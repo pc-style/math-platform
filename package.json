@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "bunx convex dev --once & next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -15,6 +15,7 @@
     "clsx": "^2.1.1",
     "convex": "^1.31.4",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
     "framer-motion": "^12.26.2",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",

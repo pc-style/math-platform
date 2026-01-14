@@ -1,119 +1,110 @@
-
 "use client";
 
 import { motion } from "framer-motion";
 import { Brain, Sparkles, BookOpen, ChevronRight } from "lucide-react";
+import { Zap, ArrowRight, Cpu, Rocket, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { useConvexAuth } from "convex/react";
+import { useConvexAuth } from "convex/react"; // Keep this import if it's used elsewhere or intended to be kept
+import { useThemeLabels } from "@/hooks/useThemeLabels"; // Assuming this is the path for useThemeLabels
+
+import { Header } from "@/components/Header";
 
 export default function LandingPage() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { getLabel, isCyber } = useThemeLabels();
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-2 group cursor-pointer">
-          <div className="p-2 border border-[#ff00ff] group-hover:bg-[#ff00ff] group-hover:shadow-[0_0_20px_#ff00ff] transition-all duration-300">
-            <Brain className="w-6 h-6 text-[#ff00ff] group-hover:text-black transition-colors" />
-          </div>
-          <span className="text-2xl font-bold text-[#ff00ff] tracking-wider">
-            MATHPREP<span className="text-white">_AI</span>
-          </span>
-        </div>
-
-        <div className="hidden md:flex items-center gap-8 text-gray-400 font-medium">
-          <a href="#features" className="hover:text-[#ff00ff] transition-colors uppercase tracking-wider text-sm">
-            &lt;Cechy /&gt;
-          </a>
-          <a href="#" className="hover:text-[#ff00ff] transition-colors uppercase tracking-wider text-sm">
-            &lt;Cennik /&gt;
-          </a>
-          <Link
-            href={isAuthenticated ? "/dashboard" : "/login"}
-            className="btn-premium py-2 px-5 text-sm"
-          >
-            {isLoading ? "..." : isAuthenticated ? "Dashboard" : "Inicjuj"}
-          </Link>
-        </div>
-      </nav>
+      <Header />
 
       {/* Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-40 text-center relative overflow-hidden">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="z-10"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 border border-[#ff00ff]/30 bg-[#ff00ff]/5 text-[#ff00ff] text-sm font-medium mb-8 tracking-wider">
-            <Sparkles className="w-4 h-4" />
-            &lt;GEMINI_1.5_FLASH /&gt;
-          </div>
+      <main className="flex-1 flex flex-col items-center justify-center px-8 relative overflow-hidden">
+        <div className="max-w-4xl w-full text-center space-y-10 relative z-10 py-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="space-y-6"
+          >
+            <div className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold tracking-widest uppercase transition-all ${isCyber
+              ? "bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/30"
+              : "bg-[var(--primary)]/5 text-[var(--primary)] rounded-full"
+              }`}>
+              <Zap className="w-4 h-4" />
+              {isCyber ? "NEXT_GEN_LEARNING_PROTOCOL" : "Nowoczesna nauka wspomagana AI"}
+            </div>
 
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 max-w-4xl mx-auto">
-            <span className="text-[#ff00ff]">&lt;</span>
-            MACHINE_LEARNING
-            <span className="text-[#ff00ff]"> /&gt;</span>
-            <br />
-            <span className="text-[#ff00ff]">FOR_MATH</span>
-          </h1>
+            <h1 className="text-6xl md:text-8xl font-extrabold tracking-tighter leading-none text-[var(--foreground)]">
+              {isCyber ? (
+                <>GENERYCZNY_PLAN<br /><span className="text-[var(--primary)]">NAUKI_MATMY</span></>
+              ) : (
+                <>Zapanuj nad<br /><span className="text-[var(--primary)] text-glow">Matematyką</span></>
+              )}
+            </h1>
 
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed font-mono">
-            // Prześlij swój podręcznik lub notatki w formacie PDF.
-            <br />
-            // Nasz system wygeneruje trzystopniowy plan nauki.
-          </p>
+            <p className="text-lg md:text-xl text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed font-medium">
+              {isCyber
+                ? "// Załaduj dane. Uruchom algorytmy. Osiągnij dominację intelektualną."
+                : "Prześlij swoje materiały w formacie PDF, a nasza sztuczna inteligencja przygotuje dla Ciebie spersonalizowaną ścieżkę nauki."}
+            </p>
+          </motion.div>
 
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-            <Link href="/dashboard" className="btn-premium group w-full sm:w-auto animate-pulse-glow">
-              INICJUJ_SYSTEM
-              <ChevronRight className="w-5 h-5 ml-1 group-hover:translate-x-1 transition-transform" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="flex flex-col sm:flex-row gap-6 justify-center pt-8"
+          >
+            <Link href="/create" className="btn-premium flex items-center gap-3 text-lg px-10 py-5">
+              <Sparkles className="w-6 h-6" />
+              {getLabel("newPlan")}
             </Link>
-            <button className="px-8 py-3 border border-gray-700 text-gray-400 font-semibold hover:border-[#00ffff] hover:text-[#00ffff] transition-all w-full sm:w-auto uppercase tracking-wider">
-              Zobacz_Przykład
-            </button>
-          </div>
-        </motion.div>
+            <Link href="/dashboard" className={`flex items-center justify-center gap-3 px-10 py-5 text-lg font-bold transition-all ${isCyber
+              ? "border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
+              : "bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 rounded-[var(--radius)]"
+              }`}>
+              <ArrowRight className="w-6 h-6" />
+              {getLabel("dashboard")}
+            </Link>
+          </motion.div>
+        </div>
 
-        {/* Feature Preview Grid */}
-        <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mt-32 w-full px-4">
-          {[
-            {
-              icon: BookOpen,
-              title: "OBSZERNA_TEORIA",
-              desc: "// Głęboka analiza materiałów źródłowych i ekstrakcja wszystkich wzorów."
-            },
-            {
-              icon: Sparkles,
-              title: "ZADANIA_Z_PRZEWODNIKIEM",
-              desc: "// Rozwiązania krok po kroku, które nauczą Cię jak myśleć."
-            },
-            {
-              icon: Brain,
-              title: "EGZAMINY_PRÓBNE",
-              desc: "// Generujemy testy sprawdzające wiedzę, bazując na Twoich materiałach."
-            }
-          ].map((f, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="card-premium text-left group"
-            >
-              <div className="p-3 border border-[#ff00ff]/30 w-fit mb-4 group-hover:bg-[#ff00ff]/10 transition-colors">
-                <f.icon className="w-6 h-6 text-[#ff00ff]" />
-              </div>
-              <h3 className="text-xl font-bold mb-2 text-[#ff00ff]">{f.title}</h3>
-              <p className="text-gray-500 leading-relaxed font-mono text-sm">{f.desc}</p>
-            </motion.div>
-          ))}
+        {/* Visual Elements */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full -z-10 opacity-30">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,var(--primary)_0%,transparent_50%)] blur-[120px] opacity-20" />
         </div>
       </main>
 
-      <footer className="py-10 border-t border-[#ff00ff]/20 text-center text-gray-600 text-sm font-mono">
+      {/* Features Preview */}
+      <section id="features" className="py-24 px-8 border-t border-[var(--border)] bg-[var(--surface)]/30">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+          {[
+            {
+              icon: Cpu,
+              title: isCyber ? "AI_CORE_ANALYSIS" : "Głęboka Analiza",
+              desc: isCyber ? "Zaawansowane modele LLM procesują dane wejściowe." : "Nasze algorytmy wyciągają najważniejsze wzory i twierdzenia z Twoich notatek."
+            },
+            {
+              icon: Rocket,
+              title: isCyber ? "LINEAR_EVOLUTION" : "Ścieżka Postępu",
+              desc: isCyber ? "Zoptymalizowany przepływ wiedzy w fazowych modułach." : "Nauka podzielona na logiczne etapy: od teorii, przez praktykę, aż po test końcowy."
+            },
+            {
+              icon: ShieldCheck,
+              title: isCyber ? "VALIDATED_RESULTS" : "Gwarancja Sukcesu",
+              desc: isCyber ? "Weryfikacja wiedzy przez systemy symulacyjne." : "Sprawdź swoje umiejętności w kontrolowanych warunkach przed prawdziwym egzaminem."
+            }
+          ].map((f, i) => (
+            <div key={i} className="card-premium space-y-4">
+              <div className={`w-12 h-12 flex items-center justify-center ${isCyber ? "border border-[var(--primary)] text-[var(--primary)]" : "bg-[var(--primary)]/10 text-[var(--primary)] rounded-2xl"}`}>
+                <f.icon className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold">{f.title}</h3>
+              <p className="text-[var(--text-muted)] leading-relaxed text-sm font-medium">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+      <footer className="py-10 border-t border-[var(--border)] text-center text-[var(--text-muted)] text-sm font-mono">
         &lt;!-- © 2026 MATHPREP_AI // pcstyle --&gt;
       </footer>
     </div>

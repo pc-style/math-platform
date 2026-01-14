@@ -1,7 +1,7 @@
 
 import { v } from "convex/values";
 import { mutation, query, action } from "./_generated/server";
-import { api, internal } from "./_generated/api";
+import { api } from "./_generated/api";
 import { authKit } from "./auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -31,7 +31,7 @@ export const getExam = query({
 });
 
 export const createExam = mutation({
-    args: { title: v.string(), storageId: v.optional(v.id("_storage")) },
+    args: { title: v.string(), storageIds: v.array(v.id("_storage")) },
     handler: async (ctx, args) => {
         const user = await authKit.getAuthUser(ctx);
         if (!user) throw new Error("Unauthorized");
@@ -40,7 +40,7 @@ export const createExam = mutation({
             userId: user.id,
             title: args.title,
             status: "generating",
-            storageId: args.storageId,
+            storageIds: args.storageIds,
             createdAt: Date.now(),
         });
 
@@ -73,15 +73,27 @@ export const generateUploadUrl = mutation(async (ctx) => {
 // --- AI Action ---
 
 export const generateExam = action({
-    args: { examId: v.id("exams"), storageId: v.id("_storage") },
+    args: { examId: v.id("exams"), storageIds: v.array(v.id("_storage")) },
     handler: async (ctx, args) => {
-        const exam = await ctx.runQuery(api.exams.getExam, { id: args.examId });
-        // Re-check auth or just proceed since it's an internal/action call triggered by user
-
         try {
-            const pdfBlob = await ctx.storage.get(args.storageId);
-            if (!pdfBlob) throw new Error("PDF not found in storage");
-            const pdfBuffer = await pdfBlob.arrayBuffer();
+            // Fetch all PDFs and convert to base64
+            const pdfParts = [];
+            for (const storageId of args.storageIds) {
+                const pdfBlob = await ctx.storage.get(storageId);
+                if (!pdfBlob) throw new Error(`PDF not found in storage: ${storageId}`);
+                const pdfBuffer = await pdfBlob.arrayBuffer();
+                // Avoid using Buffer if possible (might be undefined in some runtimes)
+                const base64 = btoa(
+                    new Uint8Array(pdfBuffer)
+                        .reduce((data, byte) => data + String.fromCharCode(byte), '')
+                );
+                pdfParts.push({
+                    inlineData: {
+                        data: base64,
+                        mimeType: "application/pdf",
+                    },
+                });
+            }
 
             const apiKey = process.env.GEMINI_API_KEY;
             if (!apiKey) throw new Error("GEMINI_API_KEY not set");
@@ -89,22 +101,26 @@ export const generateExam = action({
             const genAI = new GoogleGenerativeAI(apiKey);
             const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
+            // Build prompt with all PDFs
             const result = await model.generateContent([
-                {
-                    inlineData: {
-                        data: Buffer.from(pdfBuffer).toString("base64"),
-                        mimeType: "application/pdf",
-                    },
-                },
-                "Przeanalizuj ten plik PDF i stwórz SZCZEGÓŁOWY plan nauki matematyki po polsku. Zwróć JSON zgodny z tą strukturą: { examTitle: string, phase1_theory: [{topic, content}], phase2_guided: [{question, steps: [], solution, tips}], phase3_exam: [{question, answer}] }. Bądź bardzo obszerny.",
+                ...pdfParts,
+                `Przeanalizuj te pliki PDF (${pdfParts.length} plik${pdfParts.length > 1 ? 'ów' : ''}) i stwórz SZCZEGÓŁOWY plan nauki matematyki po polsku. Zwróć JSON zgodny z tą strukturą: { examTitle: string, phase1_theory: [{topic, content}], phase2_guided: [{question, steps: [], solution, tips}], phase3_exam: [{question, answer}] }. Bądź bardzo obszerny i połącz informacje ze wszystkich plików.`,
             ]);
 
             const text = result.response.text();
-            // Simple JSON extraction (Gemini might wrap in markdown)
-            const jsonStr = text.match(/\{[\s\S]*\}/)?.[0];
-            if (!jsonStr) throw new Error("Failed to parse AI response as JSON");
+            // Thinking models often wrap the JSON at the very end or inside markdown blocks
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) throw new Error("Nie znaleziono poprawnego formatu JSON w odpowiedzi AI.");
 
-            const data = JSON.parse(jsonStr);
+            let data;
+            try {
+                // Remove potential markdown wrappers if they exist within the match
+                const cleanedJson = jsonMatch[0].replace(/^```json\n?/, '').replace(/\n?```$/, '');
+                data = JSON.parse(cleanedJson);
+            } catch (parseError) {
+                console.error("[AI] Błąd parsowania JSON:", parseError);
+                throw new Error("Błąd struktury JSON wygenerowanej przez AI.");
+            }
 
             await ctx.runMutation(api.exams.updateExamStatus, {
                 id: args.examId,

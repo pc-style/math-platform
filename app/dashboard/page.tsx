@@ -3,95 +3,106 @@
 
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { motion } from "framer-motion";
-import { Plus, Clock, FileText, ExternalLink, Loader2 } from "lucide-react";
+import { Plus, Clock, FileText, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { pl } from "date-fns/locale";
 
+import { Header } from "@/components/Header";
+import { useThemeLabels } from "@/hooks/useThemeLabels";
+
 export default function Dashboard() {
     const exams = useQuery(api.exams.getExams);
+    const { getLabel, isCyber } = useThemeLabels();
+
+    useEffect(() => {
+        if (exams) {
+            console.log(`[Dashboard] Pobrano ${exams.length} projektów.`);
+        }
+    }, [exams]);
 
     if (exams === undefined) {
         return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 text-[#ff00ff] animate-spin" />
+            <div className="flex flex-col min-h-screen">
+                <Header />
+                <div className="flex-1 flex items-center justify-center">
+                    <Loader2 className="w-10 h-10 text-[var(--primary)] animate-spin" />
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-6 py-12">
-            <div className="flex items-center justify-between mb-12">
-                <div>
-                    <h1 className="text-3xl font-bold mb-2 text-[#ff00ff]">&lt;MOJE_PROJEKTY /&gt;</h1>
-                    <p className="text-gray-500 font-mono text-sm">// Zarządzaj swoimi planami nauki</p>
-                </div>
-                <Link href="/create" className="btn-premium">
-                    <Plus className="w-5 h-5 mr-2" />
-                    NOWY_PLAN
-                </Link>
-            </div>
-
-            {exams.length === 0 ? (
-                <div className="text-center py-20 card-premium">
-                    <div className="p-4 border border-[#ff00ff]/30 w-fit mx-auto mb-6">
-                        <FileText className="w-8 h-8 text-[#ff00ff]" />
+        <div className="flex flex-col min-h-screen">
+            <Header />
+            <div className="max-w-6xl mx-auto px-8 py-20 w-full">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
+                    <div>
+                        <h1 className="text-5xl font-extrabold mb-3 tracking-tight text-[var(--foreground)]">{getLabel("projects")}</h1>
+                        <p className="text-[var(--text-muted)] font-medium text-lg max-w-xl">
+                            {isCyber ? "// Zarządzaj swoimi planami nauki" : "Twoja osobista biblioteka spersonalizowanych planów nauki."}
+                        </p>
                     </div>
-                    <h3 className="text-xl font-semibold mb-2 text-[#ff00ff]">NULL_PROJECTS</h3>
-                    <p className="text-gray-500 mb-8 font-mono text-sm">// Nie wygenerowałeś jeszcze żadnego planu nauki.</p>
-                    <Link href="/create" className="btn-premium">
-                        INICJUJ_PIERWSZY_PLAN
+                    <Link href="/create" className="btn-premium flex items-center gap-3 px-8 py-4">
+                        <Plus className="w-6 h-6" />
+                        {getLabel("newPlan")}
                     </Link>
                 </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {exams.map((exam, idx) => (
-                        <motion.div
-                            key={exam._id}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: idx * 0.05 }}
-                            className="card-premium flex flex-col justify-between group"
-                        >
-                            <div>
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className={`px-3 py-1 border text-xs font-bold uppercase tracking-wider ${exam.status === 'ready' ? 'border-emerald-500 text-emerald-500' :
-                                        exam.status === 'generating' ? 'border-amber-500 text-amber-500 animate-pulse' :
-                                            'border-red-500 text-red-500'
-                                        }`}>
-                                        {exam.status === 'ready' ? 'GOTOWY' :
-                                            exam.status === 'generating' ? 'GENEROWANIE...' : 'BŁĄD'}
+
+                {exams.length === 0 ? (
+                    <div className="card-premium text-center py-24">
+                        <div className={`w-20 h-20 mx-auto flex items-center justify-center mb-8 ${isCyber ? "border border-[var(--primary)] text-[var(--primary)]" : "bg-[var(--primary)]/5 text-[var(--primary)] rounded-full"}`}>
+                            <Plus className="w-10 h-10" />
+                        </div>
+                        <h2 className="text-2xl font-bold mb-4 font-sans">Twój schowek jest pusty</h2>
+                        <p className="text-[var(--text-muted)] mb-10 max-w-md mx-auto">Prześlij swój pierwszy dokument PDF, aby wygenerować plan nauki.</p>
+                        <Link href="/create" className="btn-premium px-10">
+                            Zacznij teraz
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                        {exams.map((exam) => (
+                            <Link
+                                key={exam._id}
+                                href={`/exam/${exam._id}`}
+                                className={`card-premium transition-all duration-300 group hover:scale-[1.01] flex flex-col ${isCyber ? "" : "rounded-3xl"}`}
+                            >
+                                <div className="flex justify-between items-start mb-8">
+                                    <div className={`p-4 ${isCyber ? "border border-[var(--primary)] text-[var(--primary)]" : "bg-[var(--primary)]/10 text-[var(--primary)] rounded-2xl"}`}>
+                                        <FileText className="w-8 h-8" />
                                     </div>
-                                    <Clock className="w-4 h-4 text-gray-600" />
+                                    <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                                        <Clock className="w-4 h-4" />
+                                        {formatDistanceToNow(exam.createdAt, { addSuffix: true, locale: pl })}
+                                    </div>
                                 </div>
 
-                                <h3 className="text-xl font-bold mb-2 group-hover:text-[#ff00ff] transition-colors">
-                                    {exam.title}
+                                <h3 className={`text-2xl font-bold mb-4 group-hover:text-[var(--primary)] transition-colors line-clamp-2 leading-tight ${isCyber ? "font-mono" : "font-sans"}`}>
+                                    {isCyber ? `> ${exam.title.toUpperCase()}` : exam.title}
                                 </h3>
 
-                                <p className="text-sm text-gray-600 mb-6 font-mono">
-                                    // {formatDistanceToNow(new Date(exam.createdAt), { addSuffix: true, locale: pl })}
-                                </p>
-                            </div>
-
-                            <div className="flex items-center justify-between pt-6 border-t border-[#ff00ff]/20">
-                                <span className="text-xs text-gray-500 font-mono">
-                                    [{exam.data?.phase1_theory.length || 0}] zagadnień
-                                </span>
-                                <Link
-                                    href={`/exam/${exam._id}`}
-                                    className={`flex items-center gap-1 text-sm font-bold uppercase tracking-wider ${exam.status === 'ready' ? 'text-[#ff00ff] hover:text-[#00ffff]' : 'text-gray-700 cursor-not-allowed'
-                                        }`}
-                                    onClick={(e) => exam.status !== 'ready' && e.preventDefault()}
-                                >
-                                    OTWÓRZ <ExternalLink className="w-3 h-3" />
-                                </Link>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
-            )}
+                                <div className="flex items-center justify-between mt-auto pt-6 border-t border-[var(--border)]">
+                                    <div className="flex items-center gap-3">
+                                        <span className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider py-1 px-3 ${exam.status === 'ready'
+                                                ? 'bg-green-500/10 text-green-500'
+                                                : 'bg-amber-500/10 text-amber-500'
+                                            } ${isCyber ? "" : "rounded-full"}`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${exam.status === 'ready' ? 'bg-green-500' : 'bg-amber-500 animate-pulse'}`} />
+                                            {exam.status === 'ready' ? 'Gotowe' : 'W procesie'}
+                                        </span>
+                                        <span className="text-xs text-[var(--text-muted)] font-mono">
+                                            [{exam.storageIds.length} pliki]
+                                        </span>
+                                    </div>
+                                    <ArrowRight className="w-6 h-6 text-[var(--text-muted)] group-hover:text-[var(--primary)] group-hover:translate-x-1 transition-all" />
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

@@ -1,0 +1,72 @@
+{
+  "examTitle": "Kolokwium II - Analiza Matematyczna (Zestaw Przykładowy)",
+  "phase1_theory": [
+    {
+      "topic": "Pochodna funkcji w punkcie i pochodne jednostronne",
+      "content": "Definicja pochodnej jako granicy ilorazu różnicowego. W przypadku funkcji zadanych klamrą, aby pochodna w punkcie sklejenia istniała, funkcja musi być w tym punkcie ciągła, a pochodne lewostronna i prawostronna muszą być sobie równe."
+    },
+    {
+      "topic": "Interpretacja geometryczna pochodnej - Styczna",
+      "content": "Równanie stycznej do wykresu funkcji f w punkcie (x0, f(x0)) dane jest wzorem: y - f(x0) = f'(x0)(x - x0). Wymaga obliczenia wartości funkcji oraz jej pochodnej w danym punkcie."
+    },
+    {
+      "topic": "Reguła de l’Hospitala",
+      "content": "Stosowana do obliczania granic wyrażeń nieoznaczonych typu [0/0] lub [inf/inf]. Polega na obliczeniu granicy ilorazu pochodnych licznika i mianownika: lim f(x)/g(x) = lim f'(x)/g'(x)."
+    },
+    {
+      "topic": "Różniczkowanie funkcji złożonych",
+      "content": "Zastosowanie wzoru na pochodną funkcji złożonej (chain rule): [f(g(x))]' = f'(g(x)) * g'(x). Ważne przy funkcjach typu e^u(x) oraz arctan(u(x))."
+    },
+    {
+      "topic": "Badanie przebiegu zmienności funkcji",
+      "content": "Wyznaczanie dziedziny (mianownik różny od zera, argument logarytmu dodatni). Asymptoty: pionowe (w punktach wyrzuconych z dziedziny), poziome i ukośne (granice w nieskończoności). Monotoniczność i ekstrema (badanie znaku pierwszej pochodnej). Wypukłość i punkty przegięcia (badanie znaku drugiej pochodnej)."
+    }
+  ],
+  "phase2_guided": [
+    {
+      "question": "Zadanie 1: Oblicz pochodną f'(0) dla funkcji f(x) danej klamrą.",
+      "steps": [
+        "Sprawdź ciągłość w x=0: lim_{x->0+} f(x) = sqrt(0+1)=1, lim_{x->0-} f(x) = 0^2+0^3=0. Granice są różne.",
+        "Stwierdź brak ciągłości: Ponieważ funkcja nie jest ciągła w punkcie x=0, pochodna f'(0) nie istnieje."
+      ],
+      "solution": "Pochodna f'(0) nie istnieje, ponieważ funkcja f nie jest ciągła w punkcie x=0.",
+      "tips": "Zawsze zaczynaj od sprawdzenia ciągłości. Jeśli funkcja jest nieciągła, pochodna nie może istnieć."
+    },
+    {
+      "question": "Zadanie 3: Oblicz granicę lim_{x->0} (cos x - 1) / (sin x - x) stosując regułę de l’Hospitala.",
+      "steps": [
+        "Sprawdź symbol nieoznaczony: (cos 0 - 1) / (sin 0 - 0) = (1-1)/0 = [0/0].",
+        "Zastosuj regułę de l’Hospitala (pierwszy raz): lim_{x->0} (-sin x) / (cos x - 1). Ponownie otrzymujemy [0/0].",
+        "Zastosuj regułę de l’Hospitala (drugi raz): lim_{x->0} (-cos x) / (-sin x). To daje [-1/0].",
+        "Zbadaj granice jednostronne: dla x->0+ wynik to +inf, dla x->0- wynik to -inf."
+      ],
+      "solution": "Granica nie istnieje (granice jednostronne są różne: -inf i +inf). Uwaga: Przy ponownym różniczkowaniu mianownika otrzymujemy 0, co sugeruje asymptotyczne zachowanie.",
+      "tips": "Jeśli po de l'Hospitalu nadal masz [0/0], stosuj regułę do skutku, o ile spełnione są założenia."
+    },
+    {
+      "question": "Zadanie 6: Wyznacz dziedzinę, monotoniczność i ekstrema funkcji f(x) = ln(x) / x^2.",
+      "steps": [
+        "Dziedzina: x > 0 (ze względu na logarytm) oraz x != 0. Zatem D = (0, +inf).",
+        "Oblicz pochodną: f'(x) = [ (1/x)*x^2 - ln(x)*2x ] / (x^2)^2 = [ x - 2x*ln(x) ] / x^4 = (1 - 2*ln(x)) / x^3.",
+        "Punkty stacjonarne: f'(x) = 0 => 1 - 2*ln(x) = 0 => ln(x) = 1/2 => x = sqrt(e).",
+        "Znak pochodnej: f'(x) > 0 dla x < sqrt(e) (funkcja rośnie), f'(x) < 0 dla x > sqrt(e) (funkcja maleje)."
+      ],
+      "solution": "Dziedzina: (0, +inf). Funkcja rośnie w (0, sqrt(e)], maleje w [sqrt(e), +inf). Maksimum lokalne w punkcie x = sqrt(e).",
+      "tips": "Pamiętaj o dziedzinie przy ustalaniu przedziałów monotoniczności."
+    }
+  ],
+  "phase3_exam": [
+    {
+      "question": "Wyznacz równanie stycznej do f(x) = x^2 / (x - 2) w punkcie x = 1.",
+      "answer": "f(1) = -1. f'(x) = (x^2 - 4x) / (x-2)^2. f'(1) = (1-4)/(1-2)^2 = -3. Równanie: y + 1 = -3(x - 1) => y = -3x + 2."
+    },
+    {
+      "question": "Oblicz pochodną f(x) = e^{arctan x} + arctan(e^x).",
+      "answer": "f'(x) = e^{arctan x} * (1 / (1 + x^2)) + (1 / (1 + (e^x)^2)) * e^x = [e^{arctan x} / (1 + x^2)] + [e^x / (1 + e^{2x})]."
+    },
+    {
+      "question": "Dla funkcji f(x) = x^3 - 3x wyznacz przedziały, w których jest jednocześnie rosnąca i wypukła.",
+      "answer": "f'(x) = 3x^2 - 3. f'(x) > 0 <=> x in (-inf, -1) u (1, +inf). f''(x) = 6x. f''(x) > 0 <=> x > 0. Część wspólna: x in (1, +inf)."
+    }
+  ]
+}

@@ -12,7 +12,7 @@ export default defineSchema({
             v.literal("ready"),
             v.literal("error")
         ),
-        storageId: v.optional(v.id("_storage")), // The uploaded PDF
+        storageIds: v.array(v.id("_storage")), // Multiple uploaded PDFs
         data: v.optional(
             v.object({
                 examTitle: v.string(),
@@ -40,5 +40,14 @@ export default defineSchema({
         ),
         error: v.optional(v.string()),
         createdAt: v.number(),
+    }).index("by_user", ["userId"]),
+
+    // User Settings & Theme Preferences
+    users: defineTable({
+        userId: v.string(), // WorkOS User ID
+        theme: v.string(), // e.g., 'cybernetic-dark', 'normal-light', etc.
+        customizations: v.optional(v.object({
+            primaryColor: v.optional(v.string()),
+        })),
     }).index("by_user", ["userId"]),
 });
