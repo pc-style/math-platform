@@ -1,0 +1,16 @@
+{
+  "id": "short",
+  "name": "Link Shortener",
+  "desc": "transforms long urls into compact, shareable links with a high-performance url compression protocol",
+  "stack": [
+    "Next.js",
+    "React",
+    "Convex",
+    "Tailwind CSS",
+    "TypeScript"
+  ],
+  "status": "active",
+  "icon": "Link",
+  "github": "https://github.com/pc-style/short.git",
+  "link": "https://s.pcstyle.dev"
+}
