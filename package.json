@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@convex-dev/workos-authkit": "^0.1.5",
+    "@google/genai": "^1.35.0",
     "@google/generative-ai": "^0.24.1",
     "@workos-inc/authkit-nextjs": "^2.13.0",
     "clsx": "^2.1.1",
