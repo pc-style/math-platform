@@ -1,12 +1,11 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, File, X, Loader2, Sparkles, AlertCircle, FileText } from "lucide-react";
+import { Upload, X, Loader2, Sparkles, AlertCircle, FileText } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import { Header } from "@/components/Header";
 import { Id } from "../../convex/_generated/dataModel";
@@ -14,24 +13,44 @@ import { useThemeLabels } from "@/hooks/useThemeLabels";
 
 export default function CreateExam() {
     const router = useRouter();
-    const [files, setFiles] = useState<File[]>([]);
+    interface FileWithBuffer {
+        name: string;
+        type: string;
+        size: number;
+        buffer: ArrayBuffer;
+    }
+
+    const [files, setFiles] = useState<FileWithBuffer[]>([]);
     const [title, setTitle] = useState("");
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { getLabel, isCyber } = useThemeLabels();
 
-    const generateUploadUrl = useMutation(api.exams.generateUploadUrl);
     const createExam = useMutation(api.exams.createExam);
+    const storeFile = useAction(api.exams.storeFile);
     const generateExamAction = useAction(api.exams.generateExam);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         accept: { "application/pdf": [".pdf"] },
         multiple: true,
-        onDrop: (acceptedFiles) => {
-            console.log(`[Create] Wybrano ${acceptedFiles.length} nowych plików.`);
-            setFiles((prev) => [...prev, ...acceptedFiles]);
-            if (!title && acceptedFiles.length > 0) {
-                setTitle(acceptedFiles[0].name.replace(/\.pdf$/i, ""));
+        onDrop: async (acceptedFiles) => {
+            console.log(`[Create] Wybrano ${acceptedFiles.length} nowych plików. Odczytywanie do pamięci...`);
+            try {
+                const newFiles = await Promise.all(
+                    acceptedFiles.map(async (f) => ({
+                        name: f.name,
+                        type: f.type,
+                        size: f.size,
+                        buffer: await f.arrayBuffer(),
+                    }))
+                );
+                setFiles((prev) => [...prev, ...newFiles]);
+                if (!title && newFiles.length > 0) {
+                    setTitle(newFiles[0].name.replace(/\.pdf$/i, ""));
+                }
+            } catch (err) {
+                console.error("[Create] Błąd podczas odczytu plików:", err);
+                setError("Nie udało się odczytać wybranych plików. Spróbuj ponownie.");
             }
         },
     });
@@ -50,16 +69,19 @@ export default function CreateExam() {
         try {
             const storageIds: Id<"_storage">[] = [];
             for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                console.log(`[Create] Przesyłanie pliku ${i + 1}/${files.length}: ${file.name}`);
-                const postUrl = await generateUploadUrl();
-                const result = await fetch(postUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": file.type },
-                    body: file,
-                });
-                const { storageId } = await result.json();
-                storageIds.push(storageId);
+                const item = files[i];
+                console.log(`[Create] Przesyłanie pliku ${i + 1}/${files.length}: ${item.name} (${item.type})`);
+
+                try {
+                    console.log(`[Create] Przesyłanie przez Convex Action...`);
+                    const storageId = await storeFile({ file: item.buffer, contentType: item.type });
+                    if (!storageId) throw new Error("Nie udało się zapisać pliku w storage.");
+                    storageIds.push(storageId);
+                    console.log(`[Create] Plik zapisany: ${storageId}`);
+                } catch (actionErr) {
+                    console.error("[Create] Błąd akcji storeFile:", actionErr);
+                    throw actionErr;
+                }
             }
 
             console.log("[Create] Pliki przesłane. Tworzenie projektu w bazie...");
@@ -72,8 +94,12 @@ export default function CreateExam() {
 
             router.push("/dashboard");
         } catch (e) {
-            console.error("[Create] Błąd przesyłania:", e);
-            setError("ERROR: Wystąpił błąd podczas przesyłania plików. Spróbuj ponownie.");
+            console.error("[Create] Szczegóły błędu:", e);
+            if (e instanceof TypeError && e.message === "Failed to fetch") {
+                setError("BŁĄD POŁĄCZENIA: Nie można połączyć się z serwerem Convex. Sprawdź połączenie z internetem lub czy npx convex dev jest uruchomiony.");
+            } else {
+                setError(e instanceof Error ? e.message : "Wystąpił błąd podczas przesyłania plików.");
+            }
             setIsUploading(false);
         }
     };
@@ -106,8 +132,8 @@ export default function CreateExam() {
                     <div
                         {...getRootProps()}
                         className={`border-2 border-dashed p-12 text-center transition-all cursor-pointer group ${isDragActive
-                                ? 'border-[var(--primary)] bg-[var(--primary)]/5 shadow-[0_0_30px_var(--glow)] scale-[1.01]'
-                                : 'border-[var(--border)] hover:border-[var(--primary)]/50'
+                            ? 'border-[var(--primary)] bg-[var(--primary)]/5 shadow-[0_0_30px_var(--glow)] scale-[1.01]'
+                            : 'border-[var(--border)] hover:border-[var(--primary)]/50'
                             } ${isCyber ? "" : "rounded-3xl"}`}
                     >
                         <input {...getInputProps()} />

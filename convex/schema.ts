@@ -25,9 +25,11 @@ export default defineSchema({
                 phase2_guided: v.array(
                     v.object({
                         question: v.string(),
+                        description: v.optional(v.string()),
                         steps: v.array(v.string()),
                         solution: v.string(),
                         tips: v.optional(v.string()),
+                        hints: v.optional(v.array(v.string())),
                     })
                 ),
                 phase3_exam: v.array(

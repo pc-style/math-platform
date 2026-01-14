@@ -1,67 +1,67 @@
-
 import { v } from "convex/values";
 import { mutation, query, action } from "./_generated/server";
 import { api } from "./_generated/api";
 import { authKit } from "./auth";
 import { GoogleGenAI, Type } from "@google/genai";
 
-// --- Tool Definition ---
+// --- Schema Definition ---
 
-const createLearningPathTool = {
-    name: 'createLearningPath',
-    description: 'Creates a structured 3-phase math learning path (Theory, Guided Practice, Exam) based on provided materials.',
-    parameters: {
-        type: Type.OBJECT,
-        properties: {
-            examTitle: {
-                type: Type.STRING,
-                description: 'A concise Polish title for this learning material.',
-            },
-            phase1_theory: {
-                type: Type.ARRAY,
-                description: 'Phase 1: Review of key concepts, formulas, and definitions found in the source material.',
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        topic: { type: Type.STRING, description: 'Name of the concept' },
-                        content: { type: Type.STRING, description: 'Detailed explanation including formulas.' },
-                    },
-                    required: ['topic', 'content'],
+const learningPathSchema = {
+    type: Type.OBJECT,
+    properties: {
+        examTitle: {
+            type: Type.STRING,
+            description: 'A concise Polish title for this learning material.',
+        },
+        phase1_theory: {
+            type: Type.ARRAY,
+            description: 'Phase 1: Review of key concepts, formulas, and definitions found in the source material.',
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    topic: { type: Type.STRING, description: 'Name of the concept' },
+                    content: { type: Type.STRING, description: 'Detailed explanation including formulas.' },
                 },
-            },
-            phase2_guided: {
-                type: Type.ARRAY,
-                description: 'Phase 2: Example exercises with step-by-step walkthroughs.',
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        question: { type: Type.STRING, description: 'The math problem' },
-                        steps: {
-                            type: Type.ARRAY,
-                            items: { type: Type.STRING },
-                            description: 'List of logical steps to solve the problem',
-                        },
-                        solution: { type: Type.STRING, description: 'The final answer' },
-                        tips: { type: Type.STRING, description: 'Helpful hints or common pitfalls' },
-                    },
-                    required: ['question', 'steps', 'solution'],
-                },
-            },
-            phase3_exam: {
-                type: Type.ARRAY,
-                description: 'Phase 3: A test for the user to solve independently.',
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        question: { type: Type.STRING },
-                        answer: { type: Type.STRING, description: 'The correct answer for grading' },
-                    },
-                    required: ['question', 'answer'],
-                },
+                required: ['topic', 'content'],
             },
         },
-        required: ['examTitle', 'phase1_theory', 'phase2_guided', 'phase3_exam'],
+        phase2_guided: {
+            type: Type.ARRAY,
+            description: 'Phase 2: Example exercises with step-by-step walkthroughs.',
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    question: { type: Type.STRING, description: 'Tytuł zadania lub treść problemu (LaTeX dozwolony)' },
+                    description: { type: Type.STRING, description: 'Opis zadania, dane wejściowe, kontekst. (LaTeX dozwolony)' },
+                    steps: {
+                        type: Type.ARRAY,
+                        items: { type: Type.STRING },
+                        description: 'Kroki rozwiązania. Każdy krok to logiczna część procesu.',
+                    },
+                    hints: {
+                        type: Type.ARRAY,
+                        items: { type: Type.STRING },
+                        description: 'Seria podpowiedzi, które uczeń może odkrywać (np. "Zauważ, że trójkąt jest prostokątny", "Użyj twierdzenia Pitagorasa").'
+                    },
+                    solution: { type: Type.STRING, description: 'Pełne rozwiązanie i wynik końcowy (w LaTeX).' },
+                },
+                required: ['question', 'steps', 'solution', 'hints'],
+            },
+        },
+        phase3_exam: {
+            type: Type.ARRAY,
+            description: 'Phase 3: A test for the user to solve independently.',
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    question: { type: Type.STRING },
+                    answer: { type: Type.STRING, description: 'The correct answer for grading' },
+                },
+                required: ['question', 'answer'],
+            },
+        },
     },
+    required: ['examTitle', 'phase1_theory', 'phase2_guided', 'phase3_exam'],
 };
 
 // --- Mutations & Queries ---
@@ -129,6 +129,15 @@ export const generateUploadUrl = mutation(async (ctx) => {
     return await ctx.storage.generateUploadUrl();
 });
 
+export const storeFile = action({
+    args: { file: v.bytes(), contentType: v.optional(v.string()) },
+    handler: async (ctx, args) => {
+        const user = await authKit.getAuthUser(ctx);
+        if (!user) throw new Error("Unauthorized");
+        return await ctx.storage.store(new Blob([args.file], { type: args.contentType }));
+    },
+});
+
 // --- AI Action ---
 
 export const generateExam = action({
@@ -157,43 +166,74 @@ export const generateExam = action({
             if (!apiKey) throw new Error("GEMINI_API_KEY not set");
 
             const ai = new GoogleGenAI({ apiKey });
-            
+
             // Build prompt with all PDFs
             const response = await ai.models.generateContent({
-                model: 'gemini-3-flash-preview',
+                model: 'gemini-3-pro-preview',
                 contents: [
-                    ...pdfParts,
                     {
                         role: 'user',
                         parts: [
+                            ...pdfParts,
                             {
-                                text: `Przeanalizuj te pliki PDF (${pdfParts.length} plik${pdfParts.length > 1 ? 'ów' : ''}) i stwórz SZCZEGÓŁOWY plan nauki matematyki po polsku. Bądź bardzo obszerny i połącz informacje ze wszystkich plików. Użyj narzędzia 'createLearningPath' aby zwrócić dane.`,
+                                text: `Jesteś wybitnym profesorem matematyki i ekspertem od dydaktyki. Twoim celem jest stworzenie SZCZEGÓŁOWEGO, ANGARAŻUJĄCEGO i SKUTECZNEGO planu nauki na podstawie przesłanych materiałów (PDF).
+
+Analiza:
+- Przeanalizuj dokładnie każdy przesłany plik.
+- Wyciągnij kluczowe pojęcia, twierdzenia, wzory i metody rozwiązywania zadań.
+- Zidentyfikuj typowe błędy i pułapki.
+
+Generowanie Treści (WYMAGANE FORMATOWANIE LATEX DO WZORÓW MATEMATYCZNYCH):
+- Wszystkie wzory matematyczne muszą być objęte znakami dolara.
+- $E=mc^2$ dla wzorów w tekście.
+- $$ \int_0^\infty x^2 dx $$ dla wzorów w nowej linii (display mode).
+- Nie używaj \\( ... \\) ani \\[ ... \\]. Tylko $ i $$.
+- Upewnij się, że LaTeX jest poprawny składniowo.
+
+Struktura Planu:
+1. Faza 1 (Teoria):
+   - Wyjaśnij pojęcia prostym, ale precyzyjnym językiem.
+   - Zawsze podawaj wzory w LaTeX.
+   - Dodaj intuicyjne wyjaśnienia "dlaczego to działa".
+   - Użyj Markdown do formatowania tekstu (pogrubienia, listy).
+
+2. Faza 2 (Praktyka z Przewodnikiem):
+   - To najważniejsza część. Stwórz zadania, które uczą myślenia.
+   - Każde zadanie musi mieć 'steps' (kroki), które prowadzą ucznia za rękę.
+   - W 'tips' (wskazówkach) zawrzyj pytania pomocnicze lub uwagi o błędach, które pojawiają się w danym kroku.
+   - 'hints' (nowe pole) powinno zawierać serię małych podpowiedzi, które można odkrywać po kolei (np. strzałką).
+   - Sekcja ta powinna być bardzo rozbudowana.
+
+3. Faza 3 (Egzamin):
+   - Zadania sprawdzające wiedzę z Fazy 1 i umiejętności z Fazy 2.
+   - Podaj tylko ostateczne odpowiedzi, aby uczeń mógł się sprawdzić.
+
+Bądź kreatywny, ale merytorycznie rygorystyczny. Traktuj użytkownika jak inteligentnego studenta, który chce zrozumieć, a nie tylko zdać.
+Wygeneruj dużo treści. Nie oszczędzaj na wyjaśnieniach.`,
                             },
                         ],
                     },
                 ],
                 config: {
-                    tools: [{ functionDeclarations: [createLearningPathTool] }],
+                    responseMimeType: "application/json",
+                    responseSchema: learningPathSchema,
                     thinkingConfig: { thinkingBudget: 4096 },
                 },
             });
 
-            const functionCalls = response.functionCalls;
-            if (functionCalls && functionCalls.length > 0) {
-                const call = functionCalls[0];
-                if (call.name === 'createLearningPath') {
-                    const data = call.args;
-                    
-                    await ctx.runMutation(api.exams.updateExamStatus, {
-                        id: args.examId,
-                        status: "ready",
-                        data: data,
-                    });
-                    return;
-                }
+            const responseText = response.text;
+            if (responseText) {
+                const data = JSON.parse(responseText);
+
+                await ctx.runMutation(api.exams.updateExamStatus, {
+                    id: args.examId,
+                    status: "ready",
+                    data: data,
+                });
+                return;
             }
 
-            throw new Error("Model nie wywołał oczekiwanej funkcji createLearningPath.");
+            throw new Error("Model nie zwrócił poprawnego JSONa.");
 
         } catch (e) {
             console.error(e);
@@ -205,4 +245,3 @@ export const generateExam = action({
         }
     },
 });
-

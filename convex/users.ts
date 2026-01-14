@@ -14,7 +14,7 @@ export const getSettings = query({
             .withIndex("by_user", (q) => q.eq("userId", user.id))
             .first();
 
-        return settings || { theme: "cybernetic-dark" };
+        return settings || { theme: "minimalistic-warm" };
     },
 });
 
@@ -42,7 +42,7 @@ export const updateSettings = mutation({
         } else {
             await ctx.db.insert("users", {
                 userId: user.id,
-                theme: args.theme || "cybernetic-dark",
+                theme: args.theme || "minimalistic-warm",
                 customizations: args.customizations,
             });
         }

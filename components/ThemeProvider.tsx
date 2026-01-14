@@ -13,7 +13,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             document.documentElement.setAttribute("data-theme", settings.theme);
         } else {
             // Default fallback
-            document.documentElement.setAttribute("data-theme", "minimalistic-light");
+            document.documentElement.setAttribute("data-theme", "minimalistic-warm");
         }
     }, [settings]);
 

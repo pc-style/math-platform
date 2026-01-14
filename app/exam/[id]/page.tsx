@@ -8,12 +8,15 @@ import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Brain, BookOpen, PenTool, Award, ChevronDown,
-    ChevronUp, CheckCircle2, Circle, ArrowLeft,
-    Sparkles, Lightbulb, GraduationCap, ChevronRight
+    CheckCircle2, Circle, ArrowLeft,
+    Sparkles, Lightbulb, GraduationCap, ChevronRight,
+    MessageSquare
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useThemeLabels } from "@/hooks/useThemeLabels";
 import { Id } from "../../../convex/_generated/dataModel";
+import { useAction } from "convex/react";
+import { MathContent } from "@/components/MathContent";
 
 export default function ExamStudyView() {
     const params = useParams();
@@ -26,6 +29,13 @@ export default function ExamStudyView() {
     const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set([0]));
     const [revealedSolutions, setRevealedSolutions] = useState<Set<number>>(new Set());
     const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
+    const [hintIndices, setHintIndices] = useState<Record<number, number>>({});
+    const [activeChatProblem, setActiveChatProblem] = useState<number | null>(null);
+    const [chatMessages, setChatMessages] = useState<Record<number, { role: 'user' | 'model', text: string }[]>>({});
+    const [chatInput, setChatInput] = useState("");
+    const [isThinking, setIsThinking] = useState(false);
+
+    const askQuestionValue = useAction(api.chat.askQuestion);
 
     useEffect(() => {
         if (exam) {
@@ -59,7 +69,6 @@ export default function ExamStudyView() {
         if (next.has(key)) next.delete(key);
         else next.add(key);
         setCompletedSteps(next);
-        console.log(`[ExamView] Zaktualizowano postęp. Łącznie ukończono: ${next.size} kroków.`);
     };
 
     if (exam === undefined) {
@@ -67,7 +76,7 @@ export default function ExamStudyView() {
             <div className="flex flex-col min-h-screen">
                 <Header />
                 <div className="flex-1 flex items-center justify-center">
-                    <div className="w-12 h-12 border-4 border-[var(--border)] border-t-[var(--primary)] rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-4 border-[var(--border)] border-t-[var(--primary)] rounded-full animate-spin" />
                 </div>
             </div>
         );
@@ -77,13 +86,13 @@ export default function ExamStudyView() {
         return (
             <div className="flex flex-col min-h-screen">
                 <Header />
-                <div className="max-w-xl mx-auto px-6 py-40 text-center">
-                    <div className="bg-red-500/10 text-red-500 p-6 rounded-3xl mb-8 border border-red-500/20">
-                        <ArrowLeft className="w-12 h-12 mx-auto mb-4" />
-                        <h2 className="text-2xl font-bold mb-2 uppercase">Wystąpił błąd</h2>
-                        <p className="font-medium">{exam?.error || "Nie udało się załadować projektu."}</p>
+                <div className="max-w-xl mx-auto px-6 py-20 text-center">
+                    <div className="bg-red-500/10 text-red-500 p-6 rounded-2xl mb-8 border border-red-500/20">
+                        <ArrowLeft className="w-8 h-8 mx-auto mb-4" />
+                        <h2 className="text-xl font-bold mb-2 uppercase">Wystąpił błąd</h2>
+                        <p className="font-medium text-sm">{exam?.error || "Nie udało się załadować projektu."}</p>
                     </div>
-                    <button onClick={() => router.push('/dashboard')} className="btn-premium">
+                    <button onClick={() => router.push('/dashboard')} className="btn-premium text-sm px-6 py-3">
                         Wróć do dashboardu
                     </button>
                 </div>
@@ -99,24 +108,21 @@ export default function ExamStudyView() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className={`p-10 mb-10 ${isCyber ? "border-2 border-[var(--primary)] text-[var(--primary)] shadow-[0_0_50px_var(--glow)]" : "bg-[var(--primary)]/5 text-[var(--primary)] rounded-[3rem] shadow-2xl"}`}
+                        className={`p-8 mb-8 ${isCyber ? "border border-[var(--primary)] text-[var(--primary)] shadow-[0_0_30px_var(--glow)]" : "bg-[var(--primary)]/5 text-[var(--primary)] rounded-full shadow-xl"}`}
                     >
-                        <Brain className={`w-16 h-16 ${isCyber ? "animate-glitch" : "animate-pulse"}`} />
+                        <Brain className={`w-12 h-12 ${isCyber ? "animate-glitch" : "animate-pulse"}`} />
                     </motion.div>
-                    <h2 className="text-4xl font-extrabold mb-4 tracking-tight">{getLabel("generating")}</h2>
-                    <p className="text-[var(--text-muted)] max-w-md mb-12 text-lg font-medium leading-relaxed">
-                        Nasza sztuczna inteligencja analizuje Twoje materiały, wyciąga wzory i tworzy plan. To może potrwać do minuty.
+                    <h2 className="text-2xl font-bold mb-3 tracking-tight">{getLabel("generating")}</h2>
+                    <p className="text-[var(--text-muted)] max-w-sm mb-8 text-sm font-medium leading-relaxed">
+                        Analizuję materiały, wyciągam wzory i tworzę plan. Chwilka.
                     </p>
-                    <div className="w-64 h-2 bg-[var(--border)] rounded-full overflow-hidden mb-12">
+                    <div className="w-48 h-1 bg-[var(--border)] rounded-full overflow-hidden mb-8">
                         <motion.div
-                            className="h-full bg-[var(--primary)] shadow-[0_0_15px_var(--glow)]"
+                            className="h-full bg-[var(--primary)] shadow-[0_0_10px_var(--glow)]"
                             animate={{ width: ["0%", "40%", "70%", "95%"] }}
                             transition={{ duration: 45, ease: "easeInOut" }}
                         />
                     </div>
-                    <button onClick={() => router.push('/dashboard')} className="flex items-center gap-2 text-[var(--primary)] font-bold hover:underline underline-offset-8">
-                        <ArrowLeft className="w-5 h-5" /> Wróć do projektów
-                    </button>
                 </div>
             </div>
         );
@@ -124,118 +130,161 @@ export default function ExamStudyView() {
 
     const { phase1_theory, phase2_guided, phase3_exam } = exam.data!;
 
+    // --- Hints State ---
+    // (hintIndices defined above)
+
+    const nextHint = (idx: number, max: number) => {
+        setHintIndices(prev => ({
+            ...prev,
+            [idx]: Math.min((prev[idx] ?? -1) + 1, max - 1)
+        }));
+    };
+
+    const prevHint = (idx: number) => {
+        setHintIndices(prev => ({
+            ...prev,
+            [idx]: Math.max((prev[idx] ?? -1) - 1, -1)
+        }));
+    };
+
+    // --- Chat State ---
+    // (activeChatProblem, chatMessages, chatInput, isThinking defined above)
+
+    // const askQuestion defined above
+
+    const handleAskAI = async (problemIdx: number, context: string) => {
+        if (!chatInput.trim()) return;
+        const msg = chatInput;
+        setChatInput("");
+        setIsThinking(true);
+
+        const currentHistory = chatMessages[problemIdx] || [];
+        const newHistory = [...currentHistory, { role: 'user' as const, text: msg }];
+        setChatMessages(prev => ({ ...prev, [problemIdx]: newHistory }));
+
+        try {
+            const answer = await askQuestionValue({
+                question: msg,
+                context: context,
+                history: currentHistory.map(m => ({
+                    role: m.role,
+                    text: m.text
+                }))
+            });
+
+            if (answer !== null) {
+                setChatMessages(prev => ({
+                    ...prev,
+                    [problemIdx]: [...newHistory, { role: 'model', text: answer }]
+                }));
+            }
+        } catch (e) {
+            console.error("Chat error", e);
+        } finally {
+            setIsThinking(false);
+        }
+    };
+
     return (
         <div className="flex flex-col min-h-screen">
             <Header />
 
-            <div className="flex-1 max-w-6xl mx-auto px-8 py-12 w-full">
-                {/* Header Info */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
-                    <div className="flex-1">
-                        <div className="flex items-center gap-4 mb-4">
-                            <button
-                                onClick={() => router.push('/dashboard')}
-                                className={`p-2 transition-all ${isCyber ? "border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)]" : "bg-[var(--primary)]/10 text-[var(--primary)] rounded-xl hover:bg-[var(--primary)]/20 shadow-sm"}`}
-                                title="Powrót"
-                            >
-                                <ArrowLeft className="w-5 h-5" />
-                            </button>
-                            <h1 className="text-4xl font-extrabold tracking-tight line-clamp-1">{exam.title}</h1>
+            <div className="flex-1 max-w-5xl mx-auto px-6 py-8 w-full">
+                {/* Header Info - Compact */}
+                <div className="flex flex-col md:flex-row justify-between items-end gap-4 mb-8 border-b border-[var(--border)] pb-6">
+                    <div>
+                        <div className="flex items-center gap-2 mb-1 text-[var(--text-muted)] text-xs font-bold uppercase tracking-wider">
+                            <GraduationCap className="w-3 h-3" />
+                            <span>Plan: {exam.title}</span>
                         </div>
-                        <div className="flex items-center gap-6">
-                            <span className="flex items-center gap-2 text-sm font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                                <GraduationCap className="w-4 h-4" />
-                                Model: Gemini 3 Flash Preview
-                            </span>
-                            <span className="flex items-center gap-2 text-sm font-bold text-[var(--primary)] uppercase tracking-wider">
-                                <Sparkles className="w-4 h-4" />
-                                {progress === 100 ? "Ukończono" : `Postęp: ${progress}%`}
-                            </span>
-                        </div>
+                        <h1 className="text-3xl font-extrabold tracking-tight text-[var(--foreground)] font-serif italic">
+                            {exam.title}
+                        </h1>
                     </div>
 
-                    <div className="w-full md:w-64 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-3xl shadow-sm">
-                        <div className="flex justify-between text-xs font-bold uppercase mb-2 tracking-widest text-[var(--text-muted)]">
-                            <span>Opanowanych:</span>
-                            <span>{completedSteps.size} / {phase1_theory.length + phase2_guided.length + phase3_exam.length}</span>
+                    <div className="flex items-center gap-4">
+                        <div className="text-right">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-0.5">Postęp</p>
+                            <p className="text-2xl font-bold text-[var(--primary)]">{progress}%</p>
                         </div>
-                        <div className="h-4 bg-[var(--background)] rounded-full overflow-hidden border border-[var(--border)]">
-                            <motion.div
-                                className="h-full bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${progress}%` }}
-                                transition={{ duration: 1 }}
-                            />
+                        <div className="w-10 h-10 relative">
+                            <svg className="w-full h-full transform -rotate-90">
+                                <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="none" className="text-[var(--border)]" />
+                                <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="none" className="text-[var(--primary)]" strokeDasharray={100} strokeDashoffset={100 - (100 * progress) / 100} />
+                            </svg>
                         </div>
                     </div>
                 </div>
 
-                {/* Phase Selection Tabs */}
-                <div className="flex flex-wrap gap-4 mb-12">
+                {/* Phase Tabs - Compact */}
+                <div className="flex gap-6 mb-8 border-b border-[var(--border)] relative px-2">
                     {[
-                        { id: 1 as const, icon: BookOpen, label: getLabel("theory"), color: "text-blue-500" },
-                        { id: 2 as const, icon: PenTool, label: getLabel("practice"), color: "text-purple-500" },
-                        { id: 3 as const, icon: Award, label: getLabel("exam"), color: "text-amber-500" }
+                        { id: 1 as const, icon: BookOpen, label: getLabel("theory") },
+                        { id: 2 as const, icon: PenTool, label: getLabel("practice") },
+                        { id: 3 as const, icon: Award, label: getLabel("exam") }
                     ].map((phase) => (
                         <button
                             key={phase.id}
                             onClick={() => { setActivePhase(phase.id); setExpandedSteps(new Set([0])); }}
-                            className={`flex-1 min-w-[140px] flex items-center justify-center gap-3 p-5 transition-all duration-300 relative group overflow-hidden ${activePhase === phase.id
-                                ? "bg-[var(--primary)] text-white shadow-xl translate-y-[-4px]"
-                                : "bg-[var(--surface)] text-[var(--text-muted)] hover:text-[var(--foreground)] border border-[var(--border)] hover:border-[var(--primary)]/50"
-                                } ${isCyber ? "" : "rounded-[1.5rem]"}`}
+                            className={`pb-3 flex items-center gap-2 transition-all relative ${activePhase === phase.id ? "text-[var(--foreground)]" : "text-[var(--text-muted)] hover:text-[var(--foreground)]"}`}
                         >
-                            <phase.icon className={`w-6 h-6 ${activePhase === phase.id ? "text-white" : phase.color}`} />
-                            <span className="font-extrabold tracking-tight">{phase.label}</span>
+                            <span className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${activePhase === phase.id ? "bg-[var(--foreground)] text-[var(--background)]" : "bg-[var(--surface)] border border-[var(--border)]"}`}>
+                                {phase.id}
+                            </span>
+                            <span className="text-xs font-bold tracking-wide uppercase hidden sm:inline">{phase.label}</span>
                             {activePhase === phase.id && (
-                                <motion.div layoutId="phase-glow" className="absolute inset-0 bg-white/10" />
+                                <motion.div layoutId="tab-underline" className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-[var(--foreground)]" />
                             )}
                         </button>
                     ))}
                 </div>
 
-                {/* Content Overlay */}
-                <div className="space-y-6">
+                {/* Content Area */}
+                <div className="min-h-[400px]">
                     <AnimatePresence mode="wait">
                         {activePhase === 1 && (
                             <motion.div
                                 key="theory-list"
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                className="space-y-6"
+                                exit={{ opacity: 0, y: -10 }}
+                                className="space-y-3"
                             >
                                 {phase1_theory.map((item, idx) => (
-                                    <div key={idx} className={`group ${isCyber ? "" : "rounded-3xl overflow-hidden shadow-sm"}`}>
-                                        <div className={`p-6 flex items-center justify-between cursor-pointer transition-all ${expandedSteps.has(idx)
-                                            ? "bg-[var(--primary)]/5 border-x border-t border-[var(--primary)]/20"
-                                            : "bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--primary)]/50"
-                                            }`} onClick={() => toggleStep(idx)}>
-                                            <div className="flex items-center gap-6">
+                                    <div key={idx} className="glass overflow-hidden transition-all duration-300">
+                                        <div
+                                            className={`p-4 flex items-center justify-between cursor-pointer group ${expandedSteps.has(idx) ? "bg-[var(--primary)]/5" : "hover:bg-[var(--surface)]"}`}
+                                            onClick={() => toggleStep(idx)}
+                                        >
+                                            <div className="flex items-center gap-4">
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); toggleCompletion(1, idx); }}
-                                                    className="transition-transform active:scale-90"
+                                                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${completedSteps.has(`1-${idx}`)
+                                                        ? "border-[var(--primary)] bg-[var(--primary)] text-[var(--background)]"
+                                                        : "border-[var(--border)] group-hover:border-[var(--primary)]"
+                                                        }`}
                                                 >
-                                                    {completedSteps.has(`1-${idx}`)
-                                                        ? <CheckCircle2 className="w-8 h-8 text-green-500 fill-green-500/10" />
-                                                        : <Circle className="w-8 h-8 text-[var(--border)] group-hover:text-[var(--primary)]/50" />
-                                                    }
+                                                    {completedSteps.has(`1-${idx}`) && <CheckCircle2 className="w-3 h-3" />}
                                                 </button>
-                                                <h3 className="text-xl md:text-2xl font-bold tracking-tight">{item.topic}</h3>
+                                                <h3 className="text-base font-bold">{item.topic}</h3>
                                             </div>
-                                            {expandedSteps.has(idx) ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
+                                            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expandedSteps.has(idx) ? "rotate-180" : ""}`} />
                                         </div>
-                                        {expandedSteps.has(idx) && (
-                                            <motion.div
-                                                initial={{ height: 0 }}
-                                                animate={{ height: 'auto' }}
-                                                className="bg-[var(--surface)] border-x border-b border-[var(--primary)]/20 p-8 prose prose-invert max-w-none"
-                                            >
-                                                <div className="text-[var(--foreground)] leading-relaxed text-lg whitespace-pre-wrap font-medium">
-                                                    {item.content}
-                                                </div>
-                                            </motion.div>
-                                        )}
+
+                                        <AnimatePresence>
+                                            {expandedSteps.has(idx) && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: "auto", opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    className="border-t border-[var(--border)]"
+                                                >
+                                                    <div className="p-6 text-sm">
+                                                        <MathContent content={item.content} />
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
                                 ))}
                             </motion.div>
@@ -244,68 +293,203 @@ export default function ExamStudyView() {
                         {activePhase === 2 && (
                             <motion.div
                                 key="practice-list"
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
+                                exit={{ opacity: 0, y: -10 }}
                                 className="space-y-8"
                             >
                                 {phase2_guided.map((item, idx) => (
-                                    <div key={idx} className={`card-premium p-0 overflow-hidden ${isCyber ? "" : "rounded-[2.5rem]"}`}>
-                                        <div className="p-8 border-b border-[var(--border)] bg-[var(--primary)]/5 flex items-start gap-6">
-                                            <button
-                                                onClick={() => toggleCompletion(2, idx)}
-                                                className="mt-1"
-                                            >
-                                                {completedSteps.has(`2-${idx}`)
-                                                    ? <CheckCircle2 className="w-8 h-8 text-green-500" />
-                                                    : <Circle className="w-8 h-8 text-[var(--border)]" />
-                                                }
-                                            </button>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <span className="text-[var(--primary)] text-xs font-bold font-mono tracking-widest uppercase bg-[var(--primary)]/10 px-3 py-1 rounded-full">Zadanie {idx + 1}</span>
-                                                </div>
-                                                <h3 className="text-2xl font-bold leading-tight mb-4">{item.question}</h3>
+                                    <div key={idx} className="border-l-2 border-[var(--border)] pl-6 py-2 relative">
+                                        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-[var(--background)] border-2 border-[var(--primary)]" />
+
+                                        <div className="mb-6">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--primary)]">Zadanie {idx + 1}</span>
+                                                <button onClick={() => toggleCompletion(2, idx)}>
+                                                    {completedSteps.has(`2-${idx}`)
+                                                        ? <span className="text-xs font-bold text-green-600 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Ukończono</span>
+                                                        : <span className="text-xs font-bold text-[var(--text-muted)] hover:text-[var(--foreground)]">Oznacz jako gotowe</span>
+                                                    }
+                                                </button>
                                             </div>
+                                            <h3 className="text-xl font-bold mb-3 font-serif">
+                                                <MathContent content={item.question} />
+                                            </h3>
+                                            {item.description && (
+                                                <div className="text-[var(--text-muted)] mb-4 text-sm">
+                                                    <MathContent content={item.description} />
+                                                </div>
+                                            )}
                                         </div>
-                                        <div className="p-8 space-y-6">
-                                            <div className="space-y-4">
-                                                <p className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-2">
-                                                    <Lightbulb className="w-4 h-4" /> Przewodnik krok po kroku:
-                                                </p>
-                                                {item.steps.map((step, sidx) => (
-                                                    <div key={sidx} className="flex gap-4 p-4 bg-[var(--background)]/50 border border-[var(--border)] rounded-2xl">
-                                                        <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-[var(--primary)] text-white font-bold rounded-lg text-sm">{sidx + 1}</span>
-                                                        <p className="text-[var(--foreground)] font-medium">{step}</p>
+
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                            {/* Left: Solution Flow */}
+                                            <div className="lg:col-span-2 space-y-4">
+                                                <div className="glass p-5 rounded-xl">
+                                                    <h4 className="text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2 opacity-75">
+                                                        <Lightbulb className="w-3 h-3 text-yellow-500" />
+                                                        Kroki Rozwiązania
+                                                    </h4>
+                                                    <div className="space-y-3">
+                                                        {item.steps.map((step, sidx) => (
+                                                            <div key={sidx} className="flex gap-3">
+                                                                <div className="flex-col items-center flex">
+                                                                    <div className="w-5 h-5 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text-muted)] text-[10px] flex items-center justify-center font-bold">
+                                                                        {sidx + 1}
+                                                                    </div>
+                                                                    {sidx !== item.steps.length - 1 && <div className="w-px h-full bg-[var(--border)] my-1" />}
+                                                                </div>
+                                                                <div className="pb-2 text-sm">
+                                                                    <MathContent content={step} />
+                                                                </div>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                ))}
+                                                </div>
+
+                                                {/* Hints Section */}
+                                                {item.hints && item.hints.length > 0 && (
+                                                    <div className="bg-amber-50/50 dark:bg-amber-900/5 border border-amber-200/50 dark:border-amber-800/30 rounded-xl p-5">
+                                                        <div className="flex items-center justify-between mb-3">
+                                                            <h4 className="text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-500 flex items-center gap-2">
+                                                                <Sparkles className="w-3 h-3" />
+                                                                Wskazówki ({((hintIndices[idx] ?? -1) + 1)} / {item.hints.length})
+                                                            </h4>
+                                                            <div className="flex gap-1">
+                                                                <button
+                                                                    onClick={() => prevHint(idx)}
+                                                                    disabled={(hintIndices[idx] ?? -1) < 0}
+                                                                    className="p-1 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-800/50 disabled:opacity-30 transition-colors"
+                                                                >
+                                                                    <ArrowLeft className="w-4 h-4 text-amber-700" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => nextHint(idx, item.hints?.length || 0)}
+                                                                    disabled={(hintIndices[idx] ?? -1) >= (item.hints?.length || 0) - 1}
+                                                                    className="p-1 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-800/50 disabled:opacity-30 transition-colors"
+                                                                >
+                                                                    <ChevronRight className="w-4 h-4 text-amber-700" />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="min-h-[3rem] relative text-sm">
+                                                            <AnimatePresence mode="wait">
+                                                                {(hintIndices[idx] ?? -1) >= 0 ? (
+                                                                    <motion.div
+                                                                        key={hintIndices[idx]}
+                                                                        initial={{ opacity: 0, x: 10 }}
+                                                                        animate={{ opacity: 1, x: 0 }}
+                                                                        exit={{ opacity: 0, x: -10 }}
+                                                                        className="text-amber-800 dark:text-amber-200 font-medium italic leading-relaxed"
+                                                                    >
+                                                                        <MathContent content={item.hints[hintIndices[idx]]} />
+                                                                    </motion.div>
+                                                                ) : (
+                                                                    <motion.div
+                                                                        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                                                        className="text-amber-800/50 dark:text-amber-200/50 italic"
+                                                                    >
+                                                                        Kliknij strzałkę, aby zobaczyć podpowiedź.
+                                                                    </motion.div>
+                                                                )}
+                                                            </AnimatePresence>
+                                                        </div>
+                                                    </div>
+                                                )}
+
                                             </div>
 
-                                            <div className="pt-6">
-                                                <button
-                                                    onClick={() => toggleSolution(idx)}
-                                                    className={`w-full flex items-center justify-center gap-3 py-4 border-2 border-dashed font-bold transition-all ${revealedSolutions.has(idx)
-                                                        ? "border-green-500/50 bg-green-500/5 text-green-600"
-                                                        : "border-[var(--primary)]/30 text-[var(--primary)] hover:bg-[var(--primary)]/5"
-                                                        } ${isCyber ? "" : "rounded-2xl"}`}
-                                                >
-                                                    {revealedSolutions.has(idx) ? "UKRYJ ROZWIĄZANIE" : "POKAŻ OSTATECZNE ROZWIĄZANIE"}
-                                                </button>
-                                                {revealedSolutions.has(idx) && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: 10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        className="mt-6 p-8 bg-green-500/5 border border-green-500/20 rounded-3xl"
+                                            {/* Right: Interaction Area / AI Chat */}
+                                            <div className="space-y-4">
+                                                {/* Final Solution */}
+                                                <div className="glass rounded-xl overflow-hidden">
+                                                    <button
+                                                        onClick={() => toggleSolution(idx)}
+                                                        className="w-full p-3 flex items-center justify-between text-xs font-bold hover:bg-[var(--surface)] transition-colors uppercase tracking-wider"
                                                     >
-                                                        <p className="font-bold text-green-600 mb-2 uppercase text-xs tracking-widest">WYNIK KOŃCOWY:</p>
-                                                        <p className="text-xl font-extrabold text-green-700">{item.solution}</p>
-                                                        {item.tips && (
-                                                            <div className="mt-6 pt-6 border-t border-green-500/10 italic text-green-600/80 text-sm font-medium">
-                                                                Tip: {item.tips}
-                                                            </div>
+                                                        <span>{revealedSolutions.has(idx) ? "Ukryj" : "Sprawdź"} Wynik</span>
+                                                        <ChevronDown className={`w-3 h-3 transition-transform ${revealedSolutions.has(idx) ? "rotate-180" : ""}`} />
+                                                    </button>
+
+                                                    <AnimatePresence>
+                                                        {revealedSolutions.has(idx) && (
+                                                            <motion.div
+                                                                initial={{ height: 0 }}
+                                                                animate={{ height: "auto" }}
+                                                                exit={{ height: 0 }}
+                                                                className="bg-green-50/50 dark:bg-green-900/10 border-t border-green-100 dark:border-green-900/30"
+                                                            >
+                                                                <div className="p-4 text-green-800 dark:text-green-300 font-bold text-base">
+                                                                    <MathContent content={item.solution} />
+                                                                </div>
+                                                            </motion.div>
                                                         )}
-                                                    </motion.div>
-                                                )}
+                                                    </AnimatePresence>
+                                                </div>
+
+                                                {/* AI Chat Button/Window */}
+                                                <div>
+                                                    {activeChatProblem !== idx ? (
+                                                        <button
+                                                            onClick={() => setActiveChatProblem(idx)}
+                                                            className="w-full py-3 px-4 rounded-xl border border-[var(--primary)] text-[var(--primary)] font-bold text-xs hover:bg-[var(--primary)] hover:text-white transition-all flex items-center justify-center gap-2 uppercase tracking-wide shadow-sm"
+                                                        >
+                                                            <MessageSquare className="w-3 h-3" />
+                                                            Zapytaj AI
+                                                        </button>
+                                                    ) : (
+                                                        <div className="glass rounded-xl shadow-[0_4px_20px_var(--glow)] overflow-hidden flex flex-col h-[350px] border border-[var(--primary)]/30">
+                                                            <div className="bg-[var(--primary)] text-white p-3 flex justify-between items-center bg-opacity-90 backdrop-blur-sm">
+                                                                <span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                                                                    <Brain className="w-3 h-3" /> Asystent
+                                                                </span>
+                                                                <button onClick={() => setActiveChatProblem(null)} className="hover:opacity-75">
+                                                                    <ChevronDown className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                            <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-[var(--surface)]">
+                                                                {(!chatMessages[idx] || chatMessages[idx].length === 0) && (
+                                                                    <p className="text-[10px] text-[var(--text-muted)] text-center mt-4">Napisz, z czym masz problem w tym zadaniu.</p>
+                                                                )}
+                                                                {chatMessages[idx]?.map((msg, i) => (
+                                                                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                                        <div className={`max-w-[90%] rounded-xl p-2.5 text-xs font-medium leading-relaxed ${msg.role === 'user'
+                                                                            ? 'bg-[var(--primary)] text-white shadow-sm'
+                                                                            : 'bg-[var(--background)] border border-[var(--border)] shadow-sm'
+                                                                            }`}>
+                                                                            <MathContent content={msg.text} />
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                                {isThinking && (
+                                                                    <div className="flex justify-start">
+                                                                        <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl p-2.5 text-[10px] text-[var(--text-muted)] animate-pulse shadow-sm">
+                                                                            AI pisze...
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="p-2 bg-[var(--background)] border-t border-[var(--border)]">
+                                                                <form
+                                                                    onSubmit={(e) => { e.preventDefault(); handleAskAI(idx, `Zadanie: ${item.question}\nKroki: ${JSON.stringify(item.steps)}`); }}
+                                                                    className="flex gap-2"
+                                                                >
+                                                                    <input
+                                                                        type="text"
+                                                                        value={chatInput}
+                                                                        onChange={(e) => setChatInput(e.target.value)}
+                                                                        className="flex-1 bg-[var(--surface)] text-xs px-3 py-2 rounded-lg border border-[var(--border)] focus:outline-none focus:border-[var(--primary)] transition-all"
+                                                                        placeholder="Zapytaj..."
+                                                                    />
+                                                                    <button type="submit" disabled={isThinking} className="p-2 bg-[var(--primary)] text-white rounded-lg disabled:opacity-50 hover:bg-[var(--primary)]/90 transition-colors">
+                                                                        <ChevronRight className="w-3 h-3" />
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -316,54 +500,58 @@ export default function ExamStudyView() {
                         {activePhase === 3 && (
                             <motion.div
                                 key="exam-list"
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                className="space-y-6"
+                                exit={{ opacity: 0, y: -10 }}
+                                className="space-y-4"
                             >
-                                <div className="card-premium bg-amber-500/5 border-amber-500/20 p-10 mb-10 text-center">
-                                    <Award className="w-16 h-16 text-amber-500 mx-auto mb-6" />
-                                    <h2 className="text-3xl font-extrabold mb-4 font-sans">Egzamin Końcowy</h2>
-                                    <p className="text-[var(--text-muted)] max-w-xl mx-auto font-medium text-lg">
-                                        Czas na ostateczny test wiedzy. Rozwiąż zadania samodzielnie, a następnie sprawdź odpowiedzi.
-                                    </p>
+                                <div className="p-6 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30 rounded-xl text-center mb-6">
+                                    <h2 className="text-lg font-bold font-serif mb-1 text-amber-900 dark:text-amber-100">Sprawdzian Wiedzy</h2>
+                                    <p className="text-xs text-[var(--text-muted)]">Rozwiąż zadania samodzielnie.</p>
                                 </div>
+
                                 {phase3_exam.map((item, idx) => (
-                                    <div key={idx} className={`card-premium p-8 group transition-all hover:ring-2 ring-amber-500/30 ${isCyber ? "" : "rounded-[2rem]"}`}>
-                                        <div className="flex items-start gap-6 mb-8">
-                                            <button
-                                                onClick={() => toggleCompletion(3, idx)}
-                                                className="mt-1"
-                                            >
+                                    <div key={idx} className="glass p-6 group hover:border-[var(--primary)]/30 transition-colors">
+                                        <div className="flex items-start gap-4 mb-4">
+                                            <button onClick={() => toggleCompletion(3, idx)} className="mt-0.5 flex-shrink-0">
                                                 {completedSteps.has(`3-${idx}`)
-                                                    ? <CheckCircle2 className="w-8 h-8 text-green-500" />
-                                                    : <Circle className="w-8 h-8 text-[var(--border)]" />
+                                                    ? <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                                    : <Circle className="w-5 h-5 text-[var(--border)] group-hover:text-[var(--text-muted)]" />
                                                 }
                                             </button>
-                                            <div>
-                                                <p className="text-xs font-extrabold text-amber-600 tracking-widest uppercase mb-2">Pytanie {idx + 1}</p>
-                                                <h3 className="text-2xl font-bold leading-tight">{item.question}</h3>
+                                            <div className="flex-1">
+                                                <div className="flex justify-between mb-1">
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Pytanie {idx + 1}</span>
+                                                </div>
+                                                <h3 className="text-lg font-bold">
+                                                    <MathContent content={item.question} />
+                                                </h3>
                                             </div>
                                         </div>
 
-                                        <div className="pt-6 border-t border-[var(--border)]">
+                                        <div className="pl-9">
                                             <button
-                                                onClick={() => toggleSolution(idx + 100)} // Offset to distinguish from Phase 2
-                                                className={`flex items-center gap-2 text-sm font-bold uppercase tracking-widest transition-colors ${revealedSolutions.has(idx + 100) ? "text-amber-600" : "text-[var(--text-muted)] hover:text-amber-500"
-                                                    }`}
+                                                onClick={() => toggleSolution(idx + 100)}
+                                                className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-colors ${revealedSolutions.has(idx + 100) ? "text-amber-600" : "text-[var(--text-muted)] hover:text-[var(--foreground)]"}`}
                                             >
-                                                {revealedSolutions.has(idx + 100) ? "Ukryj odpowiedź" : "Sprawdź odpowiedź"}
-                                                <ChevronRight className={`w-4 h-4 transition-transform ${revealedSolutions.has(idx + 100) ? "rotate-90" : ""}`} />
+                                                {revealedSolutions.has(idx + 100) ? "Ukryj Odpowiedź" : "Pokaż Odpowiedź"}
+                                                <ChevronRight className={`w-3 h-3 transition-transform ${revealedSolutions.has(idx + 100) ? "rotate-90" : ""}`} />
                                             </button>
-                                            {revealedSolutions.has(idx + 100) && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, height: 0 }}
-                                                    animate={{ opacity: 1, height: 'auto' }}
-                                                    className="mt-6 p-6 bg-white/[0.03] border border-amber-500/20 rounded-2xl"
-                                                >
-                                                    <p className="font-extrabold text-xl text-amber-700">{item.answer}</p>
-                                                </motion.div>
-                                            )}
+
+                                            <AnimatePresence>
+                                                {revealedSolutions.has(idx + 100) && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: "auto", opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        className="mt-3 p-3 bg-amber-50/50 dark:bg-amber-900/10 rounded-lg"
+                                                    >
+                                                        <div className="font-bold text-sm text-amber-800 dark:text-amber-200">
+                                                            <MathContent content={item.answer} />
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
                                         </div>
                                     </div>
                                 ))}
@@ -373,17 +561,17 @@ export default function ExamStudyView() {
                 </div>
             </div>
 
-            {/* Progress Toast */}
             {progress === 100 && (
                 <motion.div
                     initial={{ y: 100 }}
                     animate={{ y: 0 }}
-                    className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[var(--primary)] text-white px-10 py-5 rounded-full shadow-2xl z-[100] flex items-center gap-4 border-2 border-white/20"
+                    className="fixed bottom-8 right-8 glass bg-[var(--primary)] text-white px-6 py-4 rounded-xl shadow-2xl z-[100] flex items-center gap-4 cursor-pointer"
+                    onClick={() => router.push('/dashboard')}
                 >
                     <Award className="w-8 h-8" />
-                    <div className="text-left">
-                        <p className="font-extrabold text-lg leading-none">GRATULACJE!</p>
-                        <p className="text-xs font-bold opacity-80 uppercase tracking-widest">Ukończyłeś cały plan nauki!</p>
+                    <div>
+                        <p className="font-bold uppercase tracking-widest text-xs opacity-75">Ukończono</p>
+                        <p className="font-bold">Gratulacje! Wróć do bazy.</p>
                     </div>
                 </motion.div>
             )}
