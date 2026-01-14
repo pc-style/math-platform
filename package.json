@@ -9,11 +9,20 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "framer-motion": "^12.24.10",
+    "@convex-dev/workos-authkit": "^0.1.5",
+    "@google/genai": "^1.35.0",
+    "@workos-inc/authkit-nextjs": "^2.13.0",
+    "clsx": "^2.1.1",
+    "convex": "^1.31.4",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.26.2",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
+    "openssl": "^2.0.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-dropzone": "^14.3.8",
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

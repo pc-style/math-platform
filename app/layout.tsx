@@ -1,22 +1,22 @@
-import type { Metadata } from "next";
-import { JetBrains_Mono } from "next/font/google";
-import "./globals.css";
-import { NeuralCursor } from "@/components/ui/NeuralCursor";
-import { CRTOverlay } from "@/components/ui/CRTOverlay";
-import { MatrixBackground } from "@/components/ui/MatrixBackground";
 
-const jetbrainsMono = JetBrains_Mono({
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { ConvexClientProvider } from "./ConvexClientProvider";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-  weight: ["100", "400", "700", "800"],
 });
 
 export const metadata: Metadata = {
-  title: "NEXT_TEMPLATE // PCSTYLE",
-  description: "Cybernetic starter template with Next.js, Tailwind v4, and Convex",
-  icons: {
-    icon: "/favicon.ico",
-  },
+  title: "MathPrep AI | Premium Math Learning Paths",
+  description: "Generate extensive math learning materials from your PDFs with the power of Gemini AI.",
 };
 
 export default function RootLayout({
@@ -25,12 +25,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${jetbrainsMono.variable} antialiased bg-black`}>
-        <MatrixBackground />
-        <CRTOverlay />
-        <div className="relative z-10">{children}</div>
-        <NeuralCursor />
+    <html lang="pl" className="dark">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-indigo-500/30`}
+      >
+        <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>
   );
