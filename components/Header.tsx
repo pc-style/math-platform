@@ -92,6 +92,12 @@ export const Header = () => {
               {getLabel("dashboard")}
             </Link>
             <Link
+              href="/learn"
+              className="hover:text-[var(--primary)] transition-colors text-sm font-semibold"
+            >
+              Learn
+            </Link>
+            <Link
               href="/solver"
               className="hover:text-[var(--primary)] transition-colors text-sm font-semibold"
             >
@@ -120,6 +126,13 @@ export const Header = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               {getLabel("dashboard")}
+            </Link>
+            <Link
+              href="/learn"
+              className="hover:text-[var(--primary)] transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Learn
             </Link>
             <Link
               href="/solver"
