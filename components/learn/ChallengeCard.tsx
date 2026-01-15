@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Brain, Lightbulb, ChevronRight, Check } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface ChallengeCardProps {
   title: string;
@@ -41,8 +42,8 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
       </div>
 
       {/* Description */}
-      <div className="prose prose-invert max-w-none">
-        <p className="text-muted-foreground leading-relaxed">{description}</p>
+      <div className="prose prose-invert max-w-none text-muted-foreground text-sm">
+        <ReactMarkdown>{description}</ReactMarkdown>
       </div>
 
       {/* Hints */}

@@ -38,11 +38,18 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ xp, level, str
           <span>Progress</span>
           <span>{xp % 1000} / 1000</span>
         </div>
-        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
+        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px] relative">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_10px_rgba(217,119,87,0.3)]"
+            transition={{ type: "spring", stiffness: 120, damping: 22 }}
+            className="absolute inset-y-[1px] left-[1px] rounded-full bg-primary/40 blur-md"
+          />
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ type: "spring", stiffness: 120, damping: 22 }}
+            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_18px_rgba(255,0,255,0.5)] animate-pulse-glow"
           />
         </div>
       </div>

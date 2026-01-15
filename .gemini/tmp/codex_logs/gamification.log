@@ -1,0 +1,4783 @@
+OpenAI Codex v0.84.0 (research preview)
+--------
+workdir: /Users/pcstyle/projects/pcstyledev/math-platform
+model: gpt-5.2-codex
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: medium
+reasoning summaries: detailed
+session id: 019bc1f8-8104-7582-a34c-17843ff56343
+--------
+user
+You are a UX expert. Make the learning experience 'serotogenic'. 
+1. Modify 'components/learn/ValidationFeedback.tsx' to use 'canvas-confetti' on success. 
+2. Add a 'SoundManager' hook for success/failure sounds.
+3. Make the progress bars in 'components/learn/ProgressTracker.tsx' glow and animate smoothly.
+4. Update 'app/learn/[slug]/page.tsx' to trigger these effects.
+mcp: code-index starting
+mcp: context7 starting
+mcp: code-index ready
+mcp: context7 ready
+mcp startup: ready: code-index, context7
+
+thinking
+**Identifying libraries and tooling needs**
+
+The project uses canvas-confetti and Next.js libraries and might include sound features; I'll check relevant docs and inspect files with ripgrep for context on usage and requirements.
+2026-01-15T14:04:14.740491Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc ls in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 52ms:
+AGENTS.MD
+GEMINI.md
+README.md
+app
+bun.lock
+components
+context
+convex
+env.example
+eslint.config.mjs
+hooks
+lint-out.txt
+middleware.ts
+next-env.d.ts
+next.config.ts
+node_modules
+package.json
+postcss.config.mjs
+public
+scripts
+
+thinking
+**Checking canvas-confetti usage context**
+tool context7.resolve-library-id({"libraryName":"canvas-confetti","query":"Use canvas-confetti in a Next.js/React component for success effects"})
+2026-01-15T14:04:17.341971Z ERROR codex_core::codex: needs_follow_up: true
+context7.resolve-library-id({"libraryName":"canvas-confetti","query":"Use canvas-confetti in a Next.js/React component for success effects"}) success in 1.56s:
+{
+  "content": [
+    {
+      "text": "Available Libraries:\n\nEach result includes:\n- Library ID: Context7-compatible identifier (format: /org/project)\n- Name: Library or package name\n- Description: Short summary\n- Code Snippets: Number of available code examples\n- Source Reputation: Authority indicator (High, Medium, Low, or Unknown)\n- Benchmark Score: Quality indicator (100 is the highest score)\n- Versions: List of versions if available. Use one of those versions if the user provides a version in their query. The format of the version is /org/project/version.\n\nFor best results, select libraries based on name match, source reputation, snippet coverage, benchmark score, and relevance to your use case.\n\n----------\n\n- Title: Canvas Confetti\n- Context7-compatible library ID: /catdad/canvas-confetti\n- Description: A lightweight JavaScript library for creating confetti animations on an HTML canvas, with options for customization and reduced motion support.\n- Code Snippets: 13\n- Source Reputation: High\n----------\n- Title: Neoconfetti\n- Context7-compatible library ID: /puruvj/neoconfetti\n- Description: NeoConfetti provides a confetti explosion effect across various frontend frameworks like Svelte, React, Vue, Vanilla JS, and Solid.\n- Code Snippets: 78\n- Source Reputation: High\n----------\n- Title: TypeGPU Confetti\n- Context7-compatible library ID: /software-mansion-labs/typegpu-confetti\n- Description: TypeGPU Confetti is a React Native package for highly customizable confetti animations, computed and rendered exclusively on the GPU using react-native-wgpu and TypeGPU.\n- Code Snippets: 64\n- Source Reputation: Unknown\n- Benchmark Score: 83.8\n----------\n- Title: Stimulus Confetti\n- Context7-compatible library ID: /avo-hq/stimulus-confetti\n- Description: A Stimulus JS package that easily adds confetti animations to your web application with various animation types and customization options.\n- Code Snippets: 6\n- Source Reputation: High",
+      "type": "text"
+    }
+  ]
+}
+
+thinking
+**Querying documentation**
+tool context7.query-docs({"libraryId":"/catdad/canvas-confetti","query":"How to import and trigger confetti in browser/React, including using a canvas element and reduce motion? Need example usage and options."})
+2026-01-15T14:04:20.764898Z ERROR codex_core::codex: needs_follow_up: true
+context7.query-docs({"libraryId":"/catdad/canvas-confetti","query":"How to import and trigger confetti in browser/React, including using a canvas element and reduce motion? Need example usage and options."}) success in 1.11s:
+{
+  "content": [
+    {
+      "text": "### Creating Custom Confetti Instance on Specific Canvas (JavaScript)\n\nSource: https://github.com/catdad/canvas-confetti/blob/master/README.md\n\nShows how to create a new confetti instance tied to a specific HTML canvas element using `confetti.create`. Illustrates setting global options like `resize` and `useWorker` for the instance and then launching confetti using the custom instance function.\n\n```javascript\nvar myCanvas = document.createElement('canvas');\ndocument.body.appendChild(myCanvas);\n\nvar myConfetti = confetti.create(myCanvas, {\n  resize: true,\n  useWorker: true\n});\nmyConfetti({\n  particleCount: 100,\n  spread: 160\n  // any other options from the global\n  // confetti function\n});\n```\n\n--------------------------------\n\n### Including Canvas Confetti via CDN (HTML)\n\nSource: https://github.com/catdad/canvas-confetti/blob/master/README.md\n\nInclude the canvas-confetti library directly in your HTML page using a script tag pointing to the jsDelivr CDN. This makes the `confetti` function available globally on the `window` object.\n\n```html\n<script src=\"https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js\"><\\/script>\n```\n\n--------------------------------\n\n### Launching Confetti from Random Page Location (JavaScript)\n\nSource: https://github.com/catdad/canvas-confetti/blob/master/README.md\n\nIllustrates creating a confetti burst from a random position on the page using `Math.random()` for the `origin.x` and `origin.y` options. Also includes `particleCount`, `startVelocity`, and `spread` for further customization.\n\n```javascript\nconfetti({\n  particleCount: 100,\n  startVelocity: 30,\n  spread: 360,\n  origin: {\n    x: Math.random(),\n    // since they fall down, start a bit higher than random\n    y: Math.random() - 0.2\n  }\n});\n```\n\n--------------------------------\n\n### Continuously Launching Confetti from Edges (JavaScript)\n\nSource: https://github.com/catdad/canvas-confetti/blob/master/README.md\n\nShows how to create a continuous confetti effect from both the left and right edges of the page over a set duration. Uses `requestAnimationFrame` for a smooth loop and calls `confetti()` twice per frame with different `angle` and `origin` options.\n\n```javascript\n// do this for 30 seconds\nvar duration = 30 * 1000;\nvar end = Date.now() + duration;\n\n(function frame() {\n  // launch a few confetti from the left edge\n  confetti({\n    particleCount: 7,\n    angle: 60,\n    spread: 55,\n    origin: { x: 0 }\n  });\n  // and launch a few from the right edge\n  confetti({\n    particleCount: 7,\n    angle: 120,\n    spread: 55,\n    origin: { x: 1 }\n  });\n\n  // keep going until we are out of time\n  if (Date.now() < end) {\n    requestAnimationFrame(frame);\n  }\n}());\n```\n\n--------------------------------\n\n### Creating and Using Custom Confetti Shape (JavaScript)\n\nSource: https://github.com/catdad/canvas-confetti/blob/master/README.md\n\nDemonstrates how to create a custom confetti shape using an SVG path string with the `confetti.shapeFromPath` helper and then use it in a `confetti()` call by providing it in the `shapes` array.\n\n```javascript\nvar triangle = confetti.shapeFromPath({ path: 'M0 10 L5 0 L10 10z' });\n\nconfetti({\n  shapes: [triangle]\n});\n```",
+      "type": "text"
+    }
+  ]
+}
+
+thinking
+**Planning sound hook integration**
+
+I'm searching for existing sound-related hooks or usage, focusing on HTMLAudio and the usePerformanceMode hook to ensure proper integration.
+2026-01-15T14:04:24.316395Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc 'rg -n "usePerformanceMode|PerformanceMode" -S hooks components app' in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 52ms:
+hooks/usePerformanceMode.ts:5:export const usePerformanceMode = () => {
+app/courses/learn/page.tsx:24:import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+app/courses/learn/page.tsx:306:  const isLowPerformance = usePerformanceMode();
+components/ui/NeuralCursor.tsx:4:import { usePerformanceMode } from "../../hooks/usePerformanceMode";
+components/ui/NeuralCursor.tsx:8:  const isLowPerformance = usePerformanceMode();
+components/ui/NeuralCursor.tsx:24:  const isLowPerformance = usePerformanceMode();
+components/ui/MatrixBackground.tsx:4:import { usePerformanceMode } from "../../hooks/usePerformanceMode";
+components/ui/MatrixBackground.tsx:9:  const isLowPerformance = usePerformanceMode();
+2026-01-15T14:04:26.113261Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc "sed -n '1,220p' hooks/usePerformanceMode.ts" in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 52ms:
+"use client";
+
+import { useState, useEffect } from "react";
+
+export const usePerformanceMode = () => {
+  const [isLowPerformance, setIsLowPerformance] = useState(false);
+
+  useEffect(() => {
+    const checkPerformance = () => {
+      // Check for user preference first
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (prefersReducedMotion) {
+        return true;
+      }
+
+      // Check hardware concurrency (logical processors)
+      // Low-end usually has 4 or fewer threads
+      if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) {
+        return true;
+      }
+
+thinking
+**Reviewing UI components for edits**
+2026-01-15T14:04:28.911782Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc "sed -n '1,240p' components/learn/ValidationFeedback.tsx" in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 51ms:
+"use client";
+
+import React, { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
+import { CheckCircle2, AlertCircle } from "lucide-react";
+
+interface ValidationFeedbackProps {
+  status: "idle" | "success" | "failure";
+  message?: string;
+  onAnimationComplete?: () => void;
+}
+
+export const ValidationFeedback: React.FC<ValidationFeedbackProps> = ({
+  status,
+  message,
+  onAnimationComplete,
+}) => {
+  useEffect(() => {
+    if (status === "success") {
+
+thinking
+**Planning canvas-confetti integration**
+
+Considering replacing existing confetti with canvas-confetti tied to a specific element for better control and performance; also evaluating adding a hook for sound effects and checking ProgressTracker for progress bar integration.
+2026-01-15T14:04:31.781324Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc "sed -n '1,240p' components/learn/ProgressTracker.tsx" in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 51ms:
+"use client";
+
+import React from "react";
+import { motion } from "framer-motion";
+import { Zap, Trophy } from "lucide-react";
+
+interface ProgressTrackerProps {
+  xp: number;
+  level: number;
+  streak: number;
+}
+
+export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ xp, level, streak }) => {
+  const progress = (xp % 1000) / 10; // Simple XP logic
+
+  return (
+    <div className="flex flex-col gap-4 p-4 glass border border-white/10 rounded-2xl">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/50">
+
+thinking
+**Planning smooth animation with Tailwind**
+
+I'm considering adding smooth motion transitions and a pulse or animated gradient effect using Tailwind's keyframes or global CSS, so I'll check existing global styles and Tailwind v4 theme for reusable animations.
+2026-01-15T14:04:35.471529Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc 'rg -n "@keyframes|keyframes|glow|scanline" -S app components styles' in /Users/pcstyle/projects/pcstyledev/math-platform exited 2 in 51ms:
+rg: styles: No such file or directory (os error 2)
+app/globals.css:18:  --glow: rgba(217, 119, 87, 0.1);
+app/globals.css:51:  --glow: transparent;
+app/globals.css:69:  --glow: transparent;
+app/globals.css:87:  --glow: rgba(217, 119, 87, 0.1);
+app/globals.css:106:  --glow: rgba(255, 0, 255, 0.3);
+app/globals.css:175:@keyframes slideIn {
+app/globals.css:187:@keyframes fadeIn {
+app/globals.css:199:@keyframes pulse-glow {
+app/globals.css:203:      0 0 5px var(--glow),
+app/globals.css:204:      0 0 10px var(--glow);
+app/globals.css:209:      0 0 15px var(--glow),
+app/globals.css:210:      0 0 25px var(--glow);
+app/globals.css:214:@keyframes blink {
+app/globals.css:225:@keyframes glitch {
+app/globals.css:259:.animate-pulse-glow {
+app/globals.css:260:  animation: pulse-glow 3s ease-in-out infinite;
+app/globals.css:287:  box-shadow: 0 4px 20px var(--glow);
+app/globals.css:304:  box-shadow: 0 4px 30px var(--glow);
+app/globals.css:322:  box-shadow: 0 0 10px var(--glow);
+
+thinking
+**Preparing to add global CSS classes**
+2026-01-15T14:04:37.536370Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc "sed -n '150,280p' app/globals.css" in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 52ms:
+  letter-spacing: var(--letter-spacing);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+
+thinking
+**Planning UI feedback and sound integration**
+
+I'll add an overlay with the theme-dependent glow animation for progress indication and integrate the SoundManager hook found in the hooks directory to handle sound feedback.
+2026-01-15T14:04:43.636788Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc 'ls hooks' in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 51ms:
+useChallengeValidation.test.ts
+useChallengeValidation.ts
+useGeminiLive.ts
+usePerformanceMode.ts
+useThemeLabels.ts
+
+thinking
+**Identifying need for sound manager hook**
+
+I’ve noted the potential need for a new hook to manage sound, likely under hooks/useSoundManager.ts, and plan to review the learn page next to inform proper integration.
+2026-01-15T14:04:46.498395Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc "sed -n '1,240p' app/learn/[slug]/page.tsx" in /Users/pcstyle/projects/pcstyledev/math-platform exited 1 in 52ms:
+zsh:1: no matches found: app/learn/[slug]/page.tsx
+
+thinking
+**Noting escape usage**
+
+Noted that escaping is handled using quotes when needed.
+2026-01-15T14:04:48.618310Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc "sed -n '1,260p' 'app/learn/[slug]/page.tsx'" in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 52ms:
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { CodeEditor } from "@/components/learn/CodeEditor";
+import { CodePreview } from "@/components/learn/CodePreview";
+import { ChallengeCard } from "@/components/learn/ChallengeCard";
+import { ValidationFeedback } from "@/components/learn/ValidationFeedback";
+import { useChallengeValidation } from "@/hooks/useChallengeValidation";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
+
+export default function ChallengePage() {
+  const params = useParams();
+  const slug = params.slug as string;
+
+
+thinking
+**Planning sound manager integration**
+
+I'm deciding to add a SoundManager hook triggered on success/failure and to integrate it with ValidationFeedback's confetti effect. I'll consider performance mode and prefers-reduced-motion to conditionally disable sound and animations. Next, I'll check existing audio or sound hooks to avoid duplication.
+2026-01-15T14:04:54.446568Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc 'rg -n "sound|audio|Audio" -S app components hooks' in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 52ms:
+hooks/useGeminiLive.ts:9:  const audioContextRef = useRef<AudioContext | null>(null);
+hooks/useGeminiLive.ts:18:    if (audioContextRef.current) audioContextRef.current.close();
+hooks/useGeminiLive.ts:74:            playAudio(data.serverContent.modelTurn.parts[0].inlineData.data);
+hooks/useGeminiLive.ts:94:      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+hooks/useGeminiLive.ts:97:      const audioContext = new (
+hooks/useGeminiLive.ts:98:        window.AudioContext ||
+hooks/useGeminiLive.ts:99:        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+hooks/useGeminiLive.ts:101:      audioContextRef.current = audioContext;
+hooks/useGeminiLive.ts:103:      const source = audioContext.createMediaStreamSource(stream);
+hooks/useGeminiLive.ts:104:      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+hooks/useGeminiLive.ts:107:      processor.onaudioprocess = (e) => {
+hooks/useGeminiLive.ts:115:              realtimeInput: { mediaChunks: [{ data: base64, mimeType: "audio/pcm;rate=16000" }] },
+hooks/useGeminiLive.ts:122:      processor.connect(audioContext.destination);
+hooks/useGeminiLive.ts:129:  const playAudio = (base64Data: string) => {
+hooks/useGeminiLive.ts:130:    if (!audioContextRef.current) return;
+hooks/useGeminiLive.ts:138:      // Gemini Live returns 24kHz 16-bit PCM mono audio
+hooks/useGeminiLive.ts:142:      // Create audio buffer
+hooks/useGeminiLive.ts:143:      const audioBuffer = audioContextRef.current.createBuffer(1, numSamples, sampleRate);
+hooks/useGeminiLive.ts:144:      const channelData = audioBuffer.getChannelData(0);
+hooks/useGeminiLive.ts:153:      // Play the audio
+
+thinking
+**Planning sound hook implementation**
+
+No sound hook exists yet, so I'll create a simple useSoundManager and verify the canvas-confetti package usage based on package.json and existing imports.
+2026-01-15T14:04:57.345849Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc 'cat package.json' in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 52ms:
+{
+  "name": "learning-platform",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "bunx convex dev --once & next dev",
+    "build": "bunx convex codegen && next build",
+    "start": "next start",
+    "lint": "eslint",
+    "db:clear": "bunx convex run admin:clearAll",
+    "db:premium": "bun scripts/make-premium.ts",
+    "prepare": "husky",
+    "test": "vitest run",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write ."
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+
+
+
+thinking
+**Planning confetti and progress effects**
+
+I'm deciding to create a new hook for confetti with performance-based toggling and reduced motion support, plus enhance the progress tracker with smooth glow and shimmer animations using CSS and Framer Motion while keeping styles scoped and lightweight.
+thinking
+**Designing sound manager and confetti integration**
+
+I'm planning a useSoundManager hook with Web Audio oscillator chords for success/failure sounds and refining ValidationFeedback to create and manage a dedicated confetti canvas that respects performance mode by skipping effects on low performance. The progress bar will get a glow and shimmering animation that disables or simplifies on low performance using Framer Motion and CSS.
+thinking
+**Implementing sound trigger and status sync**
+
+I'm planning to prime audio on user submit before async, then trigger success/failure sounds in a status-change effect while ignoring idle resets, ensuring sound sync with validation status updates and confetti activation.
+2026-01-15T14:06:42.282613Z ERROR codex_core::codex: needs_follow_up: true
+file update
+M /Users/pcstyle/projects/pcstyledev/math-platform/components/learn/ValidationFeedback.tsx
+@@ -2,3 +2,3 @@
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+@@ -6,2 +6,3 @@
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+@@ -18,13 +19,40 @@
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+@@ -37,29 +65,36 @@
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+apply_patch(auto_approved=true) exited 0 in 21ms:
+Success. Updated the following files:
+M components/learn/ValidationFeedback.tsx
+file update:
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+
+file update:
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+
+
+thinking
+**Planning SoundManager hook with Context7**
+
+I'm aligning on implementing the SoundManager hook using native Web Audio or HTMLAudioElement without external libraries, ensuring usage of Context7 for any library or SDK documentation, and deciding to check existing audio assets in the public directory next.
+2026-01-15T14:06:48.450554Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc 'rg -n "success|fail|error" -S public app components hooks | head' in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 52ms:
+hooks/usePerformanceMode.ts:23:      // @ts-expect-error - deviceMemory is not standard yet
+hooks/useChallengeValidation.ts:14:  failedRule?: ValidationRule;
+hooks/useChallengeValidation.ts:32:            failedRule: { ...rule, hint: `Element "${rule.selector}" not found.` },
+hooks/useChallengeValidation.ts:79:          // Allow a small margin of error (1px) for rounding
+hooks/useChallengeValidation.ts:81:            return { passed: false, failedRule: rule };
+hooks/useChallengeValidation.ts:89:            failedRule: rule,
+hooks/useChallengeValidation.test.ts:49:  it("should fail on incorrect style", () => {
+hooks/useChallengeValidation.test.ts:81:    expect(validationResult.failedRule).toEqual(rules[0]);
+hooks/useChallengeValidation.test.ts:84:  it("should fail if element is missing", () => {
+hooks/useChallengeValidation.test.ts:97:      { selector: ".missing", property: "display", expected: "flex", hint: "fail" },
+file update:
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+
+
+
+thinking
+**Planning sound manager hook**
+
+I'm outlining a useSoundManager hook to play synthetic success/failure tones respecting performance mode and prefers-reduced-motion. The page will trigger sounds on validation status changes, coordinating with ValidationFeedback's confetti trigger.
+thinking
+**Implementing sound hook with Web Audio**
+
+I'm planning useSoundManager as a client hook initializing an AudioContext with unlock on first play, generating beeps via oscillators for success and failure sounds while respecting low performance mode. Confetti remains in ValidationFeedback as instructed.
+2026-01-15T14:07:02.065314Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc 'rg -n "ProgressTracker" -S app components' in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 51ms:
+components/learn/ProgressTracker.tsx:7:interface ProgressTrackerProps {
+components/learn/ProgressTracker.tsx:13:export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ xp, level, streak }) => {
+app/learn/page.tsx:9:import { ProgressTracker } from "@/components/learn/ProgressTracker";
+app/learn/page.tsx:34:          <ProgressTracker xp={userXP} level={userLevel} streak={userStreak} />
+file update:
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+
+2026-01-15T14:07:04.023289Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc "sed -n '1,140p' app/learn/page.tsx" in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 51ms:
+"use client";
+
+import React from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { motion } from "framer-motion";
+import { Brain, Star, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ProgressTracker } from "@/components/learn/ProgressTracker";
+
+export default function LearnDashboard() {
+  const courses = useQuery(api.courses.list);
+  const challenges = useQuery(api.challenges.list);
+  const user = useQuery(api.users.getUserDetails); // Assuming there's a current user query
+
+  // Mock data if user is not found for demo
+  const userXP = user?.xp || 1250;
+  const userLevel = Math.floor(userXP / 1000) + 1;
+  const userStreak = user?.streak || 5;
+
+file update:
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+
+
+
+thinking
+**Planning progress animation and sound hooks**
+
+I'm defining a new hook file for progress bar animation and updating the page to trigger effects based on validation status. I'll integrate reduced-motion handling consistently in confetti and sound effects, implementing SoundManager with Web Audio for volume control and gesture-initiated AudioContext.
+thinking
+**Implementing sound manager hook and progress bar animation**
+
+I'm implementing the sound manager hook with Web Audio API using AudioContext created on-demand and respecting reduced-motion settings. For the progress bar, I'll add neon glow animations using motion components with smooth spring transitions and overlay elements for the glow effect, then wire sound playback to validation status changes while avoiding redundant triggers.
+file update
+A /Users/pcstyle/projects/pcstyledev/math-platform/hooks/useSoundManager.ts
+"use client";
+
+import { useCallback, useEffect, useRef } from "react";
+import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+
+type SoundManager = {
+  playSuccess: () => void;
+  playFailure: () => void;
+};
+
+const getAudioContext = () => {
+  const AudioContextClass =
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  return new AudioContextClass();
+};
+
+export const useSoundManager = (): SoundManager => {
+  const isLowPerformance = usePerformanceMode();
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  const getContext = useCallback(async () => {
+    if (isLowPerformance) return null;
+    if (!audioContextRef.current) {
+      audioContextRef.current = getAudioContext();
+    }
+    if (audioContextRef.current.state === "suspended") {
+      await audioContextRef.current.resume();
+    }
+    return audioContextRef.current;
+  }, [isLowPerformance]);
+
+  const playTone = useCallback(
+    async (frequency: number, duration: number, type: OscillatorType, volume: number) => {
+      const context = await getContext();
+      if (!context) return;
+
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+
+      oscillator.type = type;
+      oscillator.frequency.value = frequency;
+
+      const now = context.currentTime;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+
+      oscillator.start(now);
+      oscillator.stop(now + duration + 0.02);
+    },
+    [getContext],
+  );
+
+  const playSuccess = useCallback(() => {
+    void playTone(523.25, 0.16, "sine", 0.08);
+    setTimeout(() => {
+      void playTone(659.25, 0.18, "sine", 0.09);
+    }, 120);
+    setTimeout(() => {
+      void playTone(783.99, 0.2, "sine", 0.1);
+    }, 240);
+  }, [playTone]);
+
+  const playFailure = useCallback(() => {
+    void playTone(220, 0.22, "triangle", 0.08);
+    setTimeout(() => {
+      void playTone(174.61, 0.18, "triangle", 0.07);
+    }, 160);
+  }, [playTone]);
+
+  useEffect(() => {
+    return () => {
+      audioContextRef.current?.close();
+      audioContextRef.current = null;
+    };
+  }, []);
+
+  return { playSuccess, playFailure };
+};
+2026-01-15T14:07:45.139306Z ERROR codex_core::codex: needs_follow_up: true
+apply_patch(auto_approved=true) exited 0 in 38ms:
+Success. Updated the following files:
+A hooks/useSoundManager.ts
+file update:
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+diff --git a/hooks/useSoundManager.ts b/hooks/useSoundManager.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..aca51dc5436e1a44e04fa6f15125ddc18a242ffb
+--- /dev/null
++++ b/hooks/useSoundManager.ts
+@@ -0,0 +1,83 @@
++"use client";
++
++import { useCallback, useEffect, useRef } from "react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
++
++type SoundManager = {
++  playSuccess: () => void;
++  playFailure: () => void;
++};
++
++const getAudioContext = () => {
++  const AudioContextClass =
++    window.AudioContext ||
++    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
++  return new AudioContextClass();
++};
++
++export const useSoundManager = (): SoundManager => {
++  const isLowPerformance = usePerformanceMode();
++  const audioContextRef = useRef<AudioContext | null>(null);
++
++  const getContext = useCallback(async () => {
++    if (isLowPerformance) return null;
++    if (!audioContextRef.current) {
++      audioContextRef.current = getAudioContext();
++    }
++    if (audioContextRef.current.state === "suspended") {
++      await audioContextRef.current.resume();
++    }
++    return audioContextRef.current;
++  }, [isLowPerformance]);
++
++  const playTone = useCallback(
++    async (frequency: number, duration: number, type: OscillatorType, volume: number) => {
++      const context = await getContext();
++      if (!context) return;
++
++      const oscillator = context.createOscillator();
++      const gain = context.createGain();
++
++      oscillator.type = type;
++      oscillator.frequency.value = frequency;
++
++      const now = context.currentTime;
++      gain.gain.setValueAtTime(0.0001, now);
++      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
++      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++      oscillator.connect(gain);
++      gain.connect(context.destination);
++
++      oscillator.start(now);
++      oscillator.stop(now + duration + 0.02);
++    },
++    [getContext],
++  );
++
++  const playSuccess = useCallback(() => {
++    void playTone(523.25, 0.16, "sine", 0.08);
++    setTimeout(() => {
++      void playTone(659.25, 0.18, "sine", 0.09);
++    }, 120);
++    setTimeout(() => {
++      void playTone(783.99, 0.2, "sine", 0.1);
++    }, 240);
++  }, [playTone]);
++
++  const playFailure = useCallback(() => {
++    void playTone(220, 0.22, "triangle", 0.08);
++    setTimeout(() => {
++      void playTone(174.61, 0.18, "triangle", 0.07);
++    }, 160);
++  }, [playTone]);
++
++  useEffect(() => {
++    return () => {
++      audioContextRef.current?.close();
++      audioContextRef.current = null;
++    };
++  }, []);
++
++  return { playSuccess, playFailure };
++};
+
+file update:
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+diff --git a/hooks/useSoundManager.ts b/hooks/useSoundManager.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..aca51dc5436e1a44e04fa6f15125ddc18a242ffb
+--- /dev/null
++++ b/hooks/useSoundManager.ts
+@@ -0,0 +1,83 @@
++"use client";
++
++import { useCallback, useEffect, useRef } from "react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
++
++type SoundManager = {
++  playSuccess: () => void;
++  playFailure: () => void;
++};
++
++const getAudioContext = () => {
++  const AudioContextClass =
++    window.AudioContext ||
++    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
++  return new AudioContextClass();
++};
++
++export const useSoundManager = (): SoundManager => {
++  const isLowPerformance = usePerformanceMode();
++  const audioContextRef = useRef<AudioContext | null>(null);
++
++  const getContext = useCallback(async () => {
++    if (isLowPerformance) return null;
++    if (!audioContextRef.current) {
++      audioContextRef.current = getAudioContext();
++    }
++    if (audioContextRef.current.state === "suspended") {
++      await audioContextRef.current.resume();
++    }
++    return audioContextRef.current;
++  }, [isLowPerformance]);
++
++  const playTone = useCallback(
++    async (frequency: number, duration: number, type: OscillatorType, volume: number) => {
++      const context = await getContext();
++      if (!context) return;
++
++      const oscillator = context.createOscillator();
++      const gain = context.createGain();
++
++      oscillator.type = type;
++      oscillator.frequency.value = frequency;
++
++      const now = context.currentTime;
++      gain.gain.setValueAtTime(0.0001, now);
++      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
++      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++      oscillator.connect(gain);
++      gain.connect(context.destination);
++
++      oscillator.start(now);
++      oscillator.stop(now + duration + 0.02);
++    },
++    [getContext],
++  );
++
++  const playSuccess = useCallback(() => {
++    void playTone(523.25, 0.16, "sine", 0.08);
++    setTimeout(() => {
++      void playTone(659.25, 0.18, "sine", 0.09);
++    }, 120);
++    setTimeout(() => {
++      void playTone(783.99, 0.2, "sine", 0.1);
++    }, 240);
++  }, [playTone]);
++
++  const playFailure = useCallback(() => {
++    void playTone(220, 0.22, "triangle", 0.08);
++    setTimeout(() => {
++      void playTone(174.61, 0.18, "triangle", 0.07);
++    }, 160);
++  }, [playTone]);
++
++  useEffect(() => {
++    return () => {
++      audioContextRef.current?.close();
++      audioContextRef.current = null;
++    };
++  }, []);
++
++  return { playSuccess, playFailure };
++};
+
+
+thinking
+**Adding glowing effect with smooth motion**
+
+I'm updating ProgressTracker to include a glowing effect using relative positioning and motion for smooth animation, applying the patch to integrate these styles.
+2026-01-15T14:07:52.385328Z ERROR codex_core::codex: needs_follow_up: true
+file update
+M /Users/pcstyle/projects/pcstyledev/math-platform/components/learn/ProgressTracker.tsx
+@@ -40,3 +40,3 @@
+         </div>
+-        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
++        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px] relative">
+           <motion.div
+@@ -44,3 +44,10 @@
+             animate={{ width: `${progress}%` }}
+-            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_10px_rgba(217,119,87,0.3)]"
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="absolute inset-y-[1px] left-[1px] rounded-full bg-primary/40 blur-md"
++          />
++          <motion.div
++            initial={{ width: 0 }}
++            animate={{ width: `${progress}%` }}
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_18px_rgba(255,0,255,0.5)] animate-pulse-glow"
+           />
+apply_patch(auto_approved=true) exited 0 in 22ms:
+Success. Updated the following files:
+M components/learn/ProgressTracker.tsx
+file update:
+diff --git a/components/learn/ProgressTracker.tsx b/components/learn/ProgressTracker.tsx
+index 569261a2a79e2e4800d081c0606423328cd2ffc2..e684e093a09da1b318253f53e98a81242d45728c
+--- a/components/learn/ProgressTracker.tsx
++++ b/components/learn/ProgressTracker.tsx
+@@ -38,11 +38,18 @@
+           <span>Progress</span>
+           <span>{xp % 1000} / 1000</span>
+         </div>
+-        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
++        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px] relative">
+           <motion.div
+             initial={{ width: 0 }}
+             animate={{ width: `${progress}%` }}
+-            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_10px_rgba(217,119,87,0.3)]"
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="absolute inset-y-[1px] left-[1px] rounded-full bg-primary/40 blur-md"
++          />
++          <motion.div
++            initial={{ width: 0 }}
++            animate={{ width: `${progress}%` }}
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_18px_rgba(255,0,255,0.5)] animate-pulse-glow"
+           />
+         </div>
+       </div>
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+diff --git a/hooks/useSoundManager.ts b/hooks/useSoundManager.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..aca51dc5436e1a44e04fa6f15125ddc18a242ffb
+--- /dev/null
++++ b/hooks/useSoundManager.ts
+@@ -0,0 +1,83 @@
++"use client";
++
++import { useCallback, useEffect, useRef } from "react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
++
++type SoundManager = {
++  playSuccess: () => void;
++  playFailure: () => void;
++};
++
++const getAudioContext = () => {
++  const AudioContextClass =
++    window.AudioContext ||
++    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
++  return new AudioContextClass();
++};
++
++export const useSoundManager = (): SoundManager => {
++  const isLowPerformance = usePerformanceMode();
++  const audioContextRef = useRef<AudioContext | null>(null);
++
++  const getContext = useCallback(async () => {
++    if (isLowPerformance) return null;
++    if (!audioContextRef.current) {
++      audioContextRef.current = getAudioContext();
++    }
++    if (audioContextRef.current.state === "suspended") {
++      await audioContextRef.current.resume();
++    }
++    return audioContextRef.current;
++  }, [isLowPerformance]);
++
++  const playTone = useCallback(
++    async (frequency: number, duration: number, type: OscillatorType, volume: number) => {
++      const context = await getContext();
++      if (!context) return;
++
++      const oscillator = context.createOscillator();
++      const gain = context.createGain();
++
++      oscillator.type = type;
++      oscillator.frequency.value = frequency;
++
++      const now = context.currentTime;
++      gain.gain.setValueAtTime(0.0001, now);
++      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
++      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++      oscillator.connect(gain);
++      gain.connect(context.destination);
++
++      oscillator.start(now);
++      oscillator.stop(now + duration + 0.02);
++    },
++    [getContext],
++  );
++
++  const playSuccess = useCallback(() => {
++    void playTone(523.25, 0.16, "sine", 0.08);
++    setTimeout(() => {
++      void playTone(659.25, 0.18, "sine", 0.09);
++    }, 120);
++    setTimeout(() => {
++      void playTone(783.99, 0.2, "sine", 0.1);
++    }, 240);
++  }, [playTone]);
++
++  const playFailure = useCallback(() => {
++    void playTone(220, 0.22, "triangle", 0.08);
++    setTimeout(() => {
++      void playTone(174.61, 0.18, "triangle", 0.07);
++    }, 160);
++  }, [playTone]);
++
++  useEffect(() => {
++    return () => {
++      audioContextRef.current?.close();
++      audioContextRef.current = null;
++    };
++  }, []);
++
++  return { playSuccess, playFailure };
++};
+
+file update:
+diff --git a/components/learn/ProgressTracker.tsx b/components/learn/ProgressTracker.tsx
+index 569261a2a79e2e4800d081c0606423328cd2ffc2..e684e093a09da1b318253f53e98a81242d45728c
+--- a/components/learn/ProgressTracker.tsx
++++ b/components/learn/ProgressTracker.tsx
+@@ -38,11 +38,18 @@
+           <span>Progress</span>
+           <span>{xp % 1000} / 1000</span>
+         </div>
+-        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
++        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px] relative">
+           <motion.div
+             initial={{ width: 0 }}
+             animate={{ width: `${progress}%` }}
+-            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_10px_rgba(217,119,87,0.3)]"
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="absolute inset-y-[1px] left-[1px] rounded-full bg-primary/40 blur-md"
++          />
++          <motion.div
++            initial={{ width: 0 }}
++            animate={{ width: `${progress}%` }}
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_18px_rgba(255,0,255,0.5)] animate-pulse-glow"
+           />
+         </div>
+       </div>
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+diff --git a/hooks/useSoundManager.ts b/hooks/useSoundManager.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..aca51dc5436e1a44e04fa6f15125ddc18a242ffb
+--- /dev/null
++++ b/hooks/useSoundManager.ts
+@@ -0,0 +1,83 @@
++"use client";
++
++import { useCallback, useEffect, useRef } from "react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
++
++type SoundManager = {
++  playSuccess: () => void;
++  playFailure: () => void;
++};
++
++const getAudioContext = () => {
++  const AudioContextClass =
++    window.AudioContext ||
++    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
++  return new AudioContextClass();
++};
++
++export const useSoundManager = (): SoundManager => {
++  const isLowPerformance = usePerformanceMode();
++  const audioContextRef = useRef<AudioContext | null>(null);
++
++  const getContext = useCallback(async () => {
++    if (isLowPerformance) return null;
++    if (!audioContextRef.current) {
++      audioContextRef.current = getAudioContext();
++    }
++    if (audioContextRef.current.state === "suspended") {
++      await audioContextRef.current.resume();
++    }
++    return audioContextRef.current;
++  }, [isLowPerformance]);
++
++  const playTone = useCallback(
++    async (frequency: number, duration: number, type: OscillatorType, volume: number) => {
++      const context = await getContext();
++      if (!context) return;
++
++      const oscillator = context.createOscillator();
++      const gain = context.createGain();
++
++      oscillator.type = type;
++      oscillator.frequency.value = frequency;
++
++      const now = context.currentTime;
++      gain.gain.setValueAtTime(0.0001, now);
++      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
++      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++      oscillator.connect(gain);
++      gain.connect(context.destination);
++
++      oscillator.start(now);
++      oscillator.stop(now + duration + 0.02);
++    },
++    [getContext],
++  );
++
++  const playSuccess = useCallback(() => {
++    void playTone(523.25, 0.16, "sine", 0.08);
++    setTimeout(() => {
++      void playTone(659.25, 0.18, "sine", 0.09);
++    }, 120);
++    setTimeout(() => {
++      void playTone(783.99, 0.2, "sine", 0.1);
++    }, 240);
++  }, [playTone]);
++
++  const playFailure = useCallback(() => {
++    void playTone(220, 0.22, "triangle", 0.08);
++    setTimeout(() => {
++      void playTone(174.61, 0.18, "triangle", 0.07);
++    }, 160);
++  }, [playTone]);
++
++  useEffect(() => {
++    return () => {
++      audioContextRef.current?.close();
++      audioContextRef.current = null;
++    };
++  }, []);
++
++  return { playSuccess, playFailure };
++};
+
+
+thinking
+**Updating page to use SoundManager and trigger on status change**
+
+I’m adding useSoundManager with playSuccess and playFailure to the page, then using a ref and useEffect to play sounds only when validationStatus changes to success or failure, avoiding initial play by defaulting the ref to "idle".
+2026-01-15T14:08:01.137160Z ERROR codex_core::codex: needs_follow_up: true
+file update:
+diff --git a/components/learn/ProgressTracker.tsx b/components/learn/ProgressTracker.tsx
+index 569261a2a79e2e4800d081c0606423328cd2ffc2..e684e093a09da1b318253f53e98a81242d45728c
+--- a/components/learn/ProgressTracker.tsx
++++ b/components/learn/ProgressTracker.tsx
+@@ -38,11 +38,18 @@
+           <span>Progress</span>
+           <span>{xp % 1000} / 1000</span>
+         </div>
+-        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
++        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px] relative">
+           <motion.div
+             initial={{ width: 0 }}
+             animate={{ width: `${progress}%` }}
+-            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_10px_rgba(217,119,87,0.3)]"
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="absolute inset-y-[1px] left-[1px] rounded-full bg-primary/40 blur-md"
++          />
++          <motion.div
++            initial={{ width: 0 }}
++            animate={{ width: `${progress}%` }}
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_18px_rgba(255,0,255,0.5)] animate-pulse-glow"
+           />
+         </div>
+       </div>
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+diff --git a/hooks/useSoundManager.ts b/hooks/useSoundManager.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..aca51dc5436e1a44e04fa6f15125ddc18a242ffb
+--- /dev/null
++++ b/hooks/useSoundManager.ts
+@@ -0,0 +1,83 @@
++"use client";
++
++import { useCallback, useEffect, useRef } from "react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
++
++type SoundManager = {
++  playSuccess: () => void;
++  playFailure: () => void;
++};
++
++const getAudioContext = () => {
++  const AudioContextClass =
++    window.AudioContext ||
++    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
++  return new AudioContextClass();
++};
++
++export const useSoundManager = (): SoundManager => {
++  const isLowPerformance = usePerformanceMode();
++  const audioContextRef = useRef<AudioContext | null>(null);
++
++  const getContext = useCallback(async () => {
++    if (isLowPerformance) return null;
++    if (!audioContextRef.current) {
++      audioContextRef.current = getAudioContext();
++    }
++    if (audioContextRef.current.state === "suspended") {
++      await audioContextRef.current.resume();
++    }
++    return audioContextRef.current;
++  }, [isLowPerformance]);
++
++  const playTone = useCallback(
++    async (frequency: number, duration: number, type: OscillatorType, volume: number) => {
++      const context = await getContext();
++      if (!context) return;
++
++      const oscillator = context.createOscillator();
++      const gain = context.createGain();
++
++      oscillator.type = type;
++      oscillator.frequency.value = frequency;
++
++      const now = context.currentTime;
++      gain.gain.setValueAtTime(0.0001, now);
++      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
++      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++      oscillator.connect(gain);
++      gain.connect(context.destination);
++
++      oscillator.start(now);
++      oscillator.stop(now + duration + 0.02);
++    },
++    [getContext],
++  );
++
++  const playSuccess = useCallback(() => {
++    void playTone(523.25, 0.16, "sine", 0.08);
++    setTimeout(() => {
++      void playTone(659.25, 0.18, "sine", 0.09);
++    }, 120);
++    setTimeout(() => {
++      void playTone(783.99, 0.2, "sine", 0.1);
++    }, 240);
++  }, [playTone]);
++
++  const playFailure = useCallback(() => {
++    void playTone(220, 0.22, "triangle", 0.08);
++    setTimeout(() => {
++      void playTone(174.61, 0.18, "triangle", 0.07);
++    }, 160);
++  }, [playTone]);
++
++  useEffect(() => {
++    return () => {
++      audioContextRef.current?.close();
++      audioContextRef.current = null;
++    };
++  }, []);
++
++  return { playSuccess, playFailure };
++};
+
+
+thinking
+**Reviewing patch failure context**
+2026-01-15T14:08:09.747940Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc "sed -n '1,40p' 'app/learn/[slug]/page.tsx'" in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 50ms:
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { CodeEditor } from "@/components/learn/CodeEditor";
+import { CodePreview } from "@/components/learn/CodePreview";
+import { ChallengeCard } from "@/components/learn/ChallengeCard";
+import { ValidationFeedback } from "@/components/learn/ValidationFeedback";
+import { SortingVisualizer } from "@/components/learn/interactive/SortingVisualizer";
+import { BoxModelPlayground } from "@/components/learn/interactive/BoxModelPlayground";
+import { useChallengeValidation } from "@/hooks/useChallengeValidation";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
+
+export default function ChallengePage() {
+  const params = useParams();
+file update:
+diff --git a/components/learn/ProgressTracker.tsx b/components/learn/ProgressTracker.tsx
+index 569261a2a79e2e4800d081c0606423328cd2ffc2..e684e093a09da1b318253f53e98a81242d45728c
+--- a/components/learn/ProgressTracker.tsx
++++ b/components/learn/ProgressTracker.tsx
+@@ -38,11 +38,18 @@
+           <span>Progress</span>
+           <span>{xp % 1000} / 1000</span>
+         </div>
+-        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
++        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px] relative">
+           <motion.div
+             initial={{ width: 0 }}
+             animate={{ width: `${progress}%` }}
+-            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_10px_rgba(217,119,87,0.3)]"
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="absolute inset-y-[1px] left-[1px] rounded-full bg-primary/40 blur-md"
++          />
++          <motion.div
++            initial={{ width: 0 }}
++            animate={{ width: `${progress}%` }}
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_18px_rgba(255,0,255,0.5)] animate-pulse-glow"
+           />
+         </div>
+       </div>
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+diff --git a/hooks/useSoundManager.ts b/hooks/useSoundManager.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..aca51dc5436e1a44e04fa6f15125ddc18a242ffb
+--- /dev/null
++++ b/hooks/useSoundManager.ts
+@@ -0,0 +1,83 @@
++"use client";
++
++import { useCallback, useEffect, useRef } from "react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
++
++type SoundManager = {
++  playSuccess: () => void;
++  playFailure: () => void;
++};
++
++const getAudioContext = () => {
++  const AudioContextClass =
++    window.AudioContext ||
++    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
++  return new AudioContextClass();
++};
++
++export const useSoundManager = (): SoundManager => {
++  const isLowPerformance = usePerformanceMode();
++  const audioContextRef = useRef<AudioContext | null>(null);
++
++  const getContext = useCallback(async () => {
++    if (isLowPerformance) return null;
++    if (!audioContextRef.current) {
++      audioContextRef.current = getAudioContext();
++    }
++    if (audioContextRef.current.state === "suspended") {
++      await audioContextRef.current.resume();
++    }
++    return audioContextRef.current;
++  }, [isLowPerformance]);
++
++  const playTone = useCallback(
++    async (frequency: number, duration: number, type: OscillatorType, volume: number) => {
++      const context = await getContext();
++      if (!context) return;
++
++      const oscillator = context.createOscillator();
++      const gain = context.createGain();
++
++      oscillator.type = type;
++      oscillator.frequency.value = frequency;
++
++      const now = context.currentTime;
++      gain.gain.setValueAtTime(0.0001, now);
++      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
++      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++      oscillator.connect(gain);
++      gain.connect(context.destination);
++
++      oscillator.start(now);
++      oscillator.stop(now + duration + 0.02);
++    },
++    [getContext],
++  );
++
++  const playSuccess = useCallback(() => {
++    void playTone(523.25, 0.16, "sine", 0.08);
++    setTimeout(() => {
++      void playTone(659.25, 0.18, "sine", 0.09);
++    }, 120);
++    setTimeout(() => {
++      void playTone(783.99, 0.2, "sine", 0.1);
++    }, 240);
++  }, [playTone]);
++
++  const playFailure = useCallback(() => {
++    void playTone(220, 0.22, "triangle", 0.08);
++    setTimeout(() => {
++      void playTone(174.61, 0.18, "triangle", 0.07);
++    }, 160);
++  }, [playTone]);
++
++  useEffect(() => {
++    return () => {
++      audioContextRef.current?.close();
++      audioContextRef.current = null;
++    };
++  }, []);
++
++  return { playSuccess, playFailure };
++};
+
+
+thinking
+**Adding sound manager import after validation**
+file update
+M /Users/pcstyle/projects/pcstyledev/math-platform/app/learn/[slug]/page.tsx
+@@ -13,2 +13,3 @@
+ import { useChallengeValidation } from "@/hooks/useChallengeValidation";
++import { useSoundManager } from "@/hooks/useSoundManager";
+ import ReactMarkdown from "react-markdown";
+@@ -33,2 +34,4 @@
+   const iframeRef = useRef<HTMLIFrameElement>(null);
++  const { playSuccess, playFailure } = useSoundManager();
++  const lastStatusRef = useRef<"idle" | "success" | "failure">("idle");
+ 
+@@ -45,2 +48,16 @@
+ 
++  useEffect(() => {
++    if (validationStatus === lastStatusRef.current) return;
++
++    if (validationStatus === "success") {
++      playSuccess();
++    }
++
++    if (validationStatus === "failure") {
++      playFailure();
++    }
++
++    lastStatusRef.current = validationStatus;
++  }, [validationStatus, playFailure, playSuccess]);
++
+   const handleCodeChange = (value: string | undefined) => {
+2026-01-15T14:08:16.754509Z ERROR codex_core::codex: needs_follow_up: true
+apply_patch(auto_approved=true) exited 0 in 32ms:
+Success. Updated the following files:
+M app/learn/[slug]/page.tsx
+file update:
+diff --git a/app/learn/[slug]/page.tsx b/app/learn/[slug]/page.tsx
+index b1d252b6388a93a29577b6cffd0a84f08ccbf610..80eb599608753cf06e48efe988cb013e800ee153
+--- a/app/learn/[slug]/page.tsx
++++ b/app/learn/[slug]/page.tsx
+@@ -11,6 +11,7 @@
+ import { SortingVisualizer } from "@/components/learn/interactive/SortingVisualizer";
+ import { BoxModelPlayground } from "@/components/learn/interactive/BoxModelPlayground";
+ import { useChallengeValidation } from "@/hooks/useChallengeValidation";
++import { useSoundManager } from "@/hooks/useSoundManager";
+ import ReactMarkdown from "react-markdown";
+ import remarkMath from "remark-math";
+ import rehypeKatex from "rehype-katex";
+@@ -31,6 +32,8 @@
+   const [feedbackMessage, setFeedbackMessage] = useState("");
+   const { validate } = useChallengeValidation();
+   const iframeRef = useRef<HTMLIFrameElement>(null);
++  const { playSuccess, playFailure } = useSoundManager();
++  const lastStatusRef = useRef<"idle" | "success" | "failure">("idle");
+ 
+   useEffect(() => {
+     if (challenge && challenge.starterCode) {
+@@ -43,6 +46,20 @@
+     }
+   }, [challenge]);
+ 
++  useEffect(() => {
++    if (validationStatus === lastStatusRef.current) return;
++
++    if (validationStatus === "success") {
++      playSuccess();
++    }
++
++    if (validationStatus === "failure") {
++      playFailure();
++    }
++
++    lastStatusRef.current = validationStatus;
++  }, [validationStatus, playFailure, playSuccess]);
++
+   const handleCodeChange = (value: string | undefined) => {
+     setFiles((prev) => ({ ...prev, [activeTab]: value || "" }));
+     setValidationStatus("idle");
+diff --git a/components/learn/ProgressTracker.tsx b/components/learn/ProgressTracker.tsx
+index 569261a2a79e2e4800d081c0606423328cd2ffc2..e684e093a09da1b318253f53e98a81242d45728c
+--- a/components/learn/ProgressTracker.tsx
++++ b/components/learn/ProgressTracker.tsx
+@@ -38,11 +38,18 @@
+           <span>Progress</span>
+           <span>{xp % 1000} / 1000</span>
+         </div>
+-        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
++        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px] relative">
+           <motion.div
+             initial={{ width: 0 }}
+             animate={{ width: `${progress}%` }}
+-            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_10px_rgba(217,119,87,0.3)]"
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="absolute inset-y-[1px] left-[1px] rounded-full bg-primary/40 blur-md"
++          />
++          <motion.div
++            initial={{ width: 0 }}
++            animate={{ width: `${progress}%` }}
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_18px_rgba(255,0,255,0.5)] animate-pulse-glow"
+           />
+         </div>
+       </div>
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+diff --git a/hooks/useSoundManager.ts b/hooks/useSoundManager.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..aca51dc5436e1a44e04fa6f15125ddc18a242ffb
+--- /dev/null
++++ b/hooks/useSoundManager.ts
+@@ -0,0 +1,83 @@
++"use client";
++
++import { useCallback, useEffect, useRef } from "react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
++
++type SoundManager = {
++  playSuccess: () => void;
++  playFailure: () => void;
++};
++
++const getAudioContext = () => {
++  const AudioContextClass =
++    window.AudioContext ||
++    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
++  return new AudioContextClass();
++};
++
++export const useSoundManager = (): SoundManager => {
++  const isLowPerformance = usePerformanceMode();
++  const audioContextRef = useRef<AudioContext | null>(null);
++
++  const getContext = useCallback(async () => {
++    if (isLowPerformance) return null;
++    if (!audioContextRef.current) {
++      audioContextRef.current = getAudioContext();
++    }
++    if (audioContextRef.current.state === "suspended") {
++      await audioContextRef.current.resume();
++    }
++    return audioContextRef.current;
++  }, [isLowPerformance]);
++
++  const playTone = useCallback(
++    async (frequency: number, duration: number, type: OscillatorType, volume: number) => {
++      const context = await getContext();
++      if (!context) return;
++
++      const oscillator = context.createOscillator();
++      const gain = context.createGain();
++
++      oscillator.type = type;
++      oscillator.frequency.value = frequency;
++
++      const now = context.currentTime;
++      gain.gain.setValueAtTime(0.0001, now);
++      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
++      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++      oscillator.connect(gain);
++      gain.connect(context.destination);
++
++      oscillator.start(now);
++      oscillator.stop(now + duration + 0.02);
++    },
++    [getContext],
++  );
++
++  const playSuccess = useCallback(() => {
++    void playTone(523.25, 0.16, "sine", 0.08);
++    setTimeout(() => {
++      void playTone(659.25, 0.18, "sine", 0.09);
++    }, 120);
++    setTimeout(() => {
++      void playTone(783.99, 0.2, "sine", 0.1);
++    }, 240);
++  }, [playTone]);
++
++  const playFailure = useCallback(() => {
++    void playTone(220, 0.22, "triangle", 0.08);
++    setTimeout(() => {
++      void playTone(174.61, 0.18, "triangle", 0.07);
++    }, 160);
++  }, [playTone]);
++
++  useEffect(() => {
++    return () => {
++      audioContextRef.current?.close();
++      audioContextRef.current = null;
++    };
++  }, []);
++
++  return { playSuccess, playFailure };
++};
+
+file update:
+diff --git a/app/learn/[slug]/page.tsx b/app/learn/[slug]/page.tsx
+index b1d252b6388a93a29577b6cffd0a84f08ccbf610..80eb599608753cf06e48efe988cb013e800ee153
+--- a/app/learn/[slug]/page.tsx
++++ b/app/learn/[slug]/page.tsx
+@@ -11,6 +11,7 @@
+ import { SortingVisualizer } from "@/components/learn/interactive/SortingVisualizer";
+ import { BoxModelPlayground } from "@/components/learn/interactive/BoxModelPlayground";
+ import { useChallengeValidation } from "@/hooks/useChallengeValidation";
++import { useSoundManager } from "@/hooks/useSoundManager";
+ import ReactMarkdown from "react-markdown";
+ import remarkMath from "remark-math";
+ import rehypeKatex from "rehype-katex";
+@@ -31,6 +32,8 @@
+   const [feedbackMessage, setFeedbackMessage] = useState("");
+   const { validate } = useChallengeValidation();
+   const iframeRef = useRef<HTMLIFrameElement>(null);
++  const { playSuccess, playFailure } = useSoundManager();
++  const lastStatusRef = useRef<"idle" | "success" | "failure">("idle");
+ 
+   useEffect(() => {
+     if (challenge && challenge.starterCode) {
+@@ -43,6 +46,20 @@
+     }
+   }, [challenge]);
+ 
++  useEffect(() => {
++    if (validationStatus === lastStatusRef.current) return;
++
++    if (validationStatus === "success") {
++      playSuccess();
++    }
++
++    if (validationStatus === "failure") {
++      playFailure();
++    }
++
++    lastStatusRef.current = validationStatus;
++  }, [validationStatus, playFailure, playSuccess]);
++
+   const handleCodeChange = (value: string | undefined) => {
+     setFiles((prev) => ({ ...prev, [activeTab]: value || "" }));
+     setValidationStatus("idle");
+diff --git a/components/learn/ProgressTracker.tsx b/components/learn/ProgressTracker.tsx
+index 569261a2a79e2e4800d081c0606423328cd2ffc2..e684e093a09da1b318253f53e98a81242d45728c
+--- a/components/learn/ProgressTracker.tsx
++++ b/components/learn/ProgressTracker.tsx
+@@ -38,11 +38,18 @@
+           <span>Progress</span>
+           <span>{xp % 1000} / 1000</span>
+         </div>
+-        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
++        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px] relative">
+           <motion.div
+             initial={{ width: 0 }}
+             animate={{ width: `${progress}%` }}
+-            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_10px_rgba(217,119,87,0.3)]"
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="absolute inset-y-[1px] left-[1px] rounded-full bg-primary/40 blur-md"
++          />
++          <motion.div
++            initial={{ width: 0 }}
++            animate={{ width: `${progress}%` }}
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_18px_rgba(255,0,255,0.5)] animate-pulse-glow"
+           />
+         </div>
+       </div>
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+diff --git a/hooks/useSoundManager.ts b/hooks/useSoundManager.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..aca51dc5436e1a44e04fa6f15125ddc18a242ffb
+--- /dev/null
++++ b/hooks/useSoundManager.ts
+@@ -0,0 +1,83 @@
++"use client";
++
++import { useCallback, useEffect, useRef } from "react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
++
++type SoundManager = {
++  playSuccess: () => void;
++  playFailure: () => void;
++};
++
++const getAudioContext = () => {
++  const AudioContextClass =
++    window.AudioContext ||
++    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
++  return new AudioContextClass();
++};
++
++export const useSoundManager = (): SoundManager => {
++  const isLowPerformance = usePerformanceMode();
++  const audioContextRef = useRef<AudioContext | null>(null);
++
++  const getContext = useCallback(async () => {
++    if (isLowPerformance) return null;
++    if (!audioContextRef.current) {
++      audioContextRef.current = getAudioContext();
++    }
++    if (audioContextRef.current.state === "suspended") {
++      await audioContextRef.current.resume();
++    }
++    return audioContextRef.current;
++  }, [isLowPerformance]);
++
++  const playTone = useCallback(
++    async (frequency: number, duration: number, type: OscillatorType, volume: number) => {
++      const context = await getContext();
++      if (!context) return;
++
++      const oscillator = context.createOscillator();
++      const gain = context.createGain();
++
++      oscillator.type = type;
++      oscillator.frequency.value = frequency;
++
++      const now = context.currentTime;
++      gain.gain.setValueAtTime(0.0001, now);
++      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
++      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++      oscillator.connect(gain);
++      gain.connect(context.destination);
++
++      oscillator.start(now);
++      oscillator.stop(now + duration + 0.02);
++    },
++    [getContext],
++  );
++
++  const playSuccess = useCallback(() => {
++    void playTone(523.25, 0.16, "sine", 0.08);
++    setTimeout(() => {
++      void playTone(659.25, 0.18, "sine", 0.09);
++    }, 120);
++    setTimeout(() => {
++      void playTone(783.99, 0.2, "sine", 0.1);
++    }, 240);
++  }, [playTone]);
++
++  const playFailure = useCallback(() => {
++    void playTone(220, 0.22, "triangle", 0.08);
++    setTimeout(() => {
++      void playTone(174.61, 0.18, "triangle", 0.07);
++    }, 160);
++  }, [playTone]);
++
++  useEffect(() => {
++    return () => {
++      audioContextRef.current?.close();
++      audioContextRef.current = null;
++    };
++  }, []);
++
++  return { playSuccess, playFailure };
++};
+
+
+
+thinking
+**Verifying confetti usage and cleanup**
+
+Confetti creation in ValidationFeedback correctly uses documented options like resize and useWorker, and imports are all necessary. Timers in SoundManager lack cleanup but are short-lived, so this is acceptable.
+thinking
+**Confirming client-only hooks and conditional confetti creation**
+
+The usePerformanceMode and getAudioContext hooks safely run only on the client, avoiding SSR issues. Confetti canvas remains in the DOM but creation is skipped on low performance to reduce cost, which is acceptable. Next, I'll verify imports and formatting in ValidationFeedback.
+2026-01-15T14:08:32.191713Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc "sed -n '1,240p' components/learn/ValidationFeedback.tsx" in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 52ms:
+"use client";
+
+import React, { useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
+import { CheckCircle2, AlertCircle } from "lucide-react";
+import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+
+interface ValidationFeedbackProps {
+  status: "idle" | "success" | "failure";
+  message?: string;
+  onAnimationComplete?: () => void;
+}
+
+export const ValidationFeedback: React.FC<ValidationFeedbackProps> = ({
+  status,
+  message,
+  onAnimationComplete,
+}) => {
+  const isLowPerformance = usePerformanceMode();
+file update:
+diff --git a/app/learn/[slug]/page.tsx b/app/learn/[slug]/page.tsx
+index b1d252b6388a93a29577b6cffd0a84f08ccbf610..80eb599608753cf06e48efe988cb013e800ee153
+--- a/app/learn/[slug]/page.tsx
++++ b/app/learn/[slug]/page.tsx
+@@ -11,6 +11,7 @@
+ import { SortingVisualizer } from "@/components/learn/interactive/SortingVisualizer";
+ import { BoxModelPlayground } from "@/components/learn/interactive/BoxModelPlayground";
+ import { useChallengeValidation } from "@/hooks/useChallengeValidation";
++import { useSoundManager } from "@/hooks/useSoundManager";
+ import ReactMarkdown from "react-markdown";
+ import remarkMath from "remark-math";
+ import rehypeKatex from "rehype-katex";
+@@ -31,6 +32,8 @@
+   const [feedbackMessage, setFeedbackMessage] = useState("");
+   const { validate } = useChallengeValidation();
+   const iframeRef = useRef<HTMLIFrameElement>(null);
++  const { playSuccess, playFailure } = useSoundManager();
++  const lastStatusRef = useRef<"idle" | "success" | "failure">("idle");
+ 
+   useEffect(() => {
+     if (challenge && challenge.starterCode) {
+@@ -43,6 +46,20 @@
+     }
+   }, [challenge]);
+ 
++  useEffect(() => {
++    if (validationStatus === lastStatusRef.current) return;
++
++    if (validationStatus === "success") {
++      playSuccess();
++    }
++
++    if (validationStatus === "failure") {
++      playFailure();
++    }
++
++    lastStatusRef.current = validationStatus;
++  }, [validationStatus, playFailure, playSuccess]);
++
+   const handleCodeChange = (value: string | undefined) => {
+     setFiles((prev) => ({ ...prev, [activeTab]: value || "" }));
+     setValidationStatus("idle");
+diff --git a/components/learn/ProgressTracker.tsx b/components/learn/ProgressTracker.tsx
+index 569261a2a79e2e4800d081c0606423328cd2ffc2..e684e093a09da1b318253f53e98a81242d45728c
+--- a/components/learn/ProgressTracker.tsx
++++ b/components/learn/ProgressTracker.tsx
+@@ -38,11 +38,18 @@
+           <span>Progress</span>
+           <span>{xp % 1000} / 1000</span>
+         </div>
+-        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
++        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px] relative">
+           <motion.div
+             initial={{ width: 0 }}
+             animate={{ width: `${progress}%` }}
+-            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_10px_rgba(217,119,87,0.3)]"
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="absolute inset-y-[1px] left-[1px] rounded-full bg-primary/40 blur-md"
++          />
++          <motion.div
++            initial={{ width: 0 }}
++            animate={{ width: `${progress}%` }}
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_18px_rgba(255,0,255,0.5)] animate-pulse-glow"
+           />
+         </div>
+       </div>
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+diff --git a/hooks/useSoundManager.ts b/hooks/useSoundManager.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..aca51dc5436e1a44e04fa6f15125ddc18a242ffb
+--- /dev/null
++++ b/hooks/useSoundManager.ts
+@@ -0,0 +1,83 @@
++"use client";
++
++import { useCallback, useEffect, useRef } from "react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
++
++type SoundManager = {
++  playSuccess: () => void;
++  playFailure: () => void;
++};
++
++const getAudioContext = () => {
++  const AudioContextClass =
++    window.AudioContext ||
++    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
++  return new AudioContextClass();
++};
++
++export const useSoundManager = (): SoundManager => {
++  const isLowPerformance = usePerformanceMode();
++  const audioContextRef = useRef<AudioContext | null>(null);
++
++  const getContext = useCallback(async () => {
++    if (isLowPerformance) return null;
++    if (!audioContextRef.current) {
++      audioContextRef.current = getAudioContext();
++    }
++    if (audioContextRef.current.state === "suspended") {
++      await audioContextRef.current.resume();
++    }
++    return audioContextRef.current;
++  }, [isLowPerformance]);
++
++  const playTone = useCallback(
++    async (frequency: number, duration: number, type: OscillatorType, volume: number) => {
++      const context = await getContext();
++      if (!context) return;
++
++      const oscillator = context.createOscillator();
++      const gain = context.createGain();
++
++      oscillator.type = type;
++      oscillator.frequency.value = frequency;
++
++      const now = context.currentTime;
++      gain.gain.setValueAtTime(0.0001, now);
++      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
++      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++      oscillator.connect(gain);
++      gain.connect(context.destination);
++
++      oscillator.start(now);
++      oscillator.stop(now + duration + 0.02);
++    },
++    [getContext],
++  );
++
++  const playSuccess = useCallback(() => {
++    void playTone(523.25, 0.16, "sine", 0.08);
++    setTimeout(() => {
++      void playTone(659.25, 0.18, "sine", 0.09);
++    }, 120);
++    setTimeout(() => {
++      void playTone(783.99, 0.2, "sine", 0.1);
++    }, 240);
++  }, [playTone]);
++
++  const playFailure = useCallback(() => {
++    void playTone(220, 0.22, "triangle", 0.08);
++    setTimeout(() => {
++      void playTone(174.61, 0.18, "triangle", 0.07);
++    }, 160);
++  }, [playTone]);
++
++  useEffect(() => {
++    return () => {
++      audioContextRef.current?.close();
++      audioContextRef.current = null;
++    };
++  }, []);
++
++  return { playSuccess, playFailure };
++};
+
+
+thinking
+**Checking progress tracker**
+2026-01-15T14:08:35.255639Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc "sed -n '1,200p' components/learn/ProgressTracker.tsx" in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 52ms:
+"use client";
+
+import React from "react";
+import { motion } from "framer-motion";
+import { Zap, Trophy } from "lucide-react";
+
+interface ProgressTrackerProps {
+  xp: number;
+  level: number;
+  streak: number;
+}
+
+export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ xp, level, streak }) => {
+  const progress = (xp % 1000) / 10; // Simple XP logic
+
+  return (
+    <div className="flex flex-col gap-4 p-4 glass border border-white/10 rounded-2xl">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/50">
+file update:
+diff --git a/app/learn/[slug]/page.tsx b/app/learn/[slug]/page.tsx
+index b1d252b6388a93a29577b6cffd0a84f08ccbf610..80eb599608753cf06e48efe988cb013e800ee153
+--- a/app/learn/[slug]/page.tsx
++++ b/app/learn/[slug]/page.tsx
+@@ -11,6 +11,7 @@
+ import { SortingVisualizer } from "@/components/learn/interactive/SortingVisualizer";
+ import { BoxModelPlayground } from "@/components/learn/interactive/BoxModelPlayground";
+ import { useChallengeValidation } from "@/hooks/useChallengeValidation";
++import { useSoundManager } from "@/hooks/useSoundManager";
+ import ReactMarkdown from "react-markdown";
+ import remarkMath from "remark-math";
+ import rehypeKatex from "rehype-katex";
+@@ -31,6 +32,8 @@
+   const [feedbackMessage, setFeedbackMessage] = useState("");
+   const { validate } = useChallengeValidation();
+   const iframeRef = useRef<HTMLIFrameElement>(null);
++  const { playSuccess, playFailure } = useSoundManager();
++  const lastStatusRef = useRef<"idle" | "success" | "failure">("idle");
+ 
+   useEffect(() => {
+     if (challenge && challenge.starterCode) {
+@@ -43,6 +46,20 @@
+     }
+   }, [challenge]);
+ 
++  useEffect(() => {
++    if (validationStatus === lastStatusRef.current) return;
++
++    if (validationStatus === "success") {
++      playSuccess();
++    }
++
++    if (validationStatus === "failure") {
++      playFailure();
++    }
++
++    lastStatusRef.current = validationStatus;
++  }, [validationStatus, playFailure, playSuccess]);
++
+   const handleCodeChange = (value: string | undefined) => {
+     setFiles((prev) => ({ ...prev, [activeTab]: value || "" }));
+     setValidationStatus("idle");
+diff --git a/components/learn/ProgressTracker.tsx b/components/learn/ProgressTracker.tsx
+index 569261a2a79e2e4800d081c0606423328cd2ffc2..e684e093a09da1b318253f53e98a81242d45728c
+--- a/components/learn/ProgressTracker.tsx
++++ b/components/learn/ProgressTracker.tsx
+@@ -38,11 +38,18 @@
+           <span>Progress</span>
+           <span>{xp % 1000} / 1000</span>
+         </div>
+-        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
++        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px] relative">
+           <motion.div
+             initial={{ width: 0 }}
+             animate={{ width: `${progress}%` }}
+-            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_10px_rgba(217,119,87,0.3)]"
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="absolute inset-y-[1px] left-[1px] rounded-full bg-primary/40 blur-md"
++          />
++          <motion.div
++            initial={{ width: 0 }}
++            animate={{ width: `${progress}%` }}
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_18px_rgba(255,0,255,0.5)] animate-pulse-glow"
+           />
+         </div>
+       </div>
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+diff --git a/hooks/useSoundManager.ts b/hooks/useSoundManager.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..aca51dc5436e1a44e04fa6f15125ddc18a242ffb
+--- /dev/null
++++ b/hooks/useSoundManager.ts
+@@ -0,0 +1,83 @@
++"use client";
++
++import { useCallback, useEffect, useRef } from "react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
++
++type SoundManager = {
++  playSuccess: () => void;
++  playFailure: () => void;
++};
++
++const getAudioContext = () => {
++  const AudioContextClass =
++    window.AudioContext ||
++    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
++  return new AudioContextClass();
++};
++
++export const useSoundManager = (): SoundManager => {
++  const isLowPerformance = usePerformanceMode();
++  const audioContextRef = useRef<AudioContext | null>(null);
++
++  const getContext = useCallback(async () => {
++    if (isLowPerformance) return null;
++    if (!audioContextRef.current) {
++      audioContextRef.current = getAudioContext();
++    }
++    if (audioContextRef.current.state === "suspended") {
++      await audioContextRef.current.resume();
++    }
++    return audioContextRef.current;
++  }, [isLowPerformance]);
++
++  const playTone = useCallback(
++    async (frequency: number, duration: number, type: OscillatorType, volume: number) => {
++      const context = await getContext();
++      if (!context) return;
++
++      const oscillator = context.createOscillator();
++      const gain = context.createGain();
++
++      oscillator.type = type;
++      oscillator.frequency.value = frequency;
++
++      const now = context.currentTime;
++      gain.gain.setValueAtTime(0.0001, now);
++      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
++      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++      oscillator.connect(gain);
++      gain.connect(context.destination);
++
++      oscillator.start(now);
++      oscillator.stop(now + duration + 0.02);
++    },
++    [getContext],
++  );
++
++  const playSuccess = useCallback(() => {
++    void playTone(523.25, 0.16, "sine", 0.08);
++    setTimeout(() => {
++      void playTone(659.25, 0.18, "sine", 0.09);
++    }, 120);
++    setTimeout(() => {
++      void playTone(783.99, 0.2, "sine", 0.1);
++    }, 240);
++  }, [playTone]);
++
++  const playFailure = useCallback(() => {
++    void playTone(220, 0.22, "triangle", 0.08);
++    setTimeout(() => {
++      void playTone(174.61, 0.18, "triangle", 0.07);
++    }, 160);
++  }, [playTone]);
++
++  useEffect(() => {
++    return () => {
++      audioContextRef.current?.close();
++      audioContextRef.current = null;
++    };
++  }, []);
++
++  return { playSuccess, playFailure };
++};
+
+
+thinking
+**Confirming glow variable scope**
+
+The glow variable used by the pulse animation is defined globally and may vary by theme, which aligns with the neon pink shadow set locally; I'll proceed to update the page and verify these styles together.
+2026-01-15T14:08:38.896633Z ERROR codex_core::codex: needs_follow_up: true
+exec
+/bin/zsh -lc "sed -n '1,120p' 'app/learn/[slug]/page.tsx'" in /Users/pcstyle/projects/pcstyledev/math-platform succeeded in 52ms:
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { CodeEditor } from "@/components/learn/CodeEditor";
+import { CodePreview } from "@/components/learn/CodePreview";
+import { ChallengeCard } from "@/components/learn/ChallengeCard";
+import { ValidationFeedback } from "@/components/learn/ValidationFeedback";
+import { SortingVisualizer } from "@/components/learn/interactive/SortingVisualizer";
+import { BoxModelPlayground } from "@/components/learn/interactive/BoxModelPlayground";
+import { useChallengeValidation } from "@/hooks/useChallengeValidation";
+import { useSoundManager } from "@/hooks/useSoundManager";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
+
+export default function ChallengePage() {
+file update:
+diff --git a/app/learn/[slug]/page.tsx b/app/learn/[slug]/page.tsx
+index b1d252b6388a93a29577b6cffd0a84f08ccbf610..80eb599608753cf06e48efe988cb013e800ee153
+--- a/app/learn/[slug]/page.tsx
++++ b/app/learn/[slug]/page.tsx
+@@ -11,6 +11,7 @@
+ import { SortingVisualizer } from "@/components/learn/interactive/SortingVisualizer";
+ import { BoxModelPlayground } from "@/components/learn/interactive/BoxModelPlayground";
+ import { useChallengeValidation } from "@/hooks/useChallengeValidation";
++import { useSoundManager } from "@/hooks/useSoundManager";
+ import ReactMarkdown from "react-markdown";
+ import remarkMath from "remark-math";
+ import rehypeKatex from "rehype-katex";
+@@ -31,6 +32,8 @@
+   const [feedbackMessage, setFeedbackMessage] = useState("");
+   const { validate } = useChallengeValidation();
+   const iframeRef = useRef<HTMLIFrameElement>(null);
++  const { playSuccess, playFailure } = useSoundManager();
++  const lastStatusRef = useRef<"idle" | "success" | "failure">("idle");
+ 
+   useEffect(() => {
+     if (challenge && challenge.starterCode) {
+@@ -43,6 +46,20 @@
+     }
+   }, [challenge]);
+ 
++  useEffect(() => {
++    if (validationStatus === lastStatusRef.current) return;
++
++    if (validationStatus === "success") {
++      playSuccess();
++    }
++
++    if (validationStatus === "failure") {
++      playFailure();
++    }
++
++    lastStatusRef.current = validationStatus;
++  }, [validationStatus, playFailure, playSuccess]);
++
+   const handleCodeChange = (value: string | undefined) => {
+     setFiles((prev) => ({ ...prev, [activeTab]: value || "" }));
+     setValidationStatus("idle");
+diff --git a/components/learn/ProgressTracker.tsx b/components/learn/ProgressTracker.tsx
+index 569261a2a79e2e4800d081c0606423328cd2ffc2..e684e093a09da1b318253f53e98a81242d45728c
+--- a/components/learn/ProgressTracker.tsx
++++ b/components/learn/ProgressTracker.tsx
+@@ -38,11 +38,18 @@
+           <span>Progress</span>
+           <span>{xp % 1000} / 1000</span>
+         </div>
+-        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
++        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px] relative">
+           <motion.div
+             initial={{ width: 0 }}
+             animate={{ width: `${progress}%` }}
+-            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_10px_rgba(217,119,87,0.3)]"
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="absolute inset-y-[1px] left-[1px] rounded-full bg-primary/40 blur-md"
++          />
++          <motion.div
++            initial={{ width: 0 }}
++            animate={{ width: `${progress}%` }}
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_18px_rgba(255,0,255,0.5)] animate-pulse-glow"
+           />
+         </div>
+       </div>
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+diff --git a/hooks/useSoundManager.ts b/hooks/useSoundManager.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..aca51dc5436e1a44e04fa6f15125ddc18a242ffb
+--- /dev/null
++++ b/hooks/useSoundManager.ts
+@@ -0,0 +1,83 @@
++"use client";
++
++import { useCallback, useEffect, useRef } from "react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
++
++type SoundManager = {
++  playSuccess: () => void;
++  playFailure: () => void;
++};
++
++const getAudioContext = () => {
++  const AudioContextClass =
++    window.AudioContext ||
++    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
++  return new AudioContextClass();
++};
++
++export const useSoundManager = (): SoundManager => {
++  const isLowPerformance = usePerformanceMode();
++  const audioContextRef = useRef<AudioContext | null>(null);
++
++  const getContext = useCallback(async () => {
++    if (isLowPerformance) return null;
++    if (!audioContextRef.current) {
++      audioContextRef.current = getAudioContext();
++    }
++    if (audioContextRef.current.state === "suspended") {
++      await audioContextRef.current.resume();
++    }
++    return audioContextRef.current;
++  }, [isLowPerformance]);
++
++  const playTone = useCallback(
++    async (frequency: number, duration: number, type: OscillatorType, volume: number) => {
++      const context = await getContext();
++      if (!context) return;
++
++      const oscillator = context.createOscillator();
++      const gain = context.createGain();
++
++      oscillator.type = type;
++      oscillator.frequency.value = frequency;
++
++      const now = context.currentTime;
++      gain.gain.setValueAtTime(0.0001, now);
++      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
++      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++      oscillator.connect(gain);
++      gain.connect(context.destination);
++
++      oscillator.start(now);
++      oscillator.stop(now + duration + 0.02);
++    },
++    [getContext],
++  );
++
++  const playSuccess = useCallback(() => {
++    void playTone(523.25, 0.16, "sine", 0.08);
++    setTimeout(() => {
++      void playTone(659.25, 0.18, "sine", 0.09);
++    }, 120);
++    setTimeout(() => {
++      void playTone(783.99, 0.2, "sine", 0.1);
++    }, 240);
++  }, [playTone]);
++
++  const playFailure = useCallback(() => {
++    void playTone(220, 0.22, "triangle", 0.08);
++    setTimeout(() => {
++      void playTone(174.61, 0.18, "triangle", 0.07);
++    }, 160);
++  }, [playTone]);
++
++  useEffect(() => {
++    return () => {
++      audioContextRef.current?.close();
++      audioContextRef.current = null;
++    };
++  }, []);
++
++  return { playSuccess, playFailure };
++};
+
+
+
+thinking
+**Ensuring sound plays only on client with reduced motion checks**
+
+Confirmed sound plays on success status changes, avoiding initial idle triggers; planning to respect user's 'prefers-reduced-motion' by integrating checks in sound manager using performance mode and matchMedia to prevent jarring or high CPU use.
+thinking
+**Confirming user-triggered audio and confetti triggers**
+
+Sound resume aligns with user-triggered actions like button clicks, avoiding unwanted audio on navigation; confetti triggers only on success, not on mount. The updated page imports the sound manager properly, and TypeScript and dependency checks are done. Next steps include manual testing to verify audio gestures, confetti, and progress glow, noting tests haven’t run yet.
+codex
+Hooked up serotogenic feedback: canvas-confetti now runs on success, a new SoundManager hook plays success/failure tones, progress bars glow with smooth spring animations, and the learn page triggers audio on status changes.
+
+Details
+- Canvas confetti instance and layered burst added in `components/learn/ValidationFeedback.tsx` (respects `usePerformanceMode`).
+- New `useSoundManager` hook in `hooks/useSoundManager.ts` with success/failure tones via Web Audio.
+- Progress bar glow + smoother spring transitions in `components/learn/ProgressTracker.tsx`.
+- Status-driven sound triggers in `app/learn/[slug]/page.tsx`.
+
+Next steps (optional)
+1. Open a challenge and submit a correct/incorrect solution to verify confetti + tones.
+2. If you want custom audio files instead of synth tones, tell me your preferred sounds and I’ll wire them in.
+2026-01-15T14:08:57.643796Z ERROR codex_core::codex: needs_follow_up: false
+file update:
+diff --git a/app/learn/[slug]/page.tsx b/app/learn/[slug]/page.tsx
+index b1d252b6388a93a29577b6cffd0a84f08ccbf610..80eb599608753cf06e48efe988cb013e800ee153
+--- a/app/learn/[slug]/page.tsx
++++ b/app/learn/[slug]/page.tsx
+@@ -11,6 +11,7 @@
+ import { SortingVisualizer } from "@/components/learn/interactive/SortingVisualizer";
+ import { BoxModelPlayground } from "@/components/learn/interactive/BoxModelPlayground";
+ import { useChallengeValidation } from "@/hooks/useChallengeValidation";
++import { useSoundManager } from "@/hooks/useSoundManager";
+ import ReactMarkdown from "react-markdown";
+ import remarkMath from "remark-math";
+ import rehypeKatex from "rehype-katex";
+@@ -31,6 +32,8 @@
+   const [feedbackMessage, setFeedbackMessage] = useState("");
+   const { validate } = useChallengeValidation();
+   const iframeRef = useRef<HTMLIFrameElement>(null);
++  const { playSuccess, playFailure } = useSoundManager();
++  const lastStatusRef = useRef<"idle" | "success" | "failure">("idle");
+ 
+   useEffect(() => {
+     if (challenge && challenge.starterCode) {
+@@ -43,6 +46,20 @@
+     }
+   }, [challenge]);
+ 
++  useEffect(() => {
++    if (validationStatus === lastStatusRef.current) return;
++
++    if (validationStatus === "success") {
++      playSuccess();
++    }
++
++    if (validationStatus === "failure") {
++      playFailure();
++    }
++
++    lastStatusRef.current = validationStatus;
++  }, [validationStatus, playFailure, playSuccess]);
++
+   const handleCodeChange = (value: string | undefined) => {
+     setFiles((prev) => ({ ...prev, [activeTab]: value || "" }));
+     setValidationStatus("idle");
+diff --git a/components/learn/ProgressTracker.tsx b/components/learn/ProgressTracker.tsx
+index 569261a2a79e2e4800d081c0606423328cd2ffc2..e684e093a09da1b318253f53e98a81242d45728c
+--- a/components/learn/ProgressTracker.tsx
++++ b/components/learn/ProgressTracker.tsx
+@@ -38,11 +38,18 @@
+           <span>Progress</span>
+           <span>{xp % 1000} / 1000</span>
+         </div>
+-        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
++        <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px] relative">
+           <motion.div
+             initial={{ width: 0 }}
+             animate={{ width: `${progress}%` }}
+-            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_10px_rgba(217,119,87,0.3)]"
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="absolute inset-y-[1px] left-[1px] rounded-full bg-primary/40 blur-md"
++          />
++          <motion.div
++            initial={{ width: 0 }}
++            animate={{ width: `${progress}%` }}
++            transition={{ type: "spring", stiffness: 120, damping: 22 }}
++            className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full shadow-[0_0_18px_rgba(255,0,255,0.5)] animate-pulse-glow"
+           />
+         </div>
+       </div>
+diff --git a/components/learn/ValidationFeedback.tsx b/components/learn/ValidationFeedback.tsx
+index 47d74deb1e266f58dc3ee185e0af8f8a3e263ec9..8e5df94fbe2a1495c91296a5c886688be7155459
+--- a/components/learn/ValidationFeedback.tsx
++++ b/components/learn/ValidationFeedback.tsx
+@@ -1,9 +1,10 @@
+ "use client";
+ 
+-import React, { useEffect } from "react";
++import React, { useEffect, useRef } from "react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import confetti from "canvas-confetti";
+ import { CheckCircle2, AlertCircle } from "lucide-react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
+ 
+ interface ValidationFeedbackProps {
+   status: "idle" | "success" | "failure";
+@@ -16,17 +17,44 @@
+   message,
+   onAnimationComplete,
+ }) => {
++  const isLowPerformance = usePerformanceMode();
++  const canvasRef = useRef<HTMLCanvasElement>(null);
++  const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
++
+   useEffect(() => {
+-    if (status === "success") {
+-      confetti({
+-        particleCount: 150,
+-        spread: 70,
+-        origin: { y: 0.6 },
+-        colors: ["#d97757", "#ff00ff", "#00ffff"],
+-      });
+-    }
+-  }, [status]);
++    if (!canvasRef.current || isLowPerformance) return;
++
++    confettiInstanceRef.current = confetti.create(canvasRef.current, {
++      resize: true,
++      useWorker: true,
++    });
++
++    return () => {
++      confettiInstanceRef.current?.reset();
++      confettiInstanceRef.current = null;
++    };
++  }, [isLowPerformance]);
+ 
++  useEffect(() => {
++    if (status !== "success" || isLowPerformance) return;
++
++    confettiInstanceRef.current?.({
++      particleCount: 140,
++      spread: 75,
++      startVelocity: 45,
++      origin: { y: 0.7 },
++      colors: ["#ff00ff", "#00ffff", "#f5f5f5"],
++    });
++    confettiInstanceRef.current?.({
++      particleCount: 60,
++      spread: 120,
++      startVelocity: 28,
++      decay: 0.9,
++      origin: { y: 0.55 },
++      colors: ["#ff00ff", "#ff7bff", "#00ffff"],
++    });
++  }, [status, isLowPerformance]);
++
+   const shakeVariants = {
+     shake: {
+       x: [0, -10, 10, -10, 10, 0],
+@@ -35,32 +63,39 @@
+   };
+ 
+   return (
+-    <AnimatePresence onExitComplete={onAnimationComplete}>
+-      {status !== "idle" && (
+-        <motion.div
+-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+-          animate={{ opacity: 1, scale: 1, y: 0 }}
+-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
+-            status === "success"
+-              ? "bg-green-500/20 border-green-500/50 text-green-200"
+-              : "bg-red-500/20 border-red-500/50 text-red-200"
+-          }`}
+-          variants={status === "failure" ? shakeVariants : {}}
+-        >
+-          {status === "success" ? (
+-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+-          ) : (
+-            <AlertCircle className="w-6 h-6 text-red-400" />
+-          )}
+-          <div className="flex flex-col">
+-            <span className="font-bold tracking-tight">
+-              {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
+-            </span>
+-            {message && <span className="text-sm opacity-80">{message}</span>}
+-          </div>
+-        </motion.div>
+-      )}
+-    </AnimatePresence>
++    <>
++      <canvas
++        ref={canvasRef}
++        className="pointer-events-none fixed inset-0 z-40"
++        aria-hidden="true"
++      />
++      <AnimatePresence onExitComplete={onAnimationComplete}>
++        {status !== "idle" && (
++          <motion.div
++            initial={{ opacity: 0, scale: 0.9, y: 20 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.9, y: 20 }}
++            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border ${
++              status === "success"
++                ? "bg-green-500/20 border-green-500/50 text-green-200"
++                : "bg-red-500/20 border-red-500/50 text-red-200"
++            }`}
++            variants={status === "failure" ? shakeVariants : {}}
++          >
++            {status === "success" ? (
++              <CheckCircle2 className="w-6 h-6 text-green-400" />
++            ) : (
++              <AlertCircle className="w-6 h-6 text-red-400" />
++            )}
++            <div className="flex flex-col">
++              <span className="font-bold tracking-tight">
++                {status === "success" ? "Challenge Passed!" : "Not Quite Yet"}
++              </span>
++              {message && <span className="text-sm opacity-80">{message}</span>}
++            </div>
++          </motion.div>
++        )}
++      </AnimatePresence>
++    </>
+   );
+ };
+diff --git a/hooks/useSoundManager.ts b/hooks/useSoundManager.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..aca51dc5436e1a44e04fa6f15125ddc18a242ffb
+--- /dev/null
++++ b/hooks/useSoundManager.ts
+@@ -0,0 +1,83 @@
++"use client";
++
++import { useCallback, useEffect, useRef } from "react";
++import { usePerformanceMode } from "@/hooks/usePerformanceMode";
++
++type SoundManager = {
++  playSuccess: () => void;
++  playFailure: () => void;
++};
++
++const getAudioContext = () => {
++  const AudioContextClass =
++    window.AudioContext ||
++    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
++  return new AudioContextClass();
++};
++
++export const useSoundManager = (): SoundManager => {
++  const isLowPerformance = usePerformanceMode();
++  const audioContextRef = useRef<AudioContext | null>(null);
++
++  const getContext = useCallback(async () => {
++    if (isLowPerformance) return null;
++    if (!audioContextRef.current) {
++      audioContextRef.current = getAudioContext();
++    }
++    if (audioContextRef.current.state === "suspended") {
++      await audioContextRef.current.resume();
++    }
++    return audioContextRef.current;
++  }, [isLowPerformance]);
++
++  const playTone = useCallback(
++    async (frequency: number, duration: number, type: OscillatorType, volume: number) => {
++      const context = await getContext();
++      if (!context) return;
++
++      const oscillator = context.createOscillator();
++      const gain = context.createGain();
++
++      oscillator.type = type;
++      oscillator.frequency.value = frequency;
++
++      const now = context.currentTime;
++      gain.gain.setValueAtTime(0.0001, now);
++      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
++      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
++
++      oscillator.connect(gain);
++      gain.connect(context.destination);
++
++      oscillator.start(now);
++      oscillator.stop(now + duration + 0.02);
++    },
++    [getContext],
++  );
++
++  const playSuccess = useCallback(() => {
++    void playTone(523.25, 0.16, "sine", 0.08);
++    setTimeout(() => {
++      void playTone(659.25, 0.18, "sine", 0.09);
++    }, 120);
++    setTimeout(() => {
++      void playTone(783.99, 0.2, "sine", 0.1);
++    }, 240);
++  }, [playTone]);
++
++  const playFailure = useCallback(() => {
++    void playTone(220, 0.22, "triangle", 0.08);
++    setTimeout(() => {
++      void playTone(174.61, 0.18, "triangle", 0.07);
++    }, 160);
++  }, [playTone]);
++
++  useEffect(() => {
++    return () => {
++      audioContextRef.current?.close();
++      audioContextRef.current = null;
++    };
++  }, []);
++
++  return { playSuccess, playFailure };
++};
+
+tokens used
+43,145
+Hooked up serotogenic feedback: canvas-confetti now runs on success, a new SoundManager hook plays success/failure tones, progress bars glow with smooth spring animations, and the learn page triggers audio on status changes.
+
+Details
+- Canvas confetti instance and layered burst added in `components/learn/ValidationFeedback.tsx` (respects `usePerformanceMode`).
+- New `useSoundManager` hook in `hooks/useSoundManager.ts` with success/failure tones via Web Audio.
+- Progress bar glow + smoother spring transitions in `components/learn/ProgressTracker.tsx`.
+- Status-driven sound triggers in `app/learn/[slug]/page.tsx`.
+
+Next steps (optional)
+1. Open a challenge and submit a correct/incorrect solution to verify confetti + tones.
+2. If you want custom audio files instead of synth tones, tell me your preferred sounds and I’ll wire them in.
