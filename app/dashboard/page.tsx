@@ -4,7 +4,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
-import { Plus, Clock, FileText, ArrowRight, Loader2, Flame, Trophy } from "lucide-react";
+import { Plus, Clock, FileText, ArrowRight, Loader2, Flame, Trophy, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
@@ -189,6 +189,11 @@ export default function Dashboard() {
                                         <span className="text-xs text-[var(--text-muted)] font-mono">
                                             [{exam.storageIds.length} pliki]
                                         </span>
+                                        {exam.isSpeedrun && (
+                                            <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 bg-amber-500 text-black animate-pulse">
+                                                <AlertCircle className="w-2.5 h-2.5" /> Speedrun ({exam.hoursAvailable}h)
+                                            </span>
+                                        )}
                                     </div>
                                     <ArrowRight className="w-6 h-6 text-[var(--text-muted)] group-hover:text-[var(--primary)] group-hover:translate-x-1 transition-all" />
                                 </Link>

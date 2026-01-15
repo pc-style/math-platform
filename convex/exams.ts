@@ -60,8 +60,20 @@ const learningPathSchema = {
                 required: ['question', 'answer'],
             },
         },
+        flashcards: {
+            type: Type.ARRAY,
+            description: 'Flashcards for active recall. front: Definition/Formula, back: Explanation/Result.',
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    front: { type: Type.STRING },
+                    back: { type: Type.STRING },
+                },
+                required: ['front', 'back'],
+            },
+        },
     },
-    required: ['examTitle', 'phase1_theory', 'phase2_guided', 'phase3_exam'],
+    required: ['examTitle', 'phase1_theory', 'phase2_guided', 'phase3_exam', 'flashcards'],
 };
 
 // --- Mutations & Queries ---
@@ -90,7 +102,12 @@ export const getExam = query({
 });
 
 export const createExam = mutation({
-    args: { title: v.string(), storageIds: v.array(v.id("_storage")) },
+    args: {
+        title: v.string(),
+        storageIds: v.array(v.id("_storage")),
+        isSpeedrun: v.optional(v.boolean()),
+        hoursAvailable: v.optional(v.number()),
+    },
     handler: async (ctx, args) => {
         const user = await authKit.getAuthUser(ctx);
         if (!user) throw new Error("Unauthorized");
@@ -100,6 +117,8 @@ export const createExam = mutation({
             title: args.title,
             status: "generating",
             storageIds: args.storageIds,
+            isSpeedrun: args.isSpeedrun,
+            hoursAvailable: args.hoursAvailable,
             createdAt: Date.now(),
         });
 
@@ -165,7 +184,12 @@ export const deleteExam = mutation({
 });
 
 export const generateExam = action({
-    args: { examId: v.id("exams"), storageIds: v.array(v.id("_storage")) },
+    args: {
+        examId: v.id("exams"),
+        storageIds: v.array(v.id("_storage")),
+        isSpeedrun: v.optional(v.boolean()),
+        hoursAvailable: v.optional(v.number()),
+    },
     handler: async (ctx, args) => {
         try {
             // Fetch all PDFs and convert to base64
@@ -201,11 +225,22 @@ export const generateExam = action({
                             ...pdfParts,
                             {
                                 text: `Jesteś wybitnym profesorem matematyki i ekspertem od dydaktyki. Twoim celem jest stworzenie SZCZEGÓŁOWEGO, ANGARAŻUJĄCEGO i SKUTECZNEGO planu nauki na podstawie przesłanych materiałów (PDF).
+${args.isSpeedrun ? `
+🚨 TRYB ALARMOWY (SPEEDRUN): Użytkownik ma tylko ${args.hoursAvailable} godzin do egzaminu! 
+TWOJE ZADANIE:
+- Zastosuj zasadę Pareto (80/20). Skup się WYŁĄCZNIE na tematach, które pojawiają się najczęściej i mają największy wpływ na wynik.
+- Pomiń mniej istotne szczegóły i zaawansowane dygresje.
+- Ścieżka nauki musi być możliwa do przejścia w ${args.hoursAvailable} h.
+- Bądź niezwykle zwięzły, ale konkretny.
+- Phase 1 (Teoria) powinna zawierać tylko esencję + najważniejsze wzory.
+- Phase 2 (Praktyka) powinna skupić się na typowych zadaniach egzaminacyjnych.
+` : ""}
 
 Analiza:
 - Przeanalizuj dokładnie każdy przesłany plik.
 - Wyciągnij kluczowe pojęcia, twierdzenia, wzory i metody rozwiązywania zadań.
 - Zidentyfikuj typowe błędy i pułapki.
+- ${args.isSpeedrun ? "Skup się na TOP 3-5 najważniejszych tematach." : "Stwórz kompleksową strukturę ze wszystkich plików."}
 
 Generowanie Treści (WAŻNE: FORMATOWANIE I CZYTELNOŚĆ):
 - Treść musi być czytelna i "oddychająca". Dziel tekst na krótkie akapity (max 3-4 zdania).
@@ -225,17 +260,23 @@ Struktura Planu:
    - Pisz tak, jakbyś tłumaczył to inteligentnemu uczniowi, który widzi to pierwszy raz.
    - Używaj wypunktowań, aby rozbić ściany tekstu.
    - Dodaj intuicyjne wyjaśnienia "dlaczego to działa".
+   - ${args.isSpeedrun ? "Pisz BARDZO krótko, skup się na skutecznym zapamiętaniu." : ""}
 
 2. Faza 2 (Praktyka z Przewodnikiem):
-   - To najważniejsza część. Stwórz zadania, które uczą myślenia.
+   - To najważniejsba część. Stwórz zadania, które uczą myślenia.
    - Każde zadanie musi mieć 'steps' (kroki), które prowadzą ucznia za rękę.
    - W 'tips' (wskazówkach) zawrzyj pytania pomocnicze lub uwagi o błędach.
    - 'hints' (nowe pole) powinno zawierać serię małych podpowiedzi.
-   - Sekcja ta powinna być bardzo rozbudowana.
+   - Sekcja ta powinna być ${args.isSpeedrun ? "złożona z zadań PEWNIAKÓW (największe prawdopodobieństwo na egzaminie)." : "bardzo rozbudowana."}
 
 3. Faza 3 (Egzamin):
    - Zadania sprawdzające wiedzę z Fazy 1 i umiejętności z Fazy 2.
    - Podaj tylko ostateczne odpowiedzi.
+
+4. Fiszki (flashcards):
+   - Wygeneruj zestaw 10-15 fiszek do szybkiej powtórki.
+   - Front powinien zawierać pojęcie, nazwę twierdzenia lub lewą stronę ważnego wzoru.
+   - Back powinien zawierać wyjaśnienie, definicję lub prawą stronę wzoru.
 
 Bądź kreatywny, ale merytorycznie rygorystyczny. Traktuj użytkownika jak inteligentnego studenta, który chce zrozumieć, a nie tylko zdać.
 Wygeneruj dużo treści. Nie oszczędzaj na wyjaśnieniach. Twoim priorytetem jest JASNOŚĆ i CZYTELNOŚĆ.`,

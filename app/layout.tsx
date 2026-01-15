@@ -5,6 +5,8 @@ import { ConvexClientProvider } from "./ConvexClientProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { DebugOverlay } from "@/components/DebugOverlay";
 import { ThemeEffects } from "@/components/ThemeEffects";
+import { TutorProvider } from "@/context/TutorContext";
+import { TutorSidebar } from "@/components/TutorSidebar";
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-geist-mono",
@@ -27,9 +29,12 @@ export default function RootLayout({
       <body className={`${jetbrainsMono.variable} antialiased`}>
         <ConvexClientProvider>
           <ThemeProvider>
-            <ThemeEffects />
-            <div className="relative z-10">{children}</div>
-            <DebugOverlay />
+            <TutorProvider>
+              <ThemeEffects />
+              <div className="relative z-10">{children}</div>
+              <TutorSidebar />
+              <DebugOverlay />
+            </TutorProvider>
           </ThemeProvider>
         </ConvexClientProvider>
       </body>

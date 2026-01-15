@@ -10,7 +10,7 @@ import {
     Brain, BookOpen, PenTool, Award, ChevronDown,
     CheckCircle2, Circle, ArrowLeft,
     Sparkles, Lightbulb, GraduationCap, ChevronRight,
-    MessageSquare, Wand2, X, ArrowRight
+    MessageSquare, Wand2, X, ArrowRight, Clock, FileText
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { Header } from "@/components/Header";
@@ -26,12 +26,17 @@ export default function ExamStudyView() {
     const exam = useQuery(api.exams.getExam, { id: examId });
     const { getLabel, isCyber } = useThemeLabels();
 
-    const [activePhase, setActivePhase] = useState<1 | 2 | 3>(1);
+    const [activePhase, setActivePhase] = useState<1 | 2 | 3 | 4 | 5>(1);
     const [revealedSolutions, setRevealedSolutions] = useState<Set<number>>(new Set());
     const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
     const [hintIndices, setHintIndices] = useState<Record<number, number>>({});
     const [activeChatProblem, setActiveChatProblem] = useState<string | null>(null);
     const [chatMessages, setChatMessages] = useState<Record<string, { role: 'user' | 'model', text: string }[]>>({});
+    const [timeLeft, setTimeLeft] = useState(3600); // 60 mins default
+    const [isExamRunning, setIsExamRunning] = useState(false);
+    const [examResults, setExamResults] = useState<Record<number, string>>({});
+    const [flashcardIndex, setFlashcardIndex] = useState(0);
+    const [isFlipped, setIsFlipped] = useState(false);
     const [chatInput, setChatInput] = useState("");
     const [isThinking, setIsThinking] = useState(false);
 
@@ -70,7 +75,24 @@ export default function ExamStudyView() {
         }
     }, [progress, isCyber, addXp]);
 
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
 
+    useEffect(() => {
+        let timer: any;
+        if (isExamRunning && timeLeft > 0) {
+            timer = setInterval(() => {
+                setTimeLeft(prev => prev - 1);
+            }, 1000);
+        } else if (timeLeft === 0 && isExamRunning) {
+            setIsExamRunning(false);
+            setActivePhase(3);
+        }
+        return () => clearInterval(timer);
+    }, [isExamRunning, timeLeft]);
 
     const toggleSolution = (idx: number) => {
         const next = new Set(revealedSolutions);
@@ -286,20 +308,20 @@ export default function ExamStudyView() {
                 </div>
 
                 {/* Phase Tabs - Compact */}
-                <div className="flex gap-6 mb-8 border-b border-[var(--border)] relative px-2">
+                <div className="flex gap-6 mb-8 border-b border-[var(--border)] relative px-2 overflow-x-auto scrollbar-none">
                     {[
                         { id: 1 as const, icon: BookOpen, label: getLabel("theory") },
                         { id: 2 as const, icon: PenTool, label: getLabel("practice") },
-                        { id: 3 as const, icon: Award, label: getLabel("exam") }
+                        { id: 3 as const, icon: Award, label: getLabel("exam") },
+                        { id: 4 as const, icon: FileText, label: "Fiszki" },
+                        { id: 5 as const, icon: Clock, label: "Symulacja" }
                     ].map((phase) => (
                         <button
                             key={phase.id}
                             onClick={() => { setActivePhase(phase.id); }}
-                            className={`pb-3 flex items-center gap-2 transition-all relative ${activePhase === phase.id ? "text-[var(--foreground)]" : "text-[var(--text-muted)] hover:text-[var(--foreground)]"}`}
+                            className={`pb-3 flex items-center gap-2 transition-all relative shrink-0 ${activePhase === phase.id ? "text-[var(--foreground)]" : "text-[var(--text-muted)] hover:text-[var(--foreground)]"}`}
                         >
-                            <span className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${activePhase === phase.id ? "bg-[var(--foreground)] text-[var(--background)]" : "bg-[var(--surface)] border border-[var(--border)]"}`}>
-                                {phase.id}
-                            </span>
+                            <phase.icon className="w-4 h-4" />
                             <span className="text-xs font-bold tracking-wide uppercase hidden sm:inline">{phase.label}</span>
                             {activePhase === phase.id && (
                                 <motion.div layoutId="tab-underline" className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-[var(--foreground)]" />
@@ -780,6 +802,114 @@ export default function ExamStudyView() {
                                         </div>
                                     </div>
                                 ))}
+                            </motion.div>
+                        )}
+
+                        {activePhase === 4 && exam?.data?.flashcards && (
+                            <motion.div
+                                key="flashcards"
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="flex flex-col items-center justify-center min-h-[400px] gap-8"
+                            >
+                                <div className="text-center">
+                                    <h2 className="text-xl font-bold mb-2">Aktywne Przypominanie</h2>
+                                    <p className="text-xs text-[var(--text-muted)]">Fiszka {flashcardIndex + 1} z {exam.data?.flashcards?.length || 0}</p>
+                                </div>
+
+                                <div
+                                    className="perspective-1000 w-full max-w-sm h-64 cursor-pointer"
+                                    onClick={() => setIsFlipped(!isFlipped)}
+                                >
+                                    <motion.div
+                                        animate={{ rotateY: isFlipped ? 180 : 0 }}
+                                        transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
+                                        className="relative w-full h-full preserve-3d"
+                                    >
+                                        {/* Front */}
+                                        <div className="absolute inset-0 backface-hidden glass flex items-center justify-center p-8 text-center bg-[var(--surface)]">
+                                            <div className="text-lg font-bold">
+                                                <MathContent content={exam.data?.flashcards?.[flashcardIndex]?.front || ""} />
+                                            </div>
+                                            <div className="absolute bottom-4 text-[8px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Kliknij, aby odwrócić</div>
+                                        </div>
+                                        {/* Back */}
+                                        <div className="absolute inset-0 backface-hidden glass flex items-center justify-center p-8 text-center bg-[var(--primary)] text-black rotate-y-180">
+                                            <div className="text-sm font-medium">
+                                                <MathContent content={exam.data?.flashcards?.[flashcardIndex]?.back || ""} />
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={() => {
+                                            setIsFlipped(false);
+                                            const count = exam.data?.flashcards?.length || 0;
+                                            setFlashcardIndex(prev => (prev > 0 ? prev - 1 : count - 1));
+                                        }}
+                                        className="btn-secondary px-6"
+                                    >
+                                        Poprzednia
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setIsFlipped(false);
+                                            const count = exam.data?.flashcards?.length || 0;
+                                            setFlashcardIndex(prev => (prev < count - 1 ? prev + 1 : 0));
+                                        }}
+                                        className="btn-premium px-6"
+                                    >
+                                        Następna
+                                    </button>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {activePhase === 5 && (
+                            <motion.div
+                                key="simulation"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="space-y-6"
+                            >
+                                <div className="card-premium p-8 text-center space-y-4">
+                                    <div className="inline-flex p-4 bg-amber-500/10 text-amber-500 rounded-2xl mb-2">
+                                        <Clock className="w-8 h-8" />
+                                    </div>
+                                    <h2 className="text-2xl font-black italic font-serif text-[var(--foreground)]">Symulacja Egzaminu</h2>
+                                    <p className="text-[var(--text-muted)] text-sm max-w-sm mx-auto">
+                                        Gotowy na ostateczny test? Masz 60 minut na rozwiązanie wszystkich zadań bez podpowiedzi.
+                                    </p>
+
+                                    {!isExamRunning ? (
+                                        <button
+                                            onClick={() => {
+                                                setIsExamRunning(true);
+                                                setTimeLeft(3600);
+                                                setActivePhase(3); // Start with tasks in Phase 3 mode but with timer
+                                            }}
+                                            className="btn-premium px-12 py-4 text-sm font-black tracking-widest"
+                                        >
+                                            ROZPOCZNIJ SYMULACJĘ
+                                        </button>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            <div className="text-4xl font-mono font-black text-amber-500">
+                                                {formatTime(timeLeft)}
+                                            </div>
+                                            <button
+                                                onClick={() => setIsExamRunning(false)}
+                                                className="text-xs font-bold uppercase tracking-widest text-red-500 hover:text-red-400 underline"
+                                            >
+                                                Przerwij egzamin
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </motion.div>
                         )}
                     </AnimatePresence>

@@ -38,6 +38,12 @@ export default defineSchema({
                         answer: v.string(),
                     })
                 ),
+                flashcards: v.optional(v.array(
+                    v.object({
+                        front: v.string(),
+                        back: v.string(),
+                    })
+                )),
             })
         ),
         error: v.optional(v.string()),

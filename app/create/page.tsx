@@ -22,6 +22,8 @@ export default function CreateExam() {
 
     const [files, setFiles] = useState<FileWithBuffer[]>([]);
     const [title, setTitle] = useState("");
+    const [isSpeedrun, setIsSpeedrun] = useState(false);
+    const [hoursAvailable, setHoursAvailable] = useState(4);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { getLabel, isCyber } = useThemeLabels();
@@ -85,10 +87,20 @@ export default function CreateExam() {
             }
 
             console.log("[Create] Pliki przesłane. Tworzenie projektu w bazie...");
-            const examId = await createExam({ title, storageIds });
+            const examId = await createExam({
+                title,
+                storageIds,
+                isSpeedrun,
+                hoursAvailable
+            });
 
             console.log("[Create] Projekt utworzony. Uruchamianie analizy AI...");
-            generateExamAction({ examId, storageIds }).catch((e) => {
+            generateExamAction({
+                examId,
+                storageIds,
+                isSpeedrun,
+                hoursAvailable
+            }).catch((e) => {
                 console.error("[Create] Błąd AI:", e);
             });
 
@@ -127,6 +139,65 @@ export default function CreateExam() {
                             placeholder="np. Analiza Matematyczna - Kolokwium 1"
                             className={`w-full px-6 py-4 text-lg font-medium outline-none transition-all ${isCyber ? "" : "rounded-2xl bg-[var(--background)] border-[var(--border)] focus:ring-2 ring-[var(--primary)]/20"}`}
                         />
+                    </div>
+
+                    <div className={`p-6 border-2 flex flex-col gap-6 transition-all ${isSpeedrun ? (isCyber ? "border-amber-500 bg-amber-500/5 shadow-[0_0_20px_rgba(245,158,11,0.2)]" : "border-amber-500 bg-amber-50/50 rounded-3xl shadow-lg shadow-amber-500/10") : "border-[var(--border)] hover:border-[var(--primary)]/30"} ${isCyber ? "" : "rounded-3xl"}`}>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className={`p-3 ${isSpeedrun ? "bg-amber-500 text-black" : "bg-[var(--surface)] text-[var(--text-muted)]"} ${isCyber ? "" : "rounded-xl"}`}>
+                                    <AlertCircle className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold uppercase tracking-widest">EXAM REALLY SOON</p>
+                                    <p className="text-[10px] text-[var(--text-muted)] font-medium uppercase tracking-wider">Zero-to-Hero Speedrun Mode</p>
+                                </div>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={isSpeedrun}
+                                    onChange={(e) => setIsSpeedrun(e.target.checked)}
+                                />
+                                <div className={`w-11 h-6 bg-[var(--surface)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500`}></div>
+                            </label>
+                        </div>
+
+                        <AnimatePresence>
+                            {isSpeedrun && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="pt-4 border-t border-amber-500/20"
+                                >
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-amber-600 mb-4 text-center">
+                                        Ile godzin masz do egzaminu?
+                                    </label>
+                                    <div className="flex items-center justify-center gap-8">
+                                        <button
+                                            onClick={() => setHoursAvailable(Math.max(1, hoursAvailable - 1))}
+                                            className="w-12 h-12 flex items-center justify-center border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black transition-all font-bold rounded-lg"
+                                        >
+                                            -
+                                        </button>
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-4xl font-black text-amber-500 font-mono">{hoursAvailable}</span>
+                                            <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Godzin</span>
+                                        </div>
+                                        <button
+                                            onClick={() => setHoursAvailable(Math.min(48, hoursAvailable + 1))}
+                                            className="w-12 h-12 flex items-center justify-center border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black transition-all font-bold rounded-lg"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                    <p className="mt-4 text-[10px] text-amber-600/70 font-medium text-center italic">
+                                        AI wykluczy mniej ważne tematy, aby zmieścić się w tym czasie.
+                                    </p>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     <div
