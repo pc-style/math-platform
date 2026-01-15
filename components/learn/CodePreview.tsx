@@ -62,7 +62,7 @@ export const CodePreview: React.FC<CodePreviewProps> = ({ html, css, js }) => {
       </div>
       <iframe
         ref={iframeRef}
-        title="preview"
+        title="Live Code Challenge Preview"
         className="w-full h-full border-none pt-8"
         sandbox="allow-scripts"
       />

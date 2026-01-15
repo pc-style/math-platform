@@ -22,6 +22,7 @@ export const useChallengeValidation = () => {
       }
 
       const doc = iframe.contentWindow.document;
+      const win = iframe.contentWindow;
 
       for (const rule of rules) {
         const element = doc.querySelector(rule.selector);
@@ -32,13 +33,49 @@ export const useChallengeValidation = () => {
           };
         }
 
-        const computedStyle = iframe.contentWindow.getComputedStyle(element);
-        const actualValue = computedStyle.getPropertyValue(rule.property);
+        const computedStyle = win.getComputedStyle(element);
 
-        // Basic normalization for comparison (e.g., removing spaces in rgb strings)
+        // Convert camelCase to kebab-case (e.g., justifyContent -> justify-content)
+        const kebabProperty = rule.property.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+        const actualValue = computedStyle.getPropertyValue(kebabProperty);
+
+        // Normalization function
         const normalize = (val: string | null) => (val || "").toLowerCase().replace(/\s+/g, "");
 
-        if (normalize(actualValue) !== normalize(rule.expected)) {
+        const normalizedActual = normalize(actualValue);
+        const normalizedExpected = normalize(rule.expected);
+
+        // Unit-aware check for relative units
+        if (
+          normalizedExpected.endsWith("vw") ||
+          normalizedExpected.endsWith("vh") ||
+          normalizedExpected.endsWith("%")
+        ) {
+          const expectedNum = parseFloat(normalizedExpected);
+          const actualNum = parseFloat(normalizedActual); // Computed styles for dimensions are usually in px
+
+          let expectedPx = 0;
+          if (normalizedExpected.endsWith("vw")) {
+            expectedPx = (expectedNum * win.innerWidth) / 100;
+          } else if (normalizedExpected.endsWith("vh")) {
+            expectedPx = (expectedNum * win.innerHeight) / 100;
+          } else if (normalizedExpected.endsWith("%")) {
+            const parent = element.parentElement || doc.body;
+            const parentStyle = win.getComputedStyle(parent);
+            const parentDim = parseFloat(
+              parentStyle.getPropertyValue(kebabProperty === "width" ? "width" : "height"),
+            );
+            expectedPx = (expectedNum * parentDim) / 100;
+          }
+
+          // Allow a small margin of error (1px) for rounding
+          if (Math.abs(actualNum - expectedPx) > 1) {
+            return { passed: false, failedRule: rule };
+          }
+          continue;
+        }
+
+        if (normalizedActual !== normalizedExpected) {
           return {
             passed: false,
             failedRule: rule,

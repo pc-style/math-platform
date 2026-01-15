@@ -9,8 +9,7 @@ import Link from "next/link";
 import { ProgressTracker } from "@/components/learn/ProgressTracker";
 
 export default function LearnDashboard() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const challenges = useQuery((api as any).challenges.list);
+  const challenges = useQuery(api.challenges.list);
   const user = useQuery(api.users.getUserDetails); // Assuming there's a current user query
 
   // Mock data if user is not found for demo
@@ -46,10 +45,8 @@ export default function LearnDashboard() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {challenges
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ?.filter((c: any) => c.category === category)
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .map((challenge: any) => (
+                ?.filter((c) => c.category === category)
+                .map((challenge) => (
                   <Link key={challenge._id} href={`/learn/${challenge.slug}`} className="group">
                     <motion.div
                       whileHover={{ y: -4 }}

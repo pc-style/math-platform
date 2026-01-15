@@ -9,16 +9,14 @@ import { CodePreview } from "@/components/learn/CodePreview";
 import { ChallengeCard } from "@/components/learn/ChallengeCard";
 import { ValidationFeedback } from "@/components/learn/ValidationFeedback";
 import { useChallengeValidation } from "@/hooks/useChallengeValidation";
-import { motion } from "framer-motion";
 
 export default function ChallengePage() {
   const params = useParams();
   const slug = params.slug as string;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const challenge = (useQuery as any)(api.challenges.getBySlug, { slug });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const completeChallenge = (useMutation as any)(api.challenges.complete);
+  const challenge = useQuery(api.challenges.getBySlug, { slug });
+  const user = useQuery(api.users.getUserDetails);
+  const completeChallenge = useMutation(api.challenges.complete);
 
   const [files, setFiles] = useState({ html: "", css: "", js: "" });
   const [activeTab, setActiveTab] = useState<"html" | "css" | "js">("html");
@@ -28,7 +26,7 @@ export default function ChallengePage() {
 
   useEffect(() => {
     if (challenge) {
-       
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFiles({
         html: challenge.starterCode.html,
         css: challenge.starterCode.css,
@@ -57,11 +55,16 @@ export default function ChallengePage() {
       setValidationStatus("success");
       setFeedbackMessage(`Congratulations! You've earned ${challenge.xpReward} XP.`);
 
-      const userId = "user_2scfNfL7R6d3N9e8f7g6h5j4k3"; // Mock ID or from context
+      const userId = user?.userId;
+      if (!userId) {
+        setFeedbackMessage("You must be logged in to save progress.");
+        setValidationStatus("failure");
+        return;
+      }
+
       await completeChallenge({
         userId,
         challengeId: challenge._id,
-        xpEarned: challenge.xpReward,
       });
     } else {
       setValidationStatus("failure");

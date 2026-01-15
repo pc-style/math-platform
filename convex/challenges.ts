@@ -77,7 +77,6 @@ export const complete = mutation({
   args: {
     userId: v.string(),
     challengeId: v.id("challenges"),
-    xpEarned: v.number(),
   },
   handler: async (ctx, args) => {
     const challenge = await ctx.db.get(args.challengeId);
@@ -98,17 +97,19 @@ export const complete = mutation({
       )
       .unique();
 
+    const xpReward = challenge.xpReward;
+
     if (progress) {
       if (progress.status !== "completed") {
         await ctx.db.patch(progress._id, {
           status: "completed",
-          xpEarned: args.xpEarned,
+          xpEarned: xpReward,
           completedAt: Date.now(),
         });
 
         // Update user XP
         await ctx.db.patch(user._id, {
-          xp: (user.xp ?? 0) + args.xpEarned,
+          xp: (user.xp ?? 0) + xpReward,
         });
       }
     } else {
@@ -118,16 +119,16 @@ export const complete = mutation({
         status: "completed",
         attempts: 1,
         hintsUsed: 0,
-        xpEarned: args.xpEarned,
+        xpEarned: xpReward,
         completedAt: Date.now(),
       });
 
       await ctx.db.patch(user._id, {
-        xp: (user.xp ?? 0) + args.xpEarned,
+        xp: (user.xp ?? 0) + xpReward,
       });
     }
 
-    return { success: true, newXp: (user.xp ?? 0) + args.xpEarned };
+    return { success: true, newXp: (user.xp ?? 0) + xpReward };
   },
 });
 
