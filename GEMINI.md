@@ -81,12 +81,12 @@ The database, defined in `convex/schema.ts`, primarily consists of:
 
 ## Current Tasks
 
-1. [ ] **Learning Engine Feature (feat/learning-engine)**
-   - [ ] Monaco-based Code Editor component
-   - [ ] Sandboxed iframe preview system
-   - [ ] DOM-based validation engine
-   - [ ] Interactive Challenge UI (Brilliant-style)
-   - [ ] Confetti & XP rewards system
-   - [ ] Learning dashboard & progress tracking
+1. [x] **Learning Engine Feature (feat/learning-engine)**
+   - [x] Monaco-based Code Editor component
+   - [x] Sandboxed iframe preview system
+   - [x] DOM-based validation engine
+   - [x] Interactive Challenge UI (Brilliant-style)
+   - [x] Confetti & XP rewards system
+   - [x] Learning dashboard & progress tracking
 2. **Recent Changes**
    - Solver Migration: Recently consolidated "Solver" settings and chat history from `localStorage` to the specific `users` and `solverMessages` tables in Convex.
