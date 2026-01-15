@@ -123,17 +123,35 @@ export function useGeminiLive(onStop?: (durationSeconds: number) => void) {
     const playAudio = (base64Data: string) => {
         if (!audioContextRef.current) return;
 
-        const binary = atob(base64Data);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        try {
+            // Decode base64 to raw bytes
+            const binary = atob(base64Data);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
-        audioContextRef.current.decodeAudioData(bytes.buffer).then(buffer => {
-            if (!audioContextRef.current) return;
+            // Gemini Live returns 24kHz 16-bit PCM mono audio
+            const sampleRate = 24000;
+            const numSamples = bytes.length / 2; // 16-bit = 2 bytes per sample
+
+            // Create audio buffer
+            const audioBuffer = audioContextRef.current.createBuffer(1, numSamples, sampleRate);
+            const channelData = audioBuffer.getChannelData(0);
+
+            // Convert 16-bit PCM to float32
+            const dataView = new DataView(bytes.buffer);
+            for (let i = 0; i < numSamples; i++) {
+                const int16 = dataView.getInt16(i * 2, true); // little-endian
+                channelData[i] = int16 / 32768; // normalize to -1.0 to 1.0
+            }
+
+            // Play the audio
             const source = audioContextRef.current.createBufferSource();
-            source.buffer = buffer;
+            source.buffer = audioBuffer;
             source.connect(audioContextRef.current.destination);
             source.start();
-        });
+        } catch (err) {
+            console.error("Audio playback error:", err);
+        }
     };
 
     const floatTo16BitPCM = (input: Float32Array) => {
