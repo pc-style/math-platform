@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 export function useGeminiLive(onStop?: (durationSeconds: number) => void) {
     const [isActive, setIsActive] = useState(false);
@@ -93,7 +93,7 @@ export function useGeminiLive(onStop?: (durationSeconds: number) => void) {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             streamRef.current = stream;
 
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
+            const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)({ sampleRate: 16000 });
             audioContextRef.current = audioContext;
 
             const source = audioContext.createMediaStreamSource(stream);
