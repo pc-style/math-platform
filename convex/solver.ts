@@ -50,7 +50,7 @@ export const solveExercise = action({
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
+      model: "gemini-3-flash-preview",
       contents: [{ role: "user", parts }],
       config: {
         systemInstruction: `Jesteś szybkim i dokładnym solverem zadań matematycznych. Analizuj obrazy, PDF i tekst.
