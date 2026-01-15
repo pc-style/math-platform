@@ -110,7 +110,7 @@ export function TutorSidebar() {
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed top-0 right-0 h-screen w-full max-w-md bg-[var(--surface)] border-l border-[var(--border)] z-[60] shadow-2xl flex flex-col glass"
+                        className="fixed top-0 right-0 h-screen w-full md:max-w-md bg-[var(--surface)] border-l border-[var(--border)] z-[60] shadow-2xl flex flex-col glass"
                     >
                         {/* Header */}
                         <div className="p-6 border-b border-[var(--border)] flex items-center justify-between bg-[var(--background)]/50">

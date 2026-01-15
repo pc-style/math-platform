@@ -17,6 +17,19 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "MATHPREP_AI // PCSTYLE",
   description: "Generuj rozbudowane plany nauki matematyki z pomocą AI.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "MathPrep",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
+  themeColor: "#000000",
 };
 
 export default function RootLayout({

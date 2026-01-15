@@ -15,8 +15,8 @@ export default function LandingPage() {
       <Header />
 
       {/* Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center px-8 relative overflow-hidden">
-        <div className="max-w-4xl w-full text-center space-y-10 relative z-10 py-20">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 md:px-8 relative overflow-hidden w-full">
+        <div className="w-full max-w-[1400px] text-center space-y-10 relative z-10 py-12 md:py-20 mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -50,7 +50,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="flex flex-col sm:flex-row gap-6 justify-center pt-8"
+            className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center pt-8 w-full max-w-md mx-auto sm:max-w-none"
           >
             <Link href="/create" className="btn-premium flex items-center gap-3 text-lg px-10 py-5">
               <Sparkles className="w-6 h-6" />
@@ -73,8 +73,8 @@ export default function LandingPage() {
       </main>
 
       {/* Features Preview */}
-      <section id="features" className="py-24 px-8 border-t border-[var(--border)] bg-[var(--surface)]/30">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+      <section id="features" className="py-16 md:py-24 px-4 md:px-8 border-t border-[var(--border)] bg-[var(--surface)]/30 w-full">
+        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
           {[
             {
               icon: Cpu,
