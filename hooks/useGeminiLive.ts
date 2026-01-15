@@ -33,7 +33,6 @@ export function useGeminiLive(onStop?: (durationSeconds: number) => void) {
     const start = async (apiKey: string) => {
         if (isActive) return;
         setIsConnecting(true);
-        startTimeRef.current = Date.now();
 
         try {
             // 1. Initialize WebSocket
@@ -42,13 +41,16 @@ export function useGeminiLive(onStop?: (durationSeconds: number) => void) {
             socketRef.current = socket;
 
             socket.onopen = () => {
+                // Track start time only when connection is established
+                // This is an event handler, so it satisfies React 19 purity checks
+                startTimeRef.current = Date.now();
                 // Send Setup
                 socket.send(JSON.stringify({
                     setup: { model: "models/gemini-2.0-flash-exp" }
                 }));
             };
 
-            socket.onmessage = async (event) => {
+            socket.onmessage = async (event: MessageEvent) => {
                 let text = "";
                 if (typeof event.data === "string") {
                     text = event.data;
@@ -91,7 +93,7 @@ export function useGeminiLive(onStop?: (durationSeconds: number) => void) {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             streamRef.current = stream;
 
-            const audioContext = new AudioContext({ sampleRate: 16000 });
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
             audioContextRef.current = audioContext;
 
             const source = audioContext.createMediaStreamSource(stream);
@@ -125,12 +127,11 @@ export function useGeminiLive(onStop?: (durationSeconds: number) => void) {
         const bytes = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
-        // In a real implementation, we'd use a more robust queue/buffer system
-        // For simplicity, we decode and play immediately
         audioContextRef.current.decodeAudioData(bytes.buffer).then(buffer => {
-            const source = audioContextRef.current!.createBufferSource();
+            if (!audioContextRef.current) return;
+            const source = audioContextRef.current.createBufferSource();
             source.buffer = buffer;
-            source.connect(audioContextRef.current!.destination);
+            source.connect(audioContextRef.current.destination);
             source.start();
         });
     };

@@ -13,8 +13,9 @@ export function DebugOverlay() {
         if (process.env.NODE_ENV !== "development") return;
 
         const interval = setInterval(() => {
-            if ((window as any).__APP_LOGS) {
-                setLogs([...(window as any).__APP_LOGS].reverse());
+            const globalLogs = (window as unknown as { __APP_LOGS?: { time: string; msg: string }[] }).__APP_LOGS;
+            if (globalLogs) {
+                setLogs([...globalLogs].reverse());
             }
         }, 1000);
 

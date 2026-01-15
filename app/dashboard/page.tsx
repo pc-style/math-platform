@@ -16,7 +16,16 @@ import { useThemeLabels } from "@/hooks/useThemeLabels";
 export default function Dashboard() {
     const exams = useQuery(api.exams.getExams);
     const syncStats = useMutation(api.users.syncStats);
-    const [stats, setStats] = useState<any>(null);
+    const [stats, setStats] = useState<{
+        xp: number;
+        streak: number;
+        role: string;
+        usage?: {
+            generations: number;
+            messages: number;
+            audioSeconds: number;
+        }
+    } | null>(null);
     const { getLabel, isCyber } = useThemeLabels();
 
     const renameExam = useMutation(api.exams.renameExam);

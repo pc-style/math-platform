@@ -1,11 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Brain, Sparkles, BookOpen, ChevronRight } from "lucide-react";
-import { Zap, ArrowRight, Cpu, Rocket, ShieldCheck } from "lucide-react";
+import { Sparkles, Zap, ArrowRight, Cpu, Rocket, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { useConvexAuth } from "convex/react"; // Keep this import if it's used elsewhere or intended to be kept
-import { useThemeLabels } from "@/hooks/useThemeLabels"; // Assuming this is the path for useThemeLabels
+import { useThemeLabels } from "@/hooks/useThemeLabels";
 
 import { Header } from "@/components/Header";
 

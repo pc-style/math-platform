@@ -36,7 +36,6 @@ export default function ExamStudyView() {
     const [chatMessages, setChatMessages] = useState<Record<string, { role: 'user' | 'model', text: string }[]>>({});
     const [timeLeft, setTimeLeft] = useState(3600); // 60 mins default
     const [isExamRunning, setIsExamRunning] = useState(false);
-    const [examResults, setExamResults] = useState<Record<number, string>>({});
     const [flashcardIndex, setFlashcardIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
     const [chatInput, setChatInput] = useState("");
@@ -109,7 +108,7 @@ DODATKOWE INFO: Jesteś zintegrowany z interfejsem. Uczeń właśnie przegląda 
     };
 
     useEffect(() => {
-        let timer: any;
+        let timer: ReturnType<typeof setInterval>;
         if (isExamRunning && timeLeft > 0) {
             timer = setInterval(() => {
                 setTimeLeft(prev => prev - 1);

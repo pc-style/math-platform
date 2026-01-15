@@ -21,13 +21,18 @@ const TutorContext = createContext<TutorContextType | undefined>(undefined);
 
 export function TutorProvider({ children }: { children: ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            role: "ai",
-            content: "Cześć! Jestem Twoim osobistym nauczycielem matematyki. W czym możemy dzisiaj namieszać?",
-            timestamp: Date.now(),
-        },
-    ]);
+    const [messages, setMessages] = useState<Message[]>([]);
+
+    // Initial welcome message
+    React.useEffect(() => {
+        setMessages([
+            {
+                role: "ai",
+                content: "Cześć! Jestem Twoim osobistym nauczycielem matematyki. W czym możemy dzisiaj namieszać?",
+                timestamp: Date.now(),
+            },
+        ]);
+    }, []);
     const [currentContext, setCurrentContext] = useState("");
 
     const addMessage = (role: "user" | "ai", content: string) => {

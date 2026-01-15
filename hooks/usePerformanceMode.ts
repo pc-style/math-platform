@@ -20,15 +20,19 @@ export const usePerformanceMode = () => {
             }
 
             // Check device memory (if available, mostly Chrome/Edge)
-            // @ts-ignore - deviceMemory is not in standard TS types yet
-            if (navigator.deviceMemory && navigator.deviceMemory <= 4) {
+            // @ts-ignore
+            if (navigator.deviceMemory && (navigator as any).deviceMemory <= 4) {
                 return true;
             }
 
             return false;
         };
 
-        setIsLowPerformance(checkPerformance());
+        // Defer performance check to avoid synchronous setState warning
+        const timer = setTimeout(() => {
+            setIsLowPerformance(checkPerformance());
+        }, 0);
+        return () => clearTimeout(timer);
     }, []);
 
     return isLowPerformance;

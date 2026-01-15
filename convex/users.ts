@@ -1,6 +1,6 @@
-
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { mutation, query, internalMutation, MutationCtx } from "./_generated/server";
+import { Doc } from "./_generated/dataModel";
 import { authKit } from "./auth";
 
 export const testSync = internalMutation({
@@ -19,7 +19,7 @@ export const LIMITS = {
     },
 };
 
-const getRole = (user: any) => {
+const getRole = (user: { metadata?: { role?: string } }) => {
     // If WorkOS passes roles in metadata or another field
     // For now we assume 'member' as default unless specified
     return user.metadata?.role || "member";
@@ -29,7 +29,7 @@ const getRole = (user: any) => {
  * Internal logic for syncing user stats, used by mutation and webhooks.
  * IMPORTANT: Does NOT overwrite existing premium/admin roles from the database.
  */
-export async function syncUserLogic(ctx: any, user: { id: string, email: string, metadata?: any }) {
+export async function syncUserLogic(ctx: MutationCtx, user: { id: string, email: string, metadata?: { role?: string } }) {
     const metadataRole = getRole(user);
     const now = Date.now();
     const startOfMonth = new Date(now);
@@ -39,7 +39,7 @@ export async function syncUserLogic(ctx: any, user: { id: string, email: string,
 
     const record = await ctx.db
         .query("users")
-        .withIndex("by_user", (q: any) => q.eq("userId", user.id))
+        .withIndex("by_user", (q) => q.eq("userId", user.id))
         .first();
 
     if (!record) {
@@ -64,7 +64,7 @@ export async function syncUserLogic(ctx: any, user: { id: string, email: string,
     const isPremiumOrAdmin = existingRole === "premium" || existingRole === "admin";
     const finalRole = isPremiumOrAdmin ? existingRole : metadataRole;
 
-    const patch: any = { lastLogin: now, role: finalRole, email: user.email };
+    const patch: Partial<Doc<"users">> = { lastLogin: now, role: finalRole, email: user.email };
 
     // Monthly Reset
     if ((record.lastResetAt || 0) < startOfMonthTs) {
@@ -202,7 +202,7 @@ export const incrementUsage = mutation({
             .first();
 
         if (record) {
-            const patch: any = {};
+            const patch: Partial<Doc<"users">> = {};
             if (args.type === "generations") patch.monthlyGenerations = (record.monthlyGenerations || 0) + 1;
             if (args.type === "messages") patch.monthlyMessages = (record.monthlyMessages || 0) + 1;
             if (args.type === "audio") patch.monthlyAudioSeconds = (record.monthlyAudioSeconds || 0) + (args.amount || 0);
