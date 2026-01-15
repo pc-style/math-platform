@@ -13,6 +13,7 @@ interface ChallengeCardProps {
   xpReward: number;
   onRun: () => void;
   onSubmit: () => void;
+  onHintReveal?: () => void;
 }
 
 export const ChallengeCard: React.FC<ChallengeCardProps> = ({
@@ -23,6 +24,7 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
   xpReward,
   onRun,
   onSubmit,
+  onHintReveal,
 }) => {
   const [showHintIndex, setShowHintIndex] = useState(-1);
 
@@ -65,7 +67,10 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
                 </motion.div>
               ) : idx === showHintIndex + 1 ? (
                 <button
-                  onClick={() => setShowHintIndex(idx)}
+                  onClick={() => {
+                    setShowHintIndex(idx);
+                    onHintReveal?.();
+                  }}
                   className="w-full p-3 rounded-xl border border-dashed border-white/20 hover:border-primary/50 hover:bg-primary/5 transition-all text-xs text-muted-foreground text-left flex items-center justify-between group"
                 >
                   Reveal Hint {idx + 1}

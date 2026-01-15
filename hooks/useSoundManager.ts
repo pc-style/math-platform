@@ -6,6 +6,7 @@ import { usePerformanceMode } from "@/hooks/usePerformanceMode";
 type SoundManager = {
   playSuccess: () => void;
   playFailure: () => void;
+  playLevelUp: () => void;
 };
 
 const getAudioContext = () => {
@@ -72,6 +73,19 @@ export const useSoundManager = (): SoundManager => {
     }, 160);
   }, [playTone]);
 
+  const playLevelUp = useCallback(() => {
+    void playTone(392, 0.12, "sine", 0.06);
+    setTimeout(() => {
+      void playTone(523.25, 0.12, "sine", 0.07);
+    }, 110);
+    setTimeout(() => {
+      void playTone(659.25, 0.14, "sine", 0.08);
+    }, 220);
+    setTimeout(() => {
+      void playTone(783.99, 0.18, "sine", 0.09);
+    }, 340);
+  }, [playTone]);
+
   useEffect(() => {
     return () => {
       audioContextRef.current?.close();
@@ -79,5 +93,5 @@ export const useSoundManager = (): SoundManager => {
     };
   }, []);
 
-  return { playSuccess, playFailure };
+  return { playSuccess, playFailure, playLevelUp };
 };

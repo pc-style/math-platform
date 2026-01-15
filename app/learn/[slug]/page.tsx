@@ -12,10 +12,7 @@ import { SortingVisualizer } from "@/components/learn/interactive/SortingVisuali
 import { BoxModelPlayground } from "@/components/learn/interactive/BoxModelPlayground";
 import { useChallengeValidation } from "@/hooks/useChallengeValidation";
 import { useSoundManager } from "@/hooks/useSoundManager";
-import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import "katex/dist/katex.min.css";
+import { MathContent } from "@/components/MathContent";
 
 export default function ChallengePage() {
   const params = useParams();
@@ -30,10 +27,10 @@ export default function ChallengePage() {
   const [validationStatus, setValidationStatus] = useState<"idle" | "success" | "failure">("idle");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [hintUsed, setHintUsed] = useState(false);
   const { validate } = useChallengeValidation();
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const { playSuccess, playFailure } = useSoundManager();
-  const lastStatusRef = useRef<"idle" | "success" | "failure">("idle");
+  const { playSuccess, playFailure, playLevelUp } = useSoundManager();
 
   useEffect(() => {
     if (challenge && challenge.starterCode) {
@@ -43,22 +40,9 @@ export default function ChallengePage() {
         css: challenge.starterCode.css,
         js: challenge.starterCode.js || "",
       });
+      setHintUsed(false);
     }
   }, [challenge]);
-
-  useEffect(() => {
-    if (validationStatus === lastStatusRef.current) return;
-
-    if (validationStatus === "success") {
-      playSuccess();
-    }
-
-    if (validationStatus === "failure") {
-      playFailure();
-    }
-
-    lastStatusRef.current = validationStatus;
-  }, [validationStatus, playFailure, playSuccess]);
 
   const handleCodeChange = (value: string | undefined) => {
     setFiles((prev) => ({ ...prev, [activeTab]: value || "" }));
@@ -75,6 +59,9 @@ export default function ChallengePage() {
 
     setIsSubmitting(true);
     setValidationStatus("idle");
+    window.dispatchEvent(
+      new CustomEvent("learn:challengeAttempt", { detail: { challengeId: challenge._id, slug } }),
+    );
 
     let passed = false;
 
@@ -84,27 +71,46 @@ export default function ChallengePage() {
       const result = validate(iframeRef.current, challenge.validation?.rules || []);
       passed = result.passed;
       if (!passed) {
+        playFailure();
         setValidationStatus("failure");
         setFeedbackMessage(result.failedRule?.hint || "Something isn't quite right. Try again!");
+        window.dispatchEvent(
+          new CustomEvent("learn:challengeFailure", {
+            detail: { challengeId: challenge._id, slug },
+          }),
+        );
       }
     }
 
     if (passed) {
+      playSuccess();
       setValidationStatus("success");
-      setFeedbackMessage(`Congratulations! You've earned ${challenge.xpReward} XP.`);
+      setFeedbackMessage(`Victory! +${challenge.xpReward} XP.`);
 
       const userId = user?.userId;
-      if (!userId) {
-        setFeedbackMessage("You must be logged in to save progress.");
-        setValidationStatus("failure");
-        setIsSubmitting(false); // Ensure submitting state is reset
-        return;
+      let xpEarnedForQuests = challenge.xpReward;
+      if (userId) {
+        const beforeLevel = Math.floor((user?.xp ?? 0) / 1000) + 1;
+        const result = await completeChallenge({ userId, challengeId: challenge._id });
+        xpEarnedForQuests = result?.xpEarned ?? 0;
+        const afterLevel = Math.floor((result?.newXp ?? user?.xp ?? 0) / 1000) + 1;
+        if (result?.xpAwarded && afterLevel > beforeLevel) {
+          setTimeout(() => playLevelUp(), 450);
+        }
+      } else {
+        setFeedbackMessage("Victory! Sign in to save progress and XP.");
       }
 
-      await completeChallenge({
-        userId,
-        challengeId: challenge._id,
-      });
+      window.dispatchEvent(
+        new CustomEvent("learn:challengeSuccess", {
+          detail: {
+            challengeId: challenge._id,
+            slug,
+            xpEarned: xpEarnedForQuests,
+            usedHint: hintUsed,
+          },
+        }),
+      );
 
       setIsSubmitting(false);
     } else {
@@ -137,6 +143,7 @@ export default function ChallengePage() {
           xpReward={challenge.xpReward}
           onRun={isTheory ? () => {} : handleRun}
           onSubmit={handleSubmit}
+          onHintReveal={() => setHintUsed(true)}
         />
       </div>
 
@@ -148,10 +155,12 @@ export default function ChallengePage() {
             {isBoxModelPlayground ? <BoxModelPlayground /> : null}
           </div>
         ) : isTheory ? (
-          <div className="flex-1 overflow-y-auto p-8 glass rounded-2xl border border-white/10 prose prose-invert prose-lg max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-              {challenge.theoryContent || challenge.description}
-            </ReactMarkdown>
+          <div className="flex-1 overflow-y-auto p-8 glass rounded-2xl border border-white/10">
+            <MathContent
+              content={challenge.theoryContent || challenge.description}
+              className="prose-lg"
+              slug={challenge.slug}
+            />
           </div>
         ) : (
           <>

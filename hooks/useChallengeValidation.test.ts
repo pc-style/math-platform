@@ -8,7 +8,7 @@ describe("useChallengeValidation", () => {
     const { validate } = result.current;
 
     // Mock iframe and window
-    const mockGetComputedStyle = vi.fn((element) => ({
+    const mockGetComputedStyle = vi.fn(() => ({
       getPropertyValue: (prop: string) => {
         if (prop === "display") return "flex";
         return "";

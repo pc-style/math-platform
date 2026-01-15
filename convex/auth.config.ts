@@ -1,5 +1,7 @@
 import { authKit } from "./auth";
 
-export default {
+const authConfig = {
   providers: authKit.getAuthConfigProviders(),
 };
+
+export default authConfig;

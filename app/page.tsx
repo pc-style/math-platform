@@ -15,7 +15,11 @@ export default function LandingPage() {
       <Header />
 
       {/* Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-8 relative overflow-hidden">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 flex flex-col items-center justify-center px-4 sm:px-8 relative overflow-hidden"
+      >
         <div className="max-w-5xl w-full text-center space-y-8 sm:space-y-10 relative z-10 py-16 sm:py-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -93,6 +97,8 @@ export default function LandingPage() {
       {/* Features Preview */}
       <section
         id="features"
+        tabIndex={-1}
+        aria-label="Key features"
         className="py-20 sm:py-24 px-4 sm:px-8 border-t border-[var(--border)] bg-[var(--surface)]/30"
       >
         <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
@@ -133,7 +139,11 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
-      <footer className="py-10 border-t border-[var(--border)] text-center text-[var(--text-muted)] text-sm font-mono">
+      <footer
+        id="site-footer"
+        tabIndex={-1}
+        className="py-10 border-t border-[var(--border)] text-center text-[var(--text-muted)] text-sm font-mono"
+      >
         &lt;!-- © 2026 LEARNING_PLATFORM // pcstyle --&gt;
       </footer>
     </div>

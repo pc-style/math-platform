@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Palette, Check, Loader2, Zap, Home } from "lucide-react";
+import { Palette, Check, Loader2, Zap, Home, Monitor } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useThemeLabels } from "@/hooks/useThemeLabels";
 
@@ -32,6 +32,12 @@ const themes = [
     description: "Ekspresyjny styl deweloperski",
     color: "#ff00ff",
   },
+  {
+    id: "high-contrast",
+    name: "High Contrast",
+    description: "Maksymalny kontrast i wyraziste soczyste akcenty",
+    color: "#000000",
+  },
 ];
 
 export default function SettingsPage() {
@@ -39,12 +45,17 @@ export default function SettingsPage() {
   const updateSettings = useMutation(api.users.updateSettings);
   const [selectedTheme, setSelectedTheme] = useState("minimalistic-light");
   const [isSaving, setIsSaving] = useState(false);
+  const [prefersSystemTheme, setPrefersSystemTheme] = useState(false);
+  const [isSavingSystemSync, setIsSavingSystemSync] = useState(false);
   const [solverAsHomepage, setSolverAsHomepage] = useState(false);
   const { getLabel, isCyber } = useThemeLabels();
 
   useEffect(() => {
     if (userSettings?.theme) {
       setSelectedTheme(userSettings.theme);
+    }
+    if (typeof userSettings?.prefersSystemTheme === "boolean") {
+      setPrefersSystemTheme(userSettings.prefersSystemTheme);
     }
   }, [userSettings]);
 
@@ -65,11 +76,18 @@ export default function SettingsPage() {
   }, []);
 
   const handleThemeChange = async (themeId: string) => {
-    setSelectedTheme(themeId);
     setIsSaving(true);
     try {
-      await updateSettings({ theme: themeId });
+      const payload: Parameters<typeof updateSettings>[0] = { theme: themeId };
+      if (prefersSystemTheme) {
+        payload.prefersSystemTheme = false;
+      }
+      await updateSettings(payload);
       document.documentElement.setAttribute("data-theme", themeId);
+      setSelectedTheme(themeId);
+      if (prefersSystemTheme) {
+        setPrefersSystemTheme(false);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -82,6 +100,26 @@ export default function SettingsPage() {
     setSolverAsHomepage(newValue);
     localStorage.setItem("solver-default-homepage", String(newValue));
     await updateSettings({ solverDefaultHomepage: newValue });
+  };
+
+  const toggleSystemTheme = async () => {
+    const nextValue = !prefersSystemTheme;
+    setIsSavingSystemSync(true);
+    try {
+      await updateSettings({ prefersSystemTheme: nextValue });
+      setPrefersSystemTheme(nextValue);
+      if (!nextValue) {
+        document.documentElement.setAttribute("data-theme", selectedTheme);
+      } else if (typeof window !== "undefined") {
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const autoTheme = prefersDark ? "minimalistic-dark" : "minimalistic-light";
+        document.documentElement.setAttribute("data-theme", autoTheme);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSavingSystemSync(false);
+    }
   };
 
   return (
@@ -142,6 +180,64 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* System Theme Sync */}
+        <div className="card-premium mb-8">
+          <div className="flex items-center gap-4 mb-6">
+            <div
+              className={`p-3 ${
+                isCyber
+                  ? "border border-[var(--primary)] text-[var(--primary)]"
+                  : "bg-[var(--primary)] text-white rounded-xl"
+              }`}
+            >
+              <Monitor className="w-6 h-6" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold">
+                {isCyber ? "AUTOMATYCZNY_TEMAT" : "Synchronizacja z systemem"}
+              </h2>
+              <p className="text-sm text-[var(--text-muted)] font-medium">
+                {isCyber
+                  ? "// Styl podąża za preferencjami motywu Twojego systemu."
+                  : "Gdy włączone, aplikacja przyjmuje jasny lub ciemny motyw twojego systemu."}
+              </p>
+            </div>
+            {isSavingSystemSync && (
+              <Loader2 className="w-5 h-5 animate-spin text-[var(--primary)]" />
+            )}
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-[var(--background)] rounded-xl border border-[var(--border)]">
+            <div className="flex items-center gap-3">
+              <Monitor className="w-4 h-4 text-[var(--text-muted)]" />
+              <div>
+                <p className="font-medium text-sm">Systemowy motyw</p>
+                <p className="text-xs text-[var(--text-muted)]">
+                  {prefersSystemTheme
+                    ? "Kontrola manualna jest wyłączona."
+                    : "Wybierz dowolny motyw poniżej."}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={toggleSystemTheme}
+              disabled={isSavingSystemSync}
+              aria-pressed={prefersSystemTheme}
+              aria-label="Toggle automatic system theme sync"
+              className={`w-12 h-6 rounded-full transition-all duration-200 ${
+                prefersSystemTheme ? "bg-[var(--primary)]" : "bg-[var(--border)]"
+              } ${isSavingSystemSync ? "opacity-60 cursor-wait" : ""}`}
+            >
+              <div
+                className={`w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ${
+                  prefersSystemTheme ? "translate-x-6" : "translate-x-0.5"
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
         {/* Theme Settings */}
         <div className="card-premium">
           <div className="flex items-center gap-4 mb-10">
@@ -168,11 +264,14 @@ export default function SettingsPage() {
               <button
                 key={theme.id}
                 onClick={() => handleThemeChange(theme.id)}
+                disabled={prefersSystemTheme}
                 className={`p-6 border text-left transition-all duration-300 relative group ${
                   selectedTheme === theme.id
                     ? "border-[var(--primary)] bg-[var(--primary)]/[0.03] ring-1 ring-[var(--primary)]"
                     : "border-[var(--border)] hover:border-[var(--primary)]/50"
-                } ${isCyber ? "" : "rounded-2xl"}`}
+                } ${isCyber ? "" : "rounded-2xl"} ${
+                  prefersSystemTheme ? "cursor-not-allowed opacity-60" : ""
+                }`}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div
@@ -192,6 +291,11 @@ export default function SettingsPage() {
               </button>
             ))}
           </div>
+          <p className="mt-4 text-xs text-[var(--text-muted)]">
+            {prefersSystemTheme
+              ? "Systemowa synchronizacja ma pierwszeństwo. Wyłącz ją, by ręcznie wybrać motyw."
+              : "Wybierz motyw, by dopasować wygląd aplikacji do siebie."}
+          </p>
         </div>
       </div>
     </div>

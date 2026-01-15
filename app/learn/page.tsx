@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Brain, Star, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { ProgressTracker } from "@/components/learn/ProgressTracker";
+import { DailyQuests } from "@/components/learn/DailyQuests";
 
 export default function LearnDashboard() {
   const courses = useQuery(api.courses.list);
@@ -30,8 +31,9 @@ export default function LearnDashboard() {
             Master the web through interactive, tactile coding exercises.
           </p>
         </div>
-        <div className="w-80">
+        <div className="w-80 space-y-4">
           <ProgressTracker xp={userXP} level={userLevel} streak={userStreak} />
+          <DailyQuests userId={user?.userId} />
         </div>
       </header>
 

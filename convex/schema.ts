@@ -60,6 +60,7 @@ export default defineSchema({
         primaryColor: v.optional(v.string()),
       }),
     ),
+    prefersSystemTheme: v.optional(v.boolean()),
     xp: v.optional(v.number()),
     streak: v.optional(v.number()),
     lastLogin: v.optional(v.number()),

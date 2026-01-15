@@ -51,6 +51,7 @@ export async function syncUserLogic(
       email: user.email,
       role: metadataRole,
       theme: "minimalistic-warm",
+      prefersSystemTheme: false,
       xp: 0,
       streak: 1,
       lastLogin: now,
@@ -126,6 +127,7 @@ export const getSettings = query({
         solverSystemPrompt: undefined,
         solverDefaultHomepage: false,
         solverKnowledgeBase: [],
+        prefersSystemTheme: false,
       }
     );
   },
@@ -151,6 +153,7 @@ export const updateSettings = mutation({
         }),
       ),
     ),
+    prefersSystemTheme: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const user = await authKit.getAuthUser(ctx);
@@ -181,6 +184,9 @@ export const updateSettings = mutation({
         }),
         ...(args.solverKnowledgeBase !== undefined && {
           solverKnowledgeBase: args.solverKnowledgeBase,
+        }),
+        ...(args.prefersSystemTheme !== undefined && {
+          prefersSystemTheme: args.prefersSystemTheme,
         }),
       });
     }

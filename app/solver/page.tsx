@@ -18,6 +18,8 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+
 import { MathContent } from "@/components/MathContent";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -552,10 +554,13 @@ export default function SolverPage() {
                   {msg.attachment && (
                     <div className="mb-2">
                       {msg.attachment.preview ? (
-                        <img
+                        <Image
                           src={msg.attachment.preview}
                           alt={msg.attachment.name}
-                          className="max-h-32 rounded-lg object-cover"
+                          width={400}
+                          height={128}
+                          className="max-h-32 w-auto rounded-lg object-cover"
+                          unoptimized
                         />
                       ) : (
                         <div className="flex items-center gap-2 text-sm opacity-80">
@@ -602,7 +607,14 @@ export default function SolverPage() {
         {pendingFile && (
           <div className="flex items-center gap-2 mb-2 p-2 rounded-lg bg-[var(--background)] border border-[var(--border)]">
             {pendingPreview ? (
-              <img src={pendingPreview} alt="Preview" className="w-12 h-12 rounded object-cover" />
+              <Image
+                src={pendingPreview}
+                alt="Preview"
+                width={48}
+                height={48}
+                className="w-12 h-12 rounded object-cover"
+                unoptimized
+              />
             ) : (
               <div className="w-12 h-12 rounded bg-[var(--primary)]/10 flex items-center justify-center">
                 <ImageIcon className="w-5 h-5 text-[var(--primary)]" />
@@ -828,11 +840,14 @@ export default function SolverPage() {
                 <div className="grid grid-cols-3 gap-2">
                   {gallery.map((img) => (
                     <div key={img.id} className="relative group aspect-square">
-                      <img
+                      <Image
                         src={img.preview}
                         alt={img.name}
+                        width={200}
+                        height={200}
                         className="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                         onClick={() => selectFromGallery(img)}
+                        unoptimized
                       />
                       <button
                         onClick={(e) => {

@@ -1,0 +1,518 @@
+{
+  "generatedAt": "2026-01-15T14:31:10.185Z",
+  "courses": [
+    {
+      "course": {
+        "title": "Linear Algebra",
+        "slug": "linear-algebra",
+        "description": "Vectors, matrices, linear maps, eigenvalues — with geometric intuition and hands-on interactive micro-labs.",
+        "icon": "Grid2x2",
+        "order": 20
+      },
+      "challenges": [
+        {
+          "slug": "linear-algebra-01-vectors-dot-products",
+          "title": "Vectors, Norms, and Dot Products",
+          "description": "Geometric meaning of $u\\cdot v$, length, angle, and projection.",
+          "category": "Linear Algebra",
+          "difficulty": 1,
+          "xpReward": 140,
+          "order": 1,
+          "type": "theory",
+          "theoryContent": "## The objects of the course\n\nA **vector** is an element of $\\mathbb{R}^n$. Think “arrow” (geometry) and “list of coordinates” (algebra). We’ll switch views constantly.\n\nFor $u=(u_1,u_2)$ and $v=(v_1,v_2)$ in $\\mathbb{R}^2$, the **dot product** is:\n\n$$u\\cdot v = u_1v_1+u_2v_2.$$\n\nThe **norm** (length) is:\n\n$$\\|u\\|=\\sqrt{u\\cdot u}=\\sqrt{u_1^2+u_2^2}.$$\n\nThe dot product encodes the angle $\\theta$ between $u$ and $v$:\n\n$$u\\cdot v = \\|u\\|\\,\\|v\\|\\cos\\theta,\\qquad \\cos\\theta=\\frac{u\\cdot v}{\\|u\\|\\,\\|v\\|}.$$\n\nTwo vectors are **orthogonal** iff $u\\cdot v=0$.\n\n### Projection: extracting the component along a direction\n\nIf $v\\neq 0$, the projection of $u$ onto $v$ is\n\n$$\\mathrm{proj}_v(u)=\\left(\\frac{u\\cdot v}{v\\cdot v}\\right)v.$$\n\nThis is the unique vector in $\\mathrm{span}\\{v\\}$ closest to $u$.\n\n### Inequalities you will use everywhere\n\nCauchy–Schwarz:\n\n$$|u\\cdot v|\\le \\|u\\|\\,\\|v\\|.$$\n\nTriangle inequality:\n\n$$\\|u+v\\|\\le \\|u\\|+\\|v\\|.$$\n\n### Interactive lab\n\nTry to make the dot product positive/negative/zero by changing the vectors.\n\n```interactive\n\n{\n  \"kind\": \"dot2D\",\n  \"title\": \"Dot product lab\",\n  \"u\": [\n    2,\n    1\n  ],\n  \"v\": [\n    1,\n    2\n  ]\n}\n\n```\n\nAnd now connect the algebra to geometry: drag the vector and observe how a matrix maps it.\n\n```matrix-transform\n\n{\n  \"initialPreset\": \"identity\",\n  \"initialVector\": {\n    \"x\": 2,\n    \"y\": 1\n  }\n}\n\n```\n\n### Quick checks\n\n- If $u\\cdot v<0$, is $\\theta$ acute, right, or obtuse?\n\n- Compute $\\mathrm{proj}_{(1,1)}(2,0)$ by hand.\n\n- Show that $\\|u\\|=\\|{-}u\\|$.\n",
+          "hints": [
+            "Remember $u\\cdot v$ is a scalar, not a vector.",
+            "Use $u\\cdot v = \\|u\\|\\,\\|v\\|\\cos\\theta$ to interpret signs.",
+            "Projection onto $v$ is a scalar multiple of $v$."
+          ]
+        },
+        {
+          "slug": "linear-algebra-02-matrices-linear-maps",
+          "title": "Matrices as Linear Maps",
+          "description": "Columns, matrix multiplication, and composition of transformations.",
+          "category": "Linear Algebra",
+          "difficulty": 1,
+          "xpReward": 150,
+          "order": 2,
+          "type": "theory",
+          "theoryContent": "## What a matrix *does*\n\nA matrix $A\\in\\mathbb{R}^{m\\times n}$ defines a linear map $T(x)=Ax$.\n\nFor a $2\\times2$ matrix, the columns are the images of the standard basis:\n\n$$A\\begin{pmatrix}1\\\\0\\end{pmatrix}=\\text{col}_1(A),\\qquad A\\begin{pmatrix}0\\\\1\\end{pmatrix}=\\text{col}_2(A).$$\n\nThat single fact explains most of “matrix intuition”.\n\n### Matrix multiplication is composition\n\nIf $T(x)=Ax$ and $S(x)=Bx$, then $T\\circ S(x)=A(Bx)=(AB)x$.\n\nSo multiplication is not “just a formula” — it is function composition. That’s why it is generally **not commutative**: $AB\\neq BA$.\n\n### Interactive lab: compute AB, then visualize\n\n```interactive\n\n{\n  \"kind\": \"matrixMultiply\",\n  \"title\": \"Compute AB (2×2)\",\n  \"a\": [\n    [\n      1,\n      2\n    ],\n    [\n      0,\n      1\n    ]\n  ],\n  \"b\": [\n    [\n      2,\n      0\n    ],\n    [\n      1,\n      1\n    ]\n  ]\n}\n\n```\n\nNow apply a matrix to the plane: columns become the new coordinate directions.\n\n```matrix-transform\n\n{\n  \"initialPreset\": \"shear\",\n  \"initialVector\": {\n    \"x\": 2,\n    \"y\": 1\n  }\n}\n\n```\n\n### Key formulas\n\nLinearity means:\n\n$$A(u+v)=Au+Av,\\qquad A(cu)=c(Au).$$\n\nAnd when you write $x$ in coordinates $x=x_1e_1+x_2e_2$, you get:\n\n$$Ax=x_1Ae_1+x_2Ae_2=x_1\\text{col}_1(A)+x_2\\text{col}_2(A).$$\n\n### Quick checks\n\n- Explain in one sentence why $AB\\neq BA$ is natural.\n\n- If $A$ maps $e_1$ to $(3,0)$ and $e_2$ to $(0,2)$, what does it do to $(1,1)$?\n\n- If $A$ is a rotation, what is $\\|Ax\\|$ compared to $\\|x\\|$?\n",
+          "hints": [
+            "Think “columns” for $Ax$ in $\\mathbb{R}^2$.",
+            "Multiplication corresponds to doing one transform after another.",
+            "Test commutativity by choosing simple shear/scale matrices."
+          ]
+        },
+        {
+          "slug": "linear-algebra-03-linear-systems-cramers-rule",
+          "title": "Solving 2×2 Systems (and why det matters)",
+          "description": "Existence/uniqueness via $\\det(A)$; solve with Cramer's rule.",
+          "category": "Linear Algebra",
+          "difficulty": 1,
+          "xpReward": 150,
+          "order": 3,
+          "type": "theory",
+          "theoryContent": "## Linear systems as geometry\n\nA system\n\n$$\\begin{cases}a_{11}x+a_{12}y=b_1\\\\a_{21}x+a_{22}y=b_2\\end{cases}$$\n\nis the intersection of two lines in the plane.\n\nWrite it as $Ax=b$ with\n\n$$A=\\begin{pmatrix}a_{11}&a_{12}\\\\a_{21}&a_{22}\\end{pmatrix},\\quad x=\\begin{pmatrix}x\\\\y\\end{pmatrix},\\quad b=\\begin{pmatrix}b_1\\\\b_2\\end{pmatrix}.$$\n\n### The determinant decides “unique or not” (in 2×2)\n\n$$\\det(A)=a_{11}a_{22}-a_{12}a_{21}.$$\n\n- If $\\det(A)\\neq 0$, the lines cross at exactly one point (unique solution).\n\n- If $\\det(A)=0$, the lines are parallel or identical (no solution or infinitely many).\n\n### Interactive lab\n\n```interactive\n\n{\n  \"kind\": \"linearSystem2x2\",\n  \"title\": \"Solve Ax=b instantly\",\n  \"A\": [\n    [\n      2,\n      1\n    ],\n    [\n      1,\n      3\n    ]\n  ],\n  \"b\": [\n    1,\n    2\n  ]\n}\n\n```\n\n### Connection to the inverse\n\nWhen $\\det(A)\\neq 0$, the inverse exists and $x=A^{-1}b$.\n\nFor $2\\times 2$,\n\n$$A^{-1}=\\frac{1}{\\det(A)}\\begin{pmatrix}a_{22}&-a_{12}\\\\-a_{21}&a_{11}\\end{pmatrix}.$$\n\n### Quick checks\n\n- Give a geometric reason why $\\det(A)=0$ means no unique solution.\n\n- Solve $\\begin{cases}x+y=2\\\\2x+2y=4\\end{cases}$: what happens and why?\n\n- If $A$ is invertible, show that $Ax=0$ implies $x=0$.\n",
+          "hints": [
+            "Unique solutions correspond to invertible matrices.",
+            "In 2D, $\\det(A)=0$ means the columns are linearly dependent.",
+            "Try making one row a multiple of another to force $\\det(A)=0$."
+          ]
+        },
+        {
+          "slug": "linear-algebra-04-determinants-geometry",
+          "title": "Determinants: Area, Orientation, Invertibility",
+          "description": "Interpret $\\det(A)$ as signed area scaling for 2×2 maps.",
+          "category": "Linear Algebra",
+          "difficulty": 1,
+          "xpReward": 155,
+          "order": 4,
+          "type": "theory",
+          "theoryContent": "## Determinant as scaling factor\n\nFor $A\\in\\mathbb{R}^{2\\times 2}$, the determinant measures how areas scale under $x\\mapsto Ax$:\n\n$$\\text{area}(A\\,R)=|\\det(A)|\\,\\text{area}(R).$$\n\nIt also records orientation: $\\det(A)<0$ flips orientation.\n\n### Algebraic definition (2×2)\n\n$$\\det\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}=ad-bc.$$\n\n### Interactive lab\n\nTune the matrix until it becomes singular ($\\det=0$), and watch the inverse disappear.\n\n```interactive\n\n{\n  \"kind\": \"determinant2x2\",\n  \"title\": \"Determinant and inverse (2×2)\",\n  \"A\": [\n    [\n      2,\n      1\n    ],\n    [\n      3,\n      2\n    ]\n  ]\n}\n\n```\n\nNow visualize a shear/rotation/scale and check how $\\det(A)$ behaves.\n\n```matrix-transform\n\n{\n  \"initialPreset\": \"rotate45\",\n  \"initialVector\": {\n    \"x\": 2,\n    \"y\": 1\n  }\n}\n\n```\n\n### Quick checks\n\n- What does $\\det(A)=1$ mean geometrically?\n\n- Why can a matrix with $\\det(A)=0$ not be invertible?\n\n- If $A$ is a reflection, what do you expect $\\det(A)$ to be?\n",
+          "hints": [
+            "Invertible iff determinant is nonzero (in finite dimensions).",
+            "Rotation preserves area, so |det| should be 1.",
+            "Shears preserve area too (det = 1) even though shapes distort."
+          ]
+        },
+        {
+          "slug": "linear-algebra-05-vector-spaces-basis-dimension",
+          "title": "Vector Spaces, Span, Basis, Dimension",
+          "description": "What “span” means, and how a basis gives coordinates.",
+          "category": "Linear Algebra",
+          "difficulty": 1,
+          "xpReward": 155,
+          "order": 5,
+          "type": "theory",
+          "theoryContent": "## Span and subspaces\n\nGiven vectors $v_1,\\dots,v_k\\in\\mathbb{R}^n$, their span is\n\n$$\\mathrm{span}\\{v_1,\\dots,v_k\\}=\\left\\{\\sum_{i=1}^k c_iv_i\\,:\\,c_i\\in\\mathbb{R}\\right\\}.$$\n\nA **subspace** is a set closed under addition and scalar multiplication.\n\n### Basis and dimension\n\nA set $\\{b_1,\\dots,b_r\\}$ is a **basis** of a subspace $V$ if:\n\n1) it spans $V$, and 2) it is linearly independent.\n\nThen every $v\\in V$ has a unique coordinate representation\n\n$$v=\\alpha_1b_1+\\cdots+\\alpha_rb_r.$$\n\nThe number $r$ is the **dimension**: $\\dim(V)=r$.\n\n### Columns = images of basis vectors\n\nIn $\\mathbb{R}^2$, the columns of $A$ are $Ae_1$ and $Ae_2$. So changing columns literally changes the image of the standard basis.\n\n### Interactive lab\n\nUse the visualizer to see how columns generate the transformed grid (the whole plane if $\\det\\neq 0$).\n\n```matrix-transform\n\n{\n  \"initialMatrix\": [\n    [\n      1,\n      2\n    ],\n    [\n      0,\n      1\n    ]\n  ],\n  \"initialVector\": {\n    \"x\": 1,\n    \"y\": 1\n  }\n}\n\n```\n\nNow connect “span” to solving for coefficients: solve for $(x,y)$ in $xv_1+yv_2=b$ by choosing $A=[v_1\\ v_2]$.\n\n```interactive\n\n{\n  \"kind\": \"linearSystem2x2\",\n  \"title\": \"Coordinates in a basis (solve x v1 + y v2 = b)\",\n  \"A\": [\n    [\n      1,\n      2\n    ],\n    [\n      0,\n      1\n    ]\n  ],\n  \"b\": [\n    3,\n    2\n  ]\n}\n\n```\n\n### Quick checks\n\n- Give an example of a subset of $\\mathbb{R}^2$ that is *not* a subspace.\n\n- Why can’t a basis contain the zero vector?\n\n- If $A$ is invertible, what is the column space of $A$ in $\\mathbb{R}^2$?\n",
+          "hints": [
+            "A subspace must contain 0 (set c=0).",
+            "Independence means no vector is a combination of the others.",
+            "Invertible 2×2 matrices map the plane to the whole plane."
+          ]
+        },
+        {
+          "slug": "linear-algebra-06-rank-nullspace-imt",
+          "title": "Rank, Null Space, and the Invertible Matrix Theorem",
+          "description": "How many degrees of freedom remain after applying A?",
+          "category": "Linear Algebra",
+          "difficulty": 1,
+          "xpReward": 160,
+          "order": 6,
+          "type": "theory",
+          "theoryContent": "## Two fundamental subspaces\n\nFor a matrix $A\\in\\mathbb{R}^{m\\times n}$:\n\n- The **column space** is $\\mathcal{C}(A)=\\{Ax: x\\in\\mathbb{R}^n\\}\\subseteq\\mathbb{R}^m$.\n\n- The **null space** is $\\mathcal{N}(A)=\\{x\\in\\mathbb{R}^n: Ax=0\\}\\subseteq\\mathbb{R}^n$.\n\nTheir dimensions are **rank** and **nullity**. The rank–nullity theorem states:\n\n$$\\mathrm{rank}(A)+\\mathrm{nullity}(A)=n.$$\n\n### Invertible Matrix Theorem (finite-dimensional punchline)\n\nFor an $n\\times n$ matrix $A$, the following are equivalent:\n\n- $A$ is invertible\n\n- $Ax=0$ has only the trivial solution\n\n- columns of $A$ are linearly independent\n\n- $\\det(A)\\neq 0$\n\n- $\\mathrm{rank}(A)=n$\n\n- $Ax=b$ has a unique solution for every $b$\n\nand several more.\n\n### Interactive lab: make the system lose uniqueness\n\nFirst, watch $\\det(A)$:\n\n```interactive\n\n{\n  \"kind\": \"determinant2x2\",\n  \"title\": \"Singularity detector\",\n  \"A\": [\n    [\n      1,\n      2\n    ],\n    [\n      2,\n      4\n    ]\n  ]\n}\n\n```\n\nThen, solve $Ax=b$ for a singular matrix and notice the “no unique solution” behavior.\n\n```interactive\n\n{\n  \"kind\": \"linearSystem2x2\",\n  \"title\": \"Try solving with det(A)=0\",\n  \"A\": [\n    [\n      1,\n      2\n    ],\n    [\n      2,\n      4\n    ]\n  ],\n  \"b\": [\n    1,\n    2\n  ]\n}\n\n```\n\n### Quick checks\n\n- If $Ax=0$ has a nonzero solution, what must be true about $\\det(A)$ (for square A)?\n\n- In $\\mathbb{R}^2$, what does rank 1 look like geometrically?\n\n- Give a sentence interpretation of rank–nullity.\n",
+          "hints": [
+            "Rank is “how many independent outputs” the matrix can produce.",
+            "Nullity is “how many input directions collapse to 0”.",
+            "Singular means some nonzero vector gets mapped to 0 or to a lower-dimensional set."
+          ]
+        },
+        {
+          "slug": "linear-algebra-07-eigenvalues-eigenvectors",
+          "title": "Eigenvalues and Eigenvectors",
+          "description": "Directions that only stretch/flip: $Av=\\lambda v$.",
+          "category": "Linear Algebra",
+          "difficulty": 1,
+          "xpReward": 165,
+          "order": 7,
+          "type": "theory",
+          "theoryContent": "## The eigen-equation\n\nAn eigenvector $v\\neq 0$ and eigenvalue $\\lambda$ satisfy\n\n$$Av=\\lambda v.$$\n\nInterpretation: $v$ points along a direction that the transformation preserves (up to scaling).\n\n### How to compute: characteristic polynomial\n\nSolve\n\n$$\\det(A-\\lambda I)=0.$$\n\nFor $2\\times 2$,\n\n$$\\det(A-\\lambda I)=\\lambda^2-(\\mathrm{tr}\\,A)\\lambda+\\det(A).$$\n\nSo eigenvalues depend only on trace and determinant.\n\n### Interactive lab\n\n```interactive\n\n{\n  \"kind\": \"eigen2x2\",\n  \"title\": \"Eigenvalues (2×2) from trace/det\",\n  \"A\": [\n    [\n      2,\n      1\n    ],\n    [\n      1,\n      2\n    ]\n  ]\n}\n\n```\n\nUse the matrix transform visualizer and look for directions that keep their line (eigenvectors).\n\n```matrix-transform\n\n{\n  \"initialMatrix\": [\n    [\n      2,\n      1\n    ],\n    [\n      1,\n      2\n    ]\n  ],\n  \"initialVector\": {\n    \"x\": 1,\n    \"y\": 0\n  }\n}\n\n```\n\n### Quick checks\n\n- If $A$ is a pure rotation by 45°, why do you expect no real eigenvectors?\n\n- For symmetric $A$, what special property do eigenvectors have (orthogonality)?\n\n- If $A$ has two independent eigenvectors, what form can you write $A$ in?\n",
+          "hints": [
+            "Rotation matrices have complex eigenvalues unless rotation is 0° or 180°.",
+            "Symmetric matrices have real eigenvalues and orthogonal eigenvectors.",
+            "Diagonalization is $A=PDP^{-1}$ when enough eigenvectors exist."
+          ]
+        },
+        {
+          "slug": "linear-algebra-08-orthogonality-projections",
+          "title": "Orthogonality, Projections, and Best Approximation",
+          "description": "Orthogonal decomposition and why projections solve “closest point” problems.",
+          "category": "Linear Algebra",
+          "difficulty": 1,
+          "xpReward": 165,
+          "order": 8,
+          "type": "theory",
+          "theoryContent": "## Orthogonality is structure\n\nA set $\\{q_1,\\dots,q_k\\}$ is orthonormal if $q_i\\cdot q_j=\\delta_{ij}$.\n\nWhen you have an orthonormal basis, coordinates become dot products:\n\n$$x=\\sum_{i=1}^k (x\\cdot q_i)q_i.$$\n\n### Projection revisited (subspace version)\n\nIf $Q$ has orthonormal columns spanning a subspace $V$, then the projection onto $V$ is\n\n$$\\mathrm{proj}_V(x)=QQ^Tx.$$\n\nThe residual $x-\\mathrm{proj}_V(x)$ is orthogonal to $V$.\n\n### Interactive lab\n\n```interactive\n\n{\n  \"kind\": \"dot2D\",\n  \"title\": \"Make vectors orthogonal\",\n  \"u\": [\n    2,\n    1\n  ],\n  \"v\": [\n    1,\n    -2\n  ]\n}\n\n```\n\nTry a reflection: reflections preserve lengths but flip orientation (det = -1).\n\n```matrix-transform\n\n{\n  \"initialPreset\": \"reflectX\",\n  \"initialVector\": {\n    \"x\": 2,\n    \"y\": 1\n  }\n}\n\n```\n\n### Quick checks\n\n- If $q_1,q_2$ are orthonormal, compute the projection of $x$ onto their span.\n\n- Why does orthogonality make least squares solvable with dot products?\n\n- Show $\\|x\\|^2=\\|\\mathrm{proj}_V(x)\\|^2+\\|x-\\mathrm{proj}_V(x)\\|^2$ (Pythagoras).\n",
+          "hints": [
+            "Orthonormal means dot products are 0 off-diagonal and 1 on-diagonal.",
+            "Projections are best approximations because the error is orthogonal.",
+            "Think of decomposing x into parallel + perpendicular components."
+          ]
+        },
+        {
+          "slug": "linear-algebra-09-least-squares-normal-equations",
+          "title": "Least Squares and the Normal Equations (2D intuition)",
+          "description": "When Ax=b is inconsistent, solve the “closest” problem instead.",
+          "category": "Linear Algebra",
+          "difficulty": 1,
+          "xpReward": 170,
+          "order": 9,
+          "type": "theory",
+          "theoryContent": "## The problem\n\nIf $Ax=b$ has no exact solution, we instead minimize the squared error:\n\n$$\\min_x \\|Ax-b\\|^2.$$\n\nThe minimizer $\\hat x$ solves the **normal equations**:\n\n$$A^TA\\hat x=A^Tb.$$\n\nGeometric meaning: $A\\hat x$ is the projection of $b$ onto the column space of $A$.\n\n### 2×2 lab (a gentle gateway)\n\nWhen $A$ is invertible, the normal equations reduce to the usual solution. Use this as a sanity check.\n\n```interactive\n\n{\n  \"kind\": \"linearSystem2x2\",\n  \"title\": \"Solve Ax=b (invertible case as baseline)\",\n  \"A\": [\n    [\n      1,\n      1\n    ],\n    [\n      1,\n      2\n    ]\n  ],\n  \"b\": [\n    2,\n    3\n  ]\n}\n\n```\n\nNow interpret columns as spanning directions: changing columns changes what can be fit.\n\n```matrix-transform\n\n{\n  \"initialMatrix\": [\n    [\n      1,\n      1\n    ],\n    [\n      1,\n      2\n    ]\n  ],\n  \"initialVector\": {\n    \"x\": 1,\n    \"y\": 1\n  }\n}\n\n```\n\n### Quick checks\n\n- Why is $A^TA$ always symmetric?\n\n- If columns of $A$ are independent, why is $A^TA$ invertible?\n\n- What does it mean geometrically that $A^T(A\\hat x-b)=0$?\n",
+          "hints": [
+            "Differentiate \\|Ax-b\\|^2 with respect to x to get normal equations.",
+            "A^T(Ax-b)=0 says residual is orthogonal to column space.",
+            "A^TA is positive semidefinite; positive definite if columns independent."
+          ]
+        },
+        {
+          "slug": "linear-algebra-10-symmetric-matrices-quadratic-forms",
+          "title": "Symmetric Matrices and Quadratic Forms",
+          "description": "Eigenvalues as curvature: $x^TAx$ and principal directions.",
+          "category": "Linear Algebra",
+          "difficulty": 1,
+          "xpReward": 175,
+          "order": 10,
+          "type": "theory",
+          "theoryContent": "## Quadratic forms\n\nGiven symmetric $A$, the scalar\n\n$$q(x)=x^TAx$$\n\ndescribes “curvature” and energy-like quantities.\n\nA key theorem: symmetric matrices have an orthonormal eigenbasis, and\n\n$$A=Q\\Lambda Q^T,$$\n\nso\n\n$$x^TAx=(Q^Tx)^T\\Lambda(Q^Tx)=\\sum_{i=1}^n \\lambda_i y_i^2.$$\n\nThis is why eigenvalues control whether $q(x)$ is always positive/negative/indefinite.\n\n### Interactive lab\n\n```interactive\n\n{\n  \"kind\": \"eigen2x2\",\n  \"title\": \"Eigenvalues of a symmetric matrix\",\n  \"A\": [\n    [\n      3,\n      1\n    ],\n    [\n      1,\n      2\n    ]\n  ]\n}\n\n```\n\n### Quick checks\n\n- If all eigenvalues are positive, what can you say about $x^TAx$?\n\n- Why do symmetric matrices have real eigenvalues?\n\n- How does diagonalization simplify computing $A^k$?\n",
+          "hints": [
+            "Positive definite iff all eigenvalues > 0.",
+            "Symmetric implies orthogonal diagonalization.",
+            "In the eigenbasis, A acts like scaling by \\lambda_i on each coordinate axis."
+          ]
+        }
+      ]
+    },
+    {
+      "course": {
+        "title": "Calculus I",
+        "slug": "calculus-1",
+        "description": "Limits → derivatives → integrals, with a focus on meaning, estimation, and the Fundamental Theorem of Calculus.",
+        "icon": "FunctionSquare",
+        "order": 21
+      },
+      "challenges": [
+        {
+          "slug": "calculus-1-01-limits-continuity",
+          "title": "Limits and Continuity",
+          "description": "Approach a point from both sides: the idea behind $\\lim_{x\\to a} f(x)$.",
+          "category": "Calculus I",
+          "difficulty": 1,
+          "xpReward": 140,
+          "order": 1,
+          "type": "theory",
+          "theoryContent": "## The central question\n\nA limit asks: what does $f(x)$ approach as $x$ gets close to $a$?\n\n$$\\lim_{x\\to a} f(x)=L$$\n\nmeans: make $f(x)$ as close to $L$ as we want by taking $x$ sufficiently close to $a$ (but not equal).\n\n### (Optional) epsilon–delta definition\n\n$$\\forall\\varepsilon>0\\ \\exists\\delta>0\\ \\text{s.t. }0<|x-a|<\\delta\\Rightarrow |f(x)-L|<\\varepsilon.$$\n\nThis is the “programmable” definition: it’s a specification, not a trick.\n\n### Continuity\n\n$f$ is continuous at $a$ if\n\n$$\\lim_{x\\to a} f(x)=f(a).$$\n\n### Interactive lab: a limit table\n\n```interactive\n\n{\n  \"kind\": \"limitTable\",\n  \"title\": \"Look at f(a±h) as h→0\",\n  \"function\": \"sin(x)\",\n  \"a\": 0\n}\n\n```\n\n### Quick checks\n\n- Compute $\\lim_{x\\to 0} \\frac{\\sin x}{x}$ (a famous one) and explain why it matters.\n\n- Give an example where the limit exists but $f(a)$ is undefined.\n\n- Give an example where $f(a)$ exists but the limit does not.\n",
+          "hints": [
+            "Limits care about *nearby* x-values, not the value at a.",
+            "Two-sided limit exists iff left and right limits match.",
+            "Continuity is “limit equals value”."
+          ]
+        },
+        {
+          "slug": "calculus-1-02-derivative-definition",
+          "title": "Derivatives from First Principles",
+          "description": "Instantaneous rate of change: $f'(a)=\\lim_{h\\to 0}\\frac{f(a+h)-f(a)}{h}$.",
+          "category": "Calculus I",
+          "difficulty": 1,
+          "xpReward": 150,
+          "order": 2,
+          "type": "theory",
+          "theoryContent": "## The derivative is a limit\n\nThe derivative at $x=a$ is defined by\n\n$$f'(a)=\\lim_{h\\to 0}\\frac{f(a+h)-f(a)}{h}.$$\n\nInterpretations:\n\n- **Slope** of the tangent line.\n\n- **Instantaneous rate** (velocity, marginal cost, etc.).\n\n### Rules (to be justified, then used)\n\nIf $c$ is constant:\n\n- $(c)'=0$\n\n- $(x^n)'=nx^{n-1}$ (power rule)\n\n- $(f+g)'=f'+g'$\n\n- $(fg)'=f'g+fg'$ (product rule)\n\n- $\\left(\\frac{f}{g}\\right)'=\\frac{f'g-fg'}{g^2}$ (quotient rule)\n\n- $(f\\circ g)'=(f'\\circ g)\\cdot g'$ (chain rule)\n\n### Interactive lab: difference quotient\n\n```interactive\n\n{\n  \"kind\": \"derivativeDQ\",\n  \"title\": \"Watch DQ → f'(x0) as h→0\",\n  \"function\": \"x^2\",\n  \"x0\": 1,\n  \"h\": 0.1\n}\n\n```\n\n### Quick checks\n\n- Use the definition to compute the derivative of $f(x)=x^2$ at $x=1$.\n\n- Why does decreasing $h$ too far sometimes cause numerical issues (roundoff)?\n\n- Give a physical example where derivative makes sense.\n",
+          "hints": [
+            "The derivative is a *limit* of slopes of secant lines.",
+            "Use algebra to simplify the difference quotient before taking h→0.",
+            "Chain rule handles “inside functions”."
+          ]
+        },
+        {
+          "slug": "calculus-1-03-derivative-applications",
+          "title": "Derivative Applications: Optimization and Linearization",
+          "description": "Use $f'(x)=0$ and sign changes to locate extrema; approximate locally with tangent lines.",
+          "category": "Calculus I",
+          "difficulty": 1,
+          "xpReward": 155,
+          "order": 3,
+          "type": "theory",
+          "theoryContent": "## Optimization recipe\n\nTo maximize/minimize $f$ on an interval:\n\n1) Find critical points where $f'(x)=0$ or $f'$ undefined.\n2) Check endpoints.\n3) Compare values.\n\nSecond derivative intuition:\n\n$$f''(x)>0\\Rightarrow \\text{concave up (min-ish)},\\qquad f''(x)<0\\Rightarrow \\text{concave down (max-ish)}.$$\n\n## Linearization (tangent-line approximation)\n\nNear $x=a$:\n\n$$f(x)\\approx f(a)+f'(a)(x-a).$$\n\nThis is the first-order Taylor polynomial.\n\n### Interactive lab: local slope at different x0\n\n```interactive\n\n{\n  \"kind\": \"derivativeDQ\",\n  \"title\": \"Try different x0 and h\",\n  \"function\": \"x^3\",\n  \"x0\": 1,\n  \"h\": 0.2\n}\n\n```\n\n### Quick checks\n\n- Use linearization to approximate $\\sqrt{4.1}$ using $f(x)=\\sqrt{x}$ at $a=4$.\n\n- Explain why $f'(x)=0$ is necessary (but not sufficient) for a local extremum.\n\n- Give an example where $f'(x)=0$ but there is no extremum (an inflection point).\n",
+          "hints": [
+            "Linearization is just the tangent line.",
+            "Critical points also include where derivative does not exist.",
+            "Always check endpoints on closed intervals."
+          ]
+        },
+        {
+          "slug": "calculus-1-04-accumulation-and-integral",
+          "title": "Integrals as Accumulation",
+          "description": "Area under a curve via limits of sums: $\\int_a^b f(x)\\,dx$.",
+          "category": "Calculus I",
+          "difficulty": 1,
+          "xpReward": 155,
+          "order": 4,
+          "type": "theory",
+          "theoryContent": "## Riemann sums\n\nPartition $[a,b]$ into $n$ pieces of width $\\Delta x=\\frac{b-a}{n}$ and choose sample points $x_i^*$. Then\n\n$$\\sum_{i=1}^n f(x_i^*)\\,\\Delta x$$\n\napproximates the accumulated quantity (area if $f\\ge 0$).\n\nThe definite integral is the limit (when it exists):\n\n$$\\int_a^b f(x)\\,dx=\\lim_{n\\to\\infty}\\sum_{i=1}^n f(x_i^*)\\,\\Delta x.$$\n\n### Properties\n\n- Linearity: $\\int (af+bg)=a\\int f + b\\int g$.\n- Additivity: $\\int_a^b f=\\int_a^c f+\\int_c^b f$.\n\n### Interactive lab: Riemann sums\n\n```interactive\n\n{\n  \"kind\": \"riemannSum\",\n  \"title\": \"Approximate an integral\",\n  \"function\": \"x^2\",\n  \"a\": 0,\n  \"b\": 1,\n  \"n\": 10,\n  \"method\": \"midpoint\"\n}\n\n```\n\n### Quick checks\n\n- Compute $\\int_0^1 x\\,dx$ by geometry and compare to a Riemann sum.\n\n- If $f$ can be negative, what does $\\int_a^b f$ represent?\n\n- Why does increasing $n$ usually improve the approximation?\n",
+          "hints": [
+            "Integral is a limit of sums.",
+            "Negative area counts with a minus sign (signed area).",
+            "Midpoint rules often converge faster than left/right."
+          ]
+        },
+        {
+          "slug": "calculus-1-05-fundamental-theorem",
+          "title": "The Fundamental Theorem of Calculus",
+          "description": "Derivatives and integrals are inverse processes (under hypotheses).",
+          "category": "Calculus I",
+          "difficulty": 1,
+          "xpReward": 160,
+          "order": 5,
+          "type": "theory",
+          "theoryContent": "## FTC Part I (accumulation has a derivative)\n\nDefine\n\n$$F(x)=\\int_a^x f(t)\\,dt.$$\n\nThen (under mild conditions) $F'(x)=f(x)$.\n\n## FTC Part II (evaluate integrals with antiderivatives)\n\nIf $F'=f$, then\n\n$$\\int_a^b f(x)\\,dx = F(b)-F(a).$$\n\nThis converts geometry/accumulation into algebra.\n\n### Interactive lab: approximate vs exact intuition\n\n```interactive\n\n{\n  \"kind\": \"riemannSum\",\n  \"title\": \"Try sin(x) on [0, π]\",\n  \"function\": \"sin(x)\",\n  \"a\": 0,\n  \"b\": 3.1415926535,\n  \"n\": 20,\n  \"method\": \"midpoint\"\n}\n\n```\n\nYou should expect $\\int_0^{\\pi} \\sin x\\,dx=2$ because an antiderivative is $-\\cos x$:\n\n$$\\int_0^{\\pi}\\sin x\\,dx=[-\\cos x]_0^{\\pi}=(-\\cos\\pi)-(-\\cos 0)=1-(-1)=2.$$\n\n### Quick checks\n\n- Explain (in words) why Part I implies Part II.\n- If $f$ is discontinuous, what can go wrong?\n- Differentiate $F(x)=\\int_1^x t^3\\,dt$.\n",
+          "hints": [
+            "Part I: the accumulation function changes at rate f.",
+            "Part II: antiderivative evaluates net accumulation.",
+            "Be careful with variable names inside integrals."
+          ]
+        },
+        {
+          "slug": "calculus-1-06-average-value-area-between",
+          "title": "Applications of Integrals: Average Value and Area",
+          "description": "Compute mean values and areas between curves with definite integrals.",
+          "category": "Calculus I",
+          "difficulty": 1,
+          "xpReward": 160,
+          "order": 6,
+          "type": "theory",
+          "theoryContent": "## Average value\n\nThe average value of $f$ on $[a,b]$ is\n\n$$f_{\\text{avg}}=\\frac{1}{b-a}\\int_a^b f(x)\\,dx.$$\n\n## Area between curves\n\nIf $f(x)\\ge g(x)$ on $[a,b]$, then\n\n$$\\text{Area}=\\int_a^b (f(x)-g(x))\\,dx.$$\n\n### Interactive lab: average value intuition\n\nApproximate $\\int_0^1 x^2\\,dx$ and then compute $f_{\\text{avg}}$.\n\n```interactive\n\n{\n  \"kind\": \"riemannSum\",\n  \"title\": \"Riemann sum for x^2\",\n  \"function\": \"x^2\",\n  \"a\": 0,\n  \"b\": 1,\n  \"n\": 50,\n  \"method\": \"midpoint\"\n}\n\n```\n\nExact value is $\\int_0^1 x^2\\,dx=\\frac{1}{3}$, so $f_{\\text{avg}}=\\frac{1}{1-0}\\cdot\\frac{1}{3}=\\frac{1}{3}$.\n\n### Quick checks\n\n- If $f$ is constant, does $f_{\\text{avg}}$ equal that constant?\n- Interpret average value physically (average velocity, average density).\n- Why must you ensure which curve is on top for area?\n",
+          "hints": [
+            "Average value is “total / length of interval”.",
+            "Area between curves is integral of top minus bottom.",
+            "If curves cross, split the interval at intersection points."
+          ]
+        },
+        {
+          "slug": "calculus-1-07-sequences-series-intro",
+          "title": "Sequences and Infinite Series (Intro)",
+          "description": "Convergence as a limit; series as sums of sequences of partial sums.",
+          "category": "Calculus I",
+          "difficulty": 1,
+          "xpReward": 165,
+          "order": 7,
+          "type": "theory",
+          "theoryContent": "## Sequences\n\nA sequence $(a_n)$ converges to $L$ if\n\n$$\\lim_{n\\to\\infty} a_n=L.$$\n\n## Series\n\nA series is the limit of partial sums:\n\n$$\\sum_{n=1}^{\\infty} a_n\\quad\\text{converges if}\\quad S_N=\\sum_{n=1}^N a_n\\ \\text{converges as }N\\to\\infty.$$\n\nNecessary condition: if $\\sum a_n$ converges, then $a_n\\to 0$.\n\n### Geometric series (the key example)\n\n$$\\sum_{n=0}^{\\infty} ar^n=\\frac{a}{1-r}\\quad (|r|<1).$$\n\n### Interactive lab: Taylor/Maclaurin previews\n\nMany functions are represented by infinite series near 0. Explore how partial sums improve.\n\n```interactive\n\n{\n  \"kind\": \"taylor\",\n  \"title\": \"Partial sums as approximations\",\n  \"function\": \"exp(x)\",\n  \"degree\": 4,\n  \"x\": 1\n}\n\n```\n\n### Quick checks\n\n- Why does $a_n\\to 0$ not guarantee $\\sum a_n$ converges? (Give a counterexample.)\n- Compute $\\sum_{n=0}^\\infty (1/2)^n$.\n- What does convergence mean in terms of error $|S_N-S|$?\n",
+          "hints": [
+            "Harmonic series: a_n→0 but diverges.",
+            "Geometric series has a closed form.",
+            "Partial sums give successive approximations to the infinite sum."
+          ]
+        },
+        {
+          "slug": "calculus-1-08-taylor-series",
+          "title": "Taylor Polynomials and Series",
+          "description": "Approximate functions locally with polynomials; quantify error.",
+          "category": "Calculus I",
+          "difficulty": 1,
+          "xpReward": 165,
+          "order": 8,
+          "type": "theory",
+          "theoryContent": "## Taylor polynomial\n\nThe degree-$n$ Taylor polynomial of $f$ at $a$ is\n\n$$T_n(x)=\\sum_{k=0}^n \\frac{f^{(k)}(a)}{k!}(x-a)^k.$$\n\nMaclaurin is the special case $a=0$.\n\n### Why it works\n\nNear $x=a$, higher powers $(x-a)^k$ get small fast, so a polynomial can approximate $f$ with controllable error.\n\n### Interactive lab\n\n```interactive\n\n{\n  \"kind\": \"taylor\",\n  \"title\": \"Approximate sin(x) with Taylor polynomials\",\n  \"function\": \"sin(x)\",\n  \"degree\": 5,\n  \"x\": 1\n}\n\n```\n\n### Quick checks\n\n- Write the degree-2 Taylor polynomial of $e^x$ at $0$.\n- For $\\ln(1+x)$, why do we require $|x|<1$ for the series?\n- Interpret the remainder term (error) conceptually.\n",
+          "hints": [
+            "Taylor coefficients are derivatives at the center point.",
+            "Maclaurin series are around 0.",
+            "Convergence can depend on x; radius of convergence matters."
+          ]
+        },
+        {
+          "slug": "calculus-1-09-improper-integrals",
+          "title": "Improper Integrals (Conceptual Preview)",
+          "description": "When intervals are infinite or integrands blow up, use limits again.",
+          "category": "Calculus I",
+          "difficulty": 1,
+          "xpReward": 170,
+          "order": 9,
+          "type": "theory",
+          "theoryContent": "## Improper integrals are limits\n\nType I (infinite interval):\n\n$$\\int_a^{\\infty} f(x)\\,dx:=\\lim_{b\\to\\infty}\\int_a^b f(x)\\,dx.$$\n\nType II (vertical asymptote):\n\n$$\\int_a^b f(x)\\,dx:=\\lim_{t\\to a^+}\\int_t^b f(x)\\,dx$$\n\nwhen $f$ blows up near $a$.\n\n### Interactive lab: compare finite approximations\n\nTry an exponentially decaying function: the tail should contribute less and less.\n\n```interactive\n\n{\n  \"kind\": \"riemannSum\",\n  \"title\": \"Approximate ∫_0^2 e^x dx (then think about tails)\",\n  \"function\": \"exp(x)\",\n  \"a\": 0,\n  \"b\": 2,\n  \"n\": 40,\n  \"method\": \"midpoint\"\n}\n\n```\n\n### Quick checks\n\n- Why do we *define* improper integrals via limits rather than a new notion?\n- Give an example of a divergent improper integral.\n- Compute $\\int_1^{\\infty} \\frac{1}{x^2}\\,dx$.\n",
+          "hints": [
+            "Improper integrals convert “infinite” into a limit over finite bounds.",
+            "Convergence depends on tail behavior (e.g., p-integrals).",
+            "Always evaluate the limit; the antiderivative alone is not enough."
+          ]
+        },
+        {
+          "slug": "calculus-1-10-differential-equations-preview",
+          "title": "Differential Equations (First Taste)",
+          "description": "Solve simple separable growth laws; connect to exponentials.",
+          "category": "Calculus I",
+          "difficulty": 1,
+          "xpReward": 170,
+          "order": 10,
+          "type": "theory",
+          "theoryContent": "## A separable prototype\n\nThe differential equation\n\n$$\\frac{dy}{dx}=ky$$\n\nmodels growth/decay (population, radioactive decay, continuous compounding).\n\nSeparate variables (heuristically):\n\n$$\\frac{1}{y}\\,dy=k\\,dx$$\n\nIntegrate:\n\n$$\\ln|y|=kx+C\\quad\\Rightarrow\\quad y=Ce^{kx}.$$\n\n### Interactive lab: exponential derivative check\n\nThe defining property of $e^x$ is that its derivative is itself.\n\n```interactive\n\n{\n  \"kind\": \"derivativeDQ\",\n  \"title\": \"Check that d/dx e^x = e^x numerically\",\n  \"function\": \"exp(x)\",\n  \"x0\": 0,\n  \"h\": 0.1\n}\n\n```\n\n### Quick checks\n\n- Solve $y'=2y$ with initial condition $y(0)=3$.\n- Explain why $\\ln|y|$ appears when integrating $\\frac{1}{y}$.\n- How does the sign of k affect long-term behavior?\n",
+          "hints": [
+            "Separable means you can rearrange to y-terms on one side, x-terms on the other.",
+            "Integrating 1/y gives ln|y|.",
+            "Initial conditions determine the constant C."
+          ]
+        }
+      ]
+    },
+    {
+      "course": {
+        "title": "Probability",
+        "slug": "probability",
+        "description": "Axioms, counting, conditional probability, random variables, and normal intuition — with simulations and Bayes.",
+        "icon": "Dice5",
+        "order": 22
+      },
+      "challenges": [
+        {
+          "slug": "probability-01-axioms-events",
+          "title": "Probability Axioms and Events",
+          "description": "Sample spaces, events, and the Kolmogorov axioms.",
+          "category": "Probability",
+          "difficulty": 1,
+          "xpReward": 140,
+          "order": 1,
+          "type": "theory",
+          "theoryContent": "## The model\n\nA probability space $(\\Omega,\\mathcal{F},\\Pr)$ consists of:\n\n- sample space $\\Omega$ (all outcomes)\n- events $A\\in\\mathcal{F}$ (sets of outcomes)\n- probability measure $\\Pr$ satisfying axioms\n\n### Axioms\n\n1) $\\Pr(A)\\ge 0$\n2) $\\Pr(\\Omega)=1$\n3) If $A_i$ are disjoint then $\\Pr(\\cup_i A_i)=\\sum_i \\Pr(A_i)$\n\nUseful consequences:\n\n$$\\Pr(A^c)=1-\\Pr(A),\\qquad \\Pr(A\\cup B)=\\Pr(A)+\\Pr(B)-\\Pr(A\\cap B).$$\n\n### Interactive lab: simulate frequencies\n\nRun a Bernoulli simulation and watch how the empirical frequency $\\hat p$ concentrates near $p$ as n increases.\n\n```interactive\n\n{\n  \"kind\": \"bernoulliSim\",\n  \"title\": \"Empirical frequency as probability\",\n  \"p\": 0.3,\n  \"n\": 50,\n  \"trials\": 400\n}\n\n```\n\n### Quick checks\n\n- If $A$ and $B$ are disjoint, what is $\\Pr(A\\cap B)$?\n- If $\\Pr(A)=0.2$, what is $\\Pr(A^c)$?\n- Explain why additivity implies $\\Pr(\\emptyset)=0$.\n",
+          "hints": [
+            "Events are sets; probability is a function on sets.",
+            "Complement rule is immediate from additivity.",
+            "Simulation: relative frequency stabilizes as sample size grows."
+          ]
+        },
+        {
+          "slug": "probability-02-counting-combinations",
+          "title": "Counting: Permutations, Combinations, and Binomial Coefficients",
+          "description": "Counting is probability’s engine: $\\binom{n}{k}$ and friends.",
+          "category": "Probability",
+          "difficulty": 1,
+          "xpReward": 150,
+          "order": 2,
+          "type": "theory",
+          "theoryContent": "## Two counting principles\n\n- **Rule of product:** if a choice has $m$ options then another has $n$, total $mn$.\n- **Rule of sum:** disjoint cases add.\n\n### Binomial coefficient\n\n$$\\binom{n}{k}=\\frac{n!}{k!(n-k)!}$$\n\ncounts the number of size-$k$ subsets of an $n$-element set.\n\nBinomial theorem:\n\n$$(p+(1-p))^n=\\sum_{k=0}^n \\binom{n}{k}p^k(1-p)^{n-k}=1.$$\n\n### Interactive lab: see the PMF emerge from counting\n\n```interactive\n\n{\n  \"kind\": \"binomial\",\n  \"title\": \"Binomial PMF from combinations\",\n  \"n\": 10,\n  \"p\": 0.5\n}\n\n```\n\n### Quick checks\n\n- Interpret $\\binom{n}{k}$ as “choose positions of successes”.\n- Why do probabilities over k sum to 1?\n- Compute $\\binom{5}{2}$.\n",
+          "hints": [
+            "n! counts permutations; divide by k!(n-k)! to ignore order within groups.",
+            "Binomial theorem ensures PMF sums to 1.",
+            "In binomial trials, only the count of successes matters (exchangeability)."
+          ]
+        },
+        {
+          "slug": "probability-03-conditional-independence",
+          "title": "Conditional Probability and Independence",
+          "description": "Update probabilities with information: $\\Pr(A\\mid B)$.",
+          "category": "Probability",
+          "difficulty": 1,
+          "xpReward": 155,
+          "order": 3,
+          "type": "theory",
+          "theoryContent": "## Definition\n\nIf $\\Pr(B)>0$:\n\n$$\\Pr(A\\mid B)=\\frac{\\Pr(A\\cap B)}{\\Pr(B)}.$$\n\nMultiplication rule:\n\n$$\\Pr(A\\cap B)=\\Pr(A\\mid B)\\Pr(B).$$\n\n### Independence\n\n$A$ and $B$ are independent if\n\n$$\\Pr(A\\cap B)=\\Pr(A)\\Pr(B)$$\n\nequivalently $\\Pr(A\\mid B)=\\Pr(A)$ (when defined).\n\n### Interactive lab (Bayes preview)\n\nPlay with priors and false positives to see why conditioning can dramatically change belief.\n\n```interactive\n\n{\n  \"kind\": \"bayes\",\n  \"title\": \"Conditioning changes belief\",\n  \"prior\": 0.02,\n  \"sensitivity\": 0.95,\n  \"specificity\": 0.98\n}\n\n```\n\n### Quick checks\n\n- Show that if $A$ and $B$ are independent, then $A$ and $B^c$ are independent.\n- Explain why independence is stronger than “disjoint”.\n- Compute $\\Pr(A\\cap B)$ from $\\Pr(A\\mid B)$ and $\\Pr(B)$.\n",
+          "hints": [
+            "Conditional probability is “restrict sample space to B”.",
+            "Disjoint events cannot both happen; independent events can.",
+            "Use the multiplication rule to move between joint and conditional probabilities."
+          ]
+        },
+        {
+          "slug": "probability-04-bayes-theorem",
+          "title": "Bayes' Theorem",
+          "description": "Flip conditioning: $\\Pr(A\\mid B)$ from $\\Pr(B\\mid A)$.",
+          "category": "Probability",
+          "difficulty": 1,
+          "xpReward": 155,
+          "order": 4,
+          "type": "theory",
+          "theoryContent": "## The identity\n\n$$\\Pr(A\\mid B)=\\frac{\\Pr(B\\mid A)\\Pr(A)}{\\Pr(B)}.$$\n\nLaw of total probability (partition $\\{A, A^c\\}$):\n\n$$\\Pr(B)=\\Pr(B\\mid A)\\Pr(A)+\\Pr(B\\mid A^c)\\Pr(A^c).$$\n\nCombine them to get the famous formula.\n\n### Interactive lab: medical test paradox\n\n```interactive\n\n{\n  \"kind\": \"bayes\",\n  \"title\": \"Posterior after a positive test\",\n  \"prior\": 0.01,\n  \"sensitivity\": 0.95,\n  \"specificity\": 0.98\n}\n\n```\n\n### Quick checks\n\n- Explain in words: why does a tiny prior dominate posteriors?\n- If specificity increases, what happens to false positives?\n- Derive Bayes' rule from $\\Pr(A\\cap B)$ written two ways.\n",
+          "hints": [
+            "Write P(A∩B)=P(A|B)P(B)=P(B|A)P(A).",
+            "P(B) aggregates all ways B can happen.",
+            "False positives matter when the condition is rare."
+          ]
+        },
+        {
+          "slug": "probability-05-random-variables-expectation",
+          "title": "Random Variables and Expectation",
+          "description": "Expectation as a weighted average; linearity as a superpower.",
+          "category": "Probability",
+          "difficulty": 1,
+          "xpReward": 160,
+          "order": 5,
+          "type": "theory",
+          "theoryContent": "## Discrete expectation\n\nIf $X$ takes values $x_i$ with probabilities $p_i$,\n\n$$\\mathbb{E}[X]=\\sum_i x_i p_i.$$\n\nLinearity (always true, no independence needed):\n\n$$\\mathbb{E}[aX+bY]=a\\mathbb{E}[X]+b\\mathbb{E}[Y].$$\n\n### Example: binomial\n\nIf $X\\sim\\mathrm{Bin}(n,p)$ then $\\mathbb{E}[X]=np$.\n\n### Interactive lab\n\n```interactive\n\n{\n  \"kind\": \"binomial\",\n  \"title\": \"Watch mean scale like np\",\n  \"n\": 20,\n  \"p\": 0.3\n}\n\n```\n\n### Quick checks\n\n- Compute $\\mathbb{E}[X]$ for a fair die.\n- Explain why linearity is so useful.\n- For $X\\sim\\mathrm{Bin}(n,p)$, why is expectation $np$ intuitive?\n",
+          "hints": [
+            "Expectation is a weighted average.",
+            "Linearity lets you break complicated X into sums of simpler pieces.",
+            "A binomial is a sum of n Bernoulli trials; expected successes add."
+          ]
+        },
+        {
+          "slug": "probability-06-variance-spread",
+          "title": "Variance: Measuring Spread",
+          "description": "Variance is the average squared deviation: $\\mathrm{Var}(X)=\\mathbb{E}[(X-\\mu)^2]$.",
+          "category": "Probability",
+          "difficulty": 1,
+          "xpReward": 160,
+          "order": 6,
+          "type": "theory",
+          "theoryContent": "## Definition and identities\n\nLet $\\mu=\\mathbb{E}[X]$. Then\n\n$$\\mathrm{Var}(X)=\\mathbb{E}[(X-\\mu)^2]=\\mathbb{E}[X^2]-\\mu^2.$$\n\nScaling:\n\n$$\\mathrm{Var}(aX+b)=a^2\\mathrm{Var}(X).$$\n\nFor $X\\sim\\mathrm{Bin}(n,p)$:\n\n$$\\mathrm{Var}(X)=np(1-p).$$\n\n### Interactive lab\n\n```interactive\n\n{\n  \"kind\": \"binomial\",\n  \"title\": \"See how variance changes with p\",\n  \"n\": 30,\n  \"p\": 0.5\n}\n\n```\n\n### Quick checks\n\n- Why does variance scale with $a^2$?\n- When is binomial variance largest for fixed n?\n- Compare standard deviation to variance (units).\n",
+          "hints": [
+            "Variance has squared units; standard deviation fixes units.",
+            "For binomial, spread is biggest near p=0.5.",
+            "E[X^2]-E[X]^2 is often easiest to compute."
+          ]
+        },
+        {
+          "slug": "probability-07-law-of-large-numbers",
+          "title": "Law of Large Numbers (LLN)",
+          "description": "Averages stabilize: $\\hat p\\to p$ as $n\\to\\infty$ (in probability).",
+          "category": "Probability",
+          "difficulty": 1,
+          "xpReward": 165,
+          "order": 7,
+          "type": "theory",
+          "theoryContent": "## The statement (informal)\n\nIf $X_1,X_2,\\dots$ are i.i.d. with mean $\\mu$, then the sample average\n\n$$\\bar X_n=\\frac{1}{n}\\sum_{i=1}^n X_i$$\n\ngets close to $\\mu$ for large $n$.\n\nFor Bernoulli trials, this is the intuition behind “frequency = probability”.\n\n### Interactive lab\n\nIncrease n and watch the variance shrink like $\\frac{1}{n}$.\n\n```interactive\n\n{\n  \"kind\": \"bernoulliSim\",\n  \"title\": \"LLN: concentrate around p\",\n  \"p\": 0.3,\n  \"n\": 200,\n  \"trials\": 600\n}\n\n```\n\n### Quick checks\n\n- If variance shrinks like $1/n$, what happens to standard deviation?\n- Why does LLN not say *how fast* convergence is?\n- Give an everyday example where LLN explains stability.\n",
+          "hints": [
+            "Std dev scales like 1/sqrt(n).",
+            "Concentration results (Chernoff, Hoeffding) quantify rates.",
+            "LLN explains why averages are predictable even when single trials aren’t."
+          ]
+        },
+        {
+          "slug": "probability-08-normal-z-scores",
+          "title": "Normal Distribution and z-scores",
+          "description": "Standardize: $Z=(X-\\mu)/\\sigma$; use $\\Phi$ for probabilities.",
+          "category": "Probability",
+          "difficulty": 1,
+          "xpReward": 165,
+          "order": 8,
+          "type": "theory",
+          "theoryContent": "## The normal family\n\nWe write $X\\sim\\mathcal{N}(\\mu,\\sigma^2)$. Standardizing gives\n\n$$Z=\\frac{X-\\mu}{\\sigma}\\sim\\mathcal{N}(0,1).$$\n\nThen\n\n$$\\Pr(X\\le x)=\\Pr\\left(Z\\le \\frac{x-\\mu}{\\sigma}\\right)=\\Phi\\left(\\frac{x-\\mu}{\\sigma}\\right).$$\n\n### Interactive lab: compute a CDF value\n\n```interactive\n\n{\n  \"kind\": \"normalCdf\",\n  \"title\": \"Compute Φ(z) for a z-score\",\n  \"mu\": 0,\n  \"sigma\": 1,\n  \"x\": 1.96\n}\n\n```\n\n### Quick checks\n\n- What is $\\Pr(|Z|\\le 1.96)$ approximately?\n- Why does scaling by $\\sigma$ change units?\n- Interpret z as “how many standard deviations from the mean”.\n",
+          "hints": [
+            "Standardizing turns any normal into the standard normal.",
+            "Two-sided probability uses symmetry: P(|Z|≤a)=2Φ(a)-1.",
+            "z-score is unitless."
+          ]
+        },
+        {
+          "slug": "probability-09-normal-approx-binomial",
+          "title": "Normal Approximation to the Binomial",
+          "description": "For large n, $\\mathrm{Bin}(n,p)$ looks normal with mean np and variance np(1-p).",
+          "category": "Probability",
+          "difficulty": 1,
+          "xpReward": 170,
+          "order": 9,
+          "type": "theory",
+          "theoryContent": "## The approximation\n\nIf $X\\sim\\mathrm{Bin}(n,p)$ and $n$ is large (with $p$ not extreme), then\n\n$$X\\approx \\mathcal{N}(np,\\ np(1-p)).$$\n\nStandardize:\n\n$$Z\\approx \\frac{X-np}{\\sqrt{np(1-p)}}.$$\n\n### Interactive lab: compare discrete vs normal intuition\n\n```interactive\n\n{\n  \"kind\": \"binomial\",\n  \"title\": \"Binomial PMF\",\n  \"n\": 40,\n  \"p\": 0.4\n}\n\n```\n\n```interactive\n\n{\n  \"kind\": \"normalCdf\",\n  \"title\": \"Normal CDF with matching mean/variance (continuous intuition)\",\n  \"mu\": 16,\n  \"sigma\": 3.0983866769659336,\n  \"x\": 16\n}\n\n```\n\n### Quick checks\n\n- When does normal approximation fail?\n- Why does the variance contain $p(1-p)$?\n- What is a continuity correction and why might it help?\n",
+          "hints": [
+            "Approximation improves as np and n(1-p) grow.",
+            "Binomial is sum of Bernoulli trials; variance adds.",
+            "Continuity correction adjusts discrete-to-continuous mismatch."
+          ]
+        },
+        {
+          "slug": "probability-10-confidence-intervals-preview",
+          "title": "Confidence Intervals (Preview)",
+          "description": "Use normal quantiles (like 1.96) to build intervals for means/proportions.",
+          "category": "Probability",
+          "difficulty": 1,
+          "xpReward": 170,
+          "order": 10,
+          "type": "theory",
+          "theoryContent": "## The idea\n\nA (rough) 95% interval for a normal mean (known $\\sigma$) looks like\n\n$$\\bar X\\pm 1.96\\,\\frac{\\sigma}{\\sqrt{n}}.$$\n\nFor a Bernoulli proportion, a common approximation is\n\n$$\\hat p\\pm 1.96\\sqrt{\\frac{\\hat p(1-\\hat p)}{n}}.$$\n\n### Interactive lab: z-critical value intuition\n\nCompute $\\Phi(1.96)$ and interpret the two-sided coverage.\n\n```interactive\n\n{\n  \"kind\": \"normalCdf\",\n  \"title\": \"Why 1.96 gives ~95% two-sided\",\n  \"mu\": 0,\n  \"sigma\": 1,\n  \"x\": 1.96\n}\n\n```\n\n### Quick checks\n\n- Why does width shrink like $1/\\sqrt{n}$?\n- What assumptions are hidden in using 1.96?\n- What is the difference between “confidence” and “probability the parameter is in the interval”?\n",
+          "hints": [
+            "Standard error scales as 1/sqrt(n).",
+            "The 1.96 comes from Φ(1.96)≈0.975 (one-sided).",
+            "Confidence is about procedure long-run coverage, not Bayesian probability."
+          ]
+        }
+      ]
+    }
+  ]
+}

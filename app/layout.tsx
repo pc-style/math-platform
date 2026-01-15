@@ -10,6 +10,7 @@ import { UserSync } from "@/components/UserSync";
 import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
 import { HomepageRedirect } from "@/components/HomepageRedirect";
 import { PWAUpdateToast } from "@/components/PWAUpdateToast";
+import { SkipToContent } from "@/components/ui/SkipLink";
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-geist-mono",
@@ -36,6 +37,7 @@ export default function RootLayout({
   return (
     <html lang="pl">
       <body className={`${jetbrainsMono.variable} antialiased`}>
+        <SkipToContent />
         <ConvexClientProvider>
           <UserSync />
           <ThemeProvider>

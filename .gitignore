@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+./gemini
 /out/
 
 # logs

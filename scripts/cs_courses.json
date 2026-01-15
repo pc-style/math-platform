@@ -1,0 +1,323 @@
+[
+  {
+    "course": {
+      "title": "System Design",
+      "slug": "system-design",
+      "description": "[Client] -> [API] -> [Cache] -> [DB] (+ async [Queue] for side effects).",
+      "icon": "Server",
+      "order": 20
+    },
+    "challenges": [
+      {
+        "slug": "system-design-requirements-and-apis",
+        "title": "Requirements → APIs (URL Shortener)",
+        "description": "Sketch the high-level architecture: [Clients] -> [Edge] -> [API] -> [DB], plus [Cache] + [Queue].",
+        "category": "System Design",
+        "difficulty": 1,
+        "xpReward": 120,
+        "order": 1,
+        "type": "theory",
+        "theoryContent": "# Requirements → APIs (URL Shortener)\n\n## Architecture (ASCII)\n\n```\n        +-----------+         +------------------+\n        |  Clients  |  HTTPS  |  Edge / CDN / LB |\n        +-----+-----+-------->+--------+---------+\n              |                        |\n              |                        v\n              |                 +------+------+\n              |                 |  API Layer  |\n              |                 +---+-----+---+\n              |                     |     |\n              |          cache hit? |     | async events\n              |                     v     v\n              |                 +---+--+  +-----------+\n              |                 |Cache|  | Queue/Bus  |\n              |                 +---+-+  +-----+-----+\n              |                     |         |\n              |                     v         v\n              |                 +---+---------+---+\n              +---------------->|    Primary DB     |\n                                +-------------------+\n```\n\n## Your task\n\nDesign a URL shortener that supports:\n- Create short link: `POST /links`\n- Resolve short link: `GET /{code}`\n- Click tracking (analytics) without slowing redirects\n- Abuse controls (rate limit + basic bot mitigation)\n\n## Deliverables\n\n1) **Requirements**: list functional + non-functional requirements (latency, availability, cost, data retention).\n2) **API contract**: request/response shapes and error codes for create + resolve.\n3) **Capacity plan**: rough QPS assumptions and what breaks first.\n4) **Component responsibilities**: what belongs in API vs cache vs DB vs queue vs analytics.\n\n## Pitfalls to address\n\n- Cache stampede on hot links (how do you prevent thundering herds?)\n- Redirect latency budget (P50/P95 target)\n- Idempotency for link creation (duplicate requests)\n- Consistency tradeoffs for click counts (exact vs approximate)\n",
+        "hints": [
+          "Start from the redirect path; optimize the hot path first.",
+          "Make click tracking async (queue + consumer) to keep redirects fast.",
+          "Define what must be strongly consistent (if anything) vs eventually consistent."
+        ]
+      },
+      {
+        "slug": "system-design-schema-url-shortener",
+        "title": "Design the Database Schema (Links + Clicks)",
+        "description": "Design a schema: [links] -> [click_events] -> [rollups]. Think indexes + retention.",
+        "category": "System Design",
+        "difficulty": 2,
+        "xpReward": 170,
+        "order": 2,
+        "type": "theory",
+        "theoryContent": "# Design the Database Schema (Links + Clicks)\n\n## Architecture (ASCII)\n\n```\n            writes                 reads\n    +----------------+      +----------------+\n    |  API: create   |----->|     links      |\n    +----------------+      +----------------+\n             |\n             | async click events\n             v\n    +----------------+      +----------------+      +----------------+\n    |  redirect API   |----->|  click_events  |----->| click_rollups  |\n    +----------------+      +----------------+      +----------------+\n```\n\n## Your task\n\nDesign a schema that supports:\n- Link creation (user-owned or anonymous)\n- Fast lookup by `code`\n- Click tracking (high write volume)\n- Analytics queries (per link, per day)\n- Data retention (e.g. keep raw clicks for 30 days, rollups for 1 year)\n\n## Deliverables\n\nPropose **tables/collections**, **primary keys**, and **indexes**. Explain:\n- How you guarantee `code` uniqueness\n- How you handle mutable metadata (title, tags, destination URL changes)\n- How you model click events vs rollups (write amplification vs query cost)\n\n## Constraints (pick and justify)\n\n- Storage: optimize for cost; raw events are large.\n- Analytics freshness: rollups can lag by up to 1 minute.\n- Delete: users can delete a link; decide what happens to click data.\n\n## Bonus: schema evolution\n\nExplain how you’d add “custom domains” later without breaking existing links.\n",
+        "hints": [
+          "Make `links(code)` a unique index; redirects must be O(1).",
+          "Store raw click events append-only; build rollups asynchronously.",
+          "Think about TTL/partitioning for click events (time-based)."
+        ]
+      },
+      {
+        "slug": "system-design-caching-and-consistency",
+        "title": "Caching, Consistency, and Cache Stampedes",
+        "description": "Avoid stampedes: [Clients] -> [Cache] -> [DB]; coordinate misses safely.",
+        "category": "System Design",
+        "difficulty": 3,
+        "xpReward": 220,
+        "order": 3,
+        "type": "theory",
+        "theoryContent": "# Caching, Consistency, and Cache Stampedes\n\n## Architecture (ASCII)\n\n```\n                   +------------------+\n  request          |  cache (hot set) |\n +------+          +---------+--------+\n |Client|--------------------| hit\n +--+---+                    v\n    |                 +-------+------+\n    | miss            |  API / app   |\n    v                 +-------+------+\n +--+---+                     |\n |Cache|<---------------------+ single-flight?\n +--+---+                     |\n    |                         v\n    +-------------------->+---+---+\n                           |  DB  |\n                           +-------+\n```\n\n## Your task\n\nYou have a hot link that suddenly becomes viral. Cache entries expire every 60 seconds.\nAt expiry, 10k clients request the same `code` at once.\n\n1) Describe the **failure mode** (what happens to API + DB).\n2) Propose **two different mitigations**, and discuss tradeoffs:\n   - single-flight / request coalescing\n   - probabilistic early refresh / jittered TTLs\n   - stale-while-revalidate\n   - negative caching for “not found”\n3) Explain what consistency you need for redirects when a destination URL changes.\n\n## Deliverables\n\n- A short write-up of your chosen strategy.\n- An updated diagram showing where coordination happens.\n",
+        "hints": [
+          "Jitter TTLs so not everything expires at the same instant.",
+          "Single-flight prevents N concurrent cache misses for the same key.",
+          "Stale-while-revalidate can cap DB load while keeping latency low."
+        ]
+      },
+      {
+        "slug": "system-design-rate-limiting-and-abuse-controls",
+        "title": "Rate Limiting + Abuse Controls",
+        "description": "Protect create/resolve: [Edge] -> [RateLimiter] -> [API]. Use token buckets.",
+        "category": "System Design",
+        "difficulty": 3,
+        "xpReward": 220,
+        "order": 4,
+        "type": "theory",
+        "theoryContent": "# Rate Limiting + Abuse Controls\n\n## Architecture (ASCII)\n\n```\n +--------+    +-----------+    +-------------------+    +-----+\n | Client | -> | Edge/LB   | -> | Rate Limit Store  | -> | API |\n +--------+    +-----------+    +-------------------+    +--+--+\n                                                         |\n                                                         v\n                                                       +--+--+\n                                                       | DB  |\n                                                       +-----+\n```\n\n## Your task\n\nYou see two abuse patterns:\n- Link creation spam (millions of create requests)\n- Redirect probing (bots scanning codes)\n\nDesign protections for:\n1) `POST /links` (creation)\n2) `GET /{code}` (redirect)\n\n## Deliverables\n\n- Pick a rate limiting algorithm (token bucket/leaky bucket/fixed window) for each path.\n- Define keying strategy (per IP, per user, per API key, per /24, per user+IP).\n- Explain what storage you use (in-memory, Redis, edge KV) and its failure modes.\n- Add one mitigation beyond rate limiting (CAPTCHA gate, email verification, proof-of-work, reputation scoring).\n\n## Bonus\n\nHow do you avoid a “distributed race” where multiple edge nodes allow the same request because state is slightly stale?\n",
+        "hints": [
+          "Creation paths need stronger identity and heavier throttling than redirects.",
+          "Favor token buckets for smooth limiting; add burst capacity.",
+          "For multi-node correctness, prefer centralized counters or bounded staleness with conservative limits."
+        ]
+      },
+      {
+        "slug": "system-design-outbox-and-analytics-schema",
+        "title": "Outbox Pattern: Schema + Race-Free Event Emission",
+        "description": "Eliminate dual-write races: [DB txn] -> [outbox] -> [publisher] -> [bus].",
+        "category": "System Design",
+        "difficulty": 4,
+        "xpReward": 280,
+        "order": 5,
+        "type": "theory",
+        "theoryContent": "# Outbox Pattern: Schema + Race-Free Event Emission\n\n## Architecture (ASCII)\n\n```\n        +------------+          +-----------------+\n        |  API (txn) |          |  Outbox Poller  |\n        +-----+------+          +--------+--------+\n              |                          |\n              | 1) write link + outbox   | 2) publish + mark sent\n              v                          v\n        +-----+--------------------------+------+\n        |              Primary DB               |\n        |  links   |   outbox_events   |  ...   |\n        +----------+-------------------+--------+\n                              |\n                              v\n                         +----+----+\n                         |  Bus    |\n                         +----+----+\n                              |\n                              v\n                        +-----+------+\n                        | Consumers  |\n                        +------------+\n```\n\n## The problem\n\nIf your API writes `links` to the DB and separately publishes an event to a message bus, you can get a **dual-write race**:\n- DB write succeeds, publish fails → missing events\n- Publish succeeds, DB write fails → phantom events\n\n## Your task (schema design + race avoidance)\n\n1) Design an `outbox_events` table/collection schema that supports:\n   - ordering per aggregate (e.g. per link)\n   - deduplication / idempotency\n   - retry tracking (attempt count, next attempt)\n   - payload versioning\n2) Describe the publisher algorithm that is safe under concurrency:\n   - how it claims work\n   - how it prevents two workers publishing the same event\n3) Explain how consumers handle duplicates (at-least-once delivery).\n\n## Deliverables\n\n- Table schema + indexes.\n- Pseudocode for publisher loop with concurrency control.\n- One concrete example of a race and how your design prevents it.\n",
+        "hints": [
+          "Use a DB transaction: write business row + outbox row atomically.",
+          "Workers can claim rows via conditional update (status=NEW → CLAIMED) or DB locks.",
+          "At-least-once means duplicates happen; consumers must be idempotent."
+        ]
+      },
+      {
+        "slug": "system-design-multi-region-failover",
+        "title": "Multi-Region Failover (Read vs Write Paths)",
+        "description": "Design failover: [Region A] <-> [Region B]; decide write authority + read replicas.",
+        "category": "System Design",
+        "difficulty": 4,
+        "xpReward": 280,
+        "order": 6,
+        "type": "theory",
+        "theoryContent": "# Multi-Region Failover (Read vs Write Paths)\n\n## Architecture (ASCII)\n\n```\n           +------------------ Global DNS ------------------+\n           |                                                |\n           v                                                v\n     +-----------+                                    +-----------+\n     | Region A  |                                    | Region B  |\n     |  API/LB   |                                    |  API/LB   |\n     +-----+-----+                                    +-----+-----+\n           |                                                |\n           v                                                v\n     +-----+-----+    async replication / log shipping +-----+-----+\n     |  DB (RW)  |<---------------------------------->|  DB (RO)  |\n     +-----------+                                    +-----------+\n```\n\n## Your task\n\nYou want redirects to be low-latency globally, but link creation must remain correct.\n\n1) Choose a topology:\n   - single-writer + read replicas\n   - multi-writer (conflict resolution)\n2) Define what happens during region outage:\n   - can users still create links?\n   - can redirects still resolve?\n3) Decide how to invalidate caches across regions on destination changes.\n\n## Deliverables\n\n- A short description of your topology and operational playbook.\n- The consistency model users will observe (e.g. “destination updates can take up to N seconds globally”).\n- One failure drill: “Region A down” timeline with expected behavior.\n",
+        "hints": [
+          "For correctness, keep a single write authority unless you truly need multi-writer.",
+          "Redirects can often tolerate eventual consistency; creations usually can’t.",
+          "Cache invalidation across regions is hard; consider short TTL + versioning."
+        ]
+      }
+    ]
+  },
+  {
+    "course": {
+      "title": "Distributed Systems",
+      "slug": "distributed-systems",
+      "description": "[Clients] -> [Service] -> [Replicas]; correctness lives in clocks, logs, and idempotency.",
+      "icon": "Network",
+      "order": 21
+    },
+    "challenges": [
+      {
+        "slug": "distributed-systems-replication-and-consistency",
+        "title": "Replication + Consistency (Leader/Follower)",
+        "description": "Explain replication: [Leader] -> [Followers]; define read/write consistency choices.",
+        "category": "Distributed Systems",
+        "difficulty": 1,
+        "xpReward": 130,
+        "order": 1,
+        "type": "theory",
+        "theoryContent": "# Replication + Consistency (Leader/Follower)\n\n## Architecture (ASCII)\n\n```\n          writes                  replication                reads\n +--------+        +---------+    log/stream    +---------+   +--------+\n |Client A| -----> | Leader  | ---------------> |Follower |<--|Client B|\n +--------+        +----+----+                  +----+----+   +--------+\n                        |                            |\n                        v                            v\n                    +---+----------------------------+---+\n                    |            Storage / WAL            |\n                    +-------------------------------------+\n```\n\n## Your task\n\nDefine and compare:\n- strong consistency vs eventual consistency\n- read-your-writes, monotonic reads, causal consistency\n\nThen answer:\n1) If a client writes at time T, when can another client safely read the new value?\n2) What’s the cost of synchronous replication (latency, availability)?\n3) How do leader elections affect correctness (stale reads, split brain)?\n\n## Deliverables\n\n- A short table mapping **consistency guarantees** → **implementation choices** (quorums, leader leases, read fences).\n- One concrete bug caused by weak consistency and how you’d detect it.\n",
+        "hints": [
+          "Synchronous replication improves consistency but can reduce availability.",
+          "Leader elections can cause stale reads unless clients use fencing/epochs.",
+          "Define what your product needs; don’t overpay for consistency you won’t use."
+        ]
+      },
+      {
+        "slug": "distributed-systems-fix-inventory-race",
+        "title": "Fix a Race Condition: Overselling Inventory",
+        "description": "Race: two checkouts read stock=1 and both decrement. Fix with atomicity + idempotency.",
+        "category": "Distributed Systems",
+        "difficulty": 3,
+        "xpReward": 240,
+        "order": 2,
+        "type": "theory",
+        "theoryContent": "# Fix a Race Condition: Overselling Inventory\n\n## Architecture (ASCII)\n\n```\n +--------+      +-------------+      +----------+\n | Client | ---> | Checkout Svc| ---> |   DB     |\n +--------+      +------+------+      +----+-----+\n                       |                   |\n                       | payment           | stock\n                       v                   v\n                  +----+-----+        +----+-----+\n                  | Payments |        | Inventory|\n                  +----------+        +----------+\n```\n\n## The bug\n\nYou have:\n1) read current stock\n2) if stock > 0 then decrement\n\nTwo requests can interleave:\n- R1 reads stock=1\n- R2 reads stock=1\n- R1 decrements to 0\n- R2 decrements to -1  (oversold)\n\n## Your task\n\nPropose **two** fixes, at least one of which must work across multiple service instances:\n\nOption ideas:\n- DB transaction with `SELECT ... FOR UPDATE` / conditional update\n- atomic compare-and-swap update (`UPDATE ... WHERE stock > 0`)\n- reservation model with expiry (hold stock for N minutes)\n- distributed lock (with fencing token)\n\nAlso design an **idempotency key** strategy for retries (payment callbacks can retry!).\n\n## Deliverables\n\n- Pseudocode for your chosen approach.\n- A short explanation of the failure modes (deadlocks, lock contention, timeouts).\n- How you would test it (load test + deterministic concurrency test).\n",
+        "hints": [
+          "Prefer making the decrement atomic at the database layer.",
+          "Idempotency prevents duplicate charges and double decrements on retries.",
+          "Locks without fencing can still break during failover; address that explicitly."
+        ]
+      },
+      {
+        "slug": "distributed-systems-fix-distributed-lock-race",
+        "title": "Fix a Race Condition: Naive Distributed Lock",
+        "description": "Race: lock stolen after GC pause. Fix with TTL + fencing tokens + renewals.",
+        "category": "Distributed Systems",
+        "difficulty": 4,
+        "xpReward": 290,
+        "order": 3,
+        "type": "theory",
+        "theoryContent": "# Fix a Race Condition: Naive Distributed Lock\n\n## Architecture (ASCII)\n\n```\n +---------+       +-----------------+\n | Worker1 |<----->|  Lock Service   |\n +---------+       | (Redis/etcd)    |\n +---------+       +--------+--------+\n | Worker2 |<-------------->|\n +---------+                v\n                        +----+----+\n                        |  DB    |\n                        +---------+\n```\n\n## The bug\n\nWorker1 acquires a lock and starts a critical section. It gets paused (GC, stop-the-world, node stall),\nand the lock TTL expires. Worker2 acquires the same lock and starts the same critical section.\nNow you have **two owners**.\n\n## Your task\n\n1) Explain why “`SETNX` + TTL” is not enough by itself.\n2) Propose a safe locking protocol that includes:\n   - unique lock value (owner token)\n   - TTL + renewals (watchdog)\n   - **fencing token** (monotonic epoch) passed to downstream systems\n3) Show how the DB (or downstream) rejects stale owners using the fencing token.\n\n## Deliverables\n\n- A diagram of the protocol steps.\n- Pseudocode for acquire/renew/release.\n- A concrete stale-owner scenario and how the fencing token prevents corruption.\n",
+        "hints": [
+          "A lock only protects work if the protected system can detect staleness (fencing).",
+          "Renewals help but still fail under long pauses; fencing is the key correctness lever.",
+          "Release must verify ownership token to avoid deleting someone else’s lock."
+        ]
+      },
+      {
+        "slug": "distributed-systems-raft-log-replication",
+        "title": "Consensus by Log: Raft Mental Model",
+        "description": "Understand consensus: [Leader] replicates a log; commits when a quorum acknowledges.",
+        "category": "Distributed Systems",
+        "difficulty": 4,
+        "xpReward": 280,
+        "order": 4,
+        "type": "theory",
+        "theoryContent": "# Consensus by Log: Raft Mental Model\n\n## Architecture (ASCII)\n\n```\n             AppendEntries(term, prevIdx, entries...)\n +---------+  --------------------------------------> +---------+\n | Leader  |  --------------------------------------> | Follower|\n +----+----+  --------------------------------------> +----+----+\n      |                                                 |\n      | commit index advances when quorum acks           |\n      v                                                 v\n +----+------------------+                    +---------+---------+\n |     Replicated Log    |                    |     Replicated Log |\n +-----------------------+                    +--------------------+\n```\n\n## Your task\n\nExplain, in your own words:\n- leader election + terms\n- log matching property\n- commit rule (why quorum matters)\n\nThen answer:\n1) What does “linearizable write” mean in a Raft-backed KV store?\n2) What happens if a leader is partitioned but still running?\n3) How do you prevent an old leader from overwriting newer state after recovery?\n\n## Deliverables\n\n- One page explanation with a timeline diagram of an election and a commit.\n",
+        "hints": [
+          "Terms prevent stale leaders from continuing to commit.",
+          "Log matching prevents divergent histories from being committed.",
+          "Linearizable reads often need a read index / leader lease mechanism."
+        ]
+      },
+      {
+        "slug": "distributed-systems-clocks-and-ordering",
+        "title": "Time, Ordering, and Causality",
+        "description": "Model causality: events form a DAG; use Lamport/vector clocks to order without real time.",
+        "category": "Distributed Systems",
+        "difficulty": 2,
+        "xpReward": 190,
+        "order": 5,
+        "type": "theory",
+        "theoryContent": "# Time, Ordering, and Causality\n\n## Architecture (ASCII)\n\n```\n Node A:  a1 ---- a2 ---- a3\n            \\           /\n             \\         /\n Node B:       b1 ---- b2\n\n (message edges create \"happens-before\")\n```\n\n## Your task\n\nYou’re building a collaborative app. Two users update the same document concurrently.\n\n1) Explain why wall-clock timestamps are insufficient (skew, leap, drift).\n2) Use **Lamport clocks** to derive a consistent total order. What information is lost?\n3) Use **vector clocks** to detect concurrency. What’s the storage cost?\n4) Decide on a conflict resolution strategy:\n   - last-write-wins (LWW)\n   - operational transform (OT)\n   - CRDT\n\n## Deliverables\n\n- A short example with 2 nodes and 5 events showing Lamport and vector clock values.\n- A paragraph describing which strategy you would pick and why.\n",
+        "hints": [
+          "Lamport clocks give you an order but not true causality.",
+          "Vector clocks can detect concurrency, but scale with the number of nodes.",
+          "Choose a strategy that matches product needs; CRDTs aren’t always necessary."
+        ]
+      },
+      {
+        "slug": "distributed-systems-outbox-idempotency-schema",
+        "title": "Schema Design: Idempotency + Exactly-Once-ish Processing",
+        "description": "Design tables for idempotency: [requests] -> [outbox] -> [consumer_offsets].",
+        "category": "Distributed Systems",
+        "difficulty": 3,
+        "xpReward": 240,
+        "order": 6,
+        "type": "theory",
+        "theoryContent": "# Schema Design: Idempotency + Exactly-Once-ish Processing\n\n## Architecture (ASCII)\n\n```\n +---------+    +---------+    +-----------+    +------------+\n | Client  | -> |  API    | -> |  DB txn   | -> |  Outbox    |\n +---------+    +----+----+    +-----+-----+    +-----+------+\n                           \\\\                      |\n                            \\\\ publish             v\n                             \\\\              +-----+------+\n                              \\\\             |   Bus      |\n                               \\\\            +-----+------+\n                                \\\\                 |\n                                 \\\\                v\n                                  \\\\        +------+------+\n                                   ------->  | Consumers   |\n                                              +-------------+\n```\n\n## Your task\n\nYou want “exactly-once” effects (e.g., sending a single email) even though your bus is at-least-once.\n\nDesign a schema that supports:\n- **Idempotency keys** for API requests\n- **Outbox events** for safe publishing\n- **Consumer dedupe** (processed event ids) OR transactional sinks\n\n## Deliverables\n\n1) Table schemas + indexes for:\n   - `idempotency_keys`\n   - `outbox_events`\n   - `processed_events` (or equivalent)\n2) A clear algorithm for:\n   - handling retries on the API side\n   - handling duplicates on the consumer side\n3) One race condition your design prevents (show the interleaving).\n",
+        "hints": [
+          "Exactly-once is usually an illusion; target exactly-once effects instead.",
+          "Idempotency keys must cover the full side-effect scope, not just the request body.",
+          "Consumers should store a dedupe key in the same transaction as the effect if possible."
+        ]
+      }
+    ]
+  },
+  {
+    "course": {
+      "title": "Rust Programming",
+      "slug": "rust-programming",
+      "description": "[Ownership] -> [Borrowing] -> [Concurrency]; make invalid states unrepresentable.",
+      "icon": "Terminal",
+      "order": 22
+    },
+    "challenges": [
+      {
+        "slug": "rust-programming-ownership-and-borrowing",
+        "title": "Ownership + Borrowing: Mental Model",
+        "description": "Understand data flow: [Owner] -> (borrow) -> [Reader]; prevent aliasing + mutation.",
+        "category": "Rust Programming",
+        "difficulty": 1,
+        "xpReward": 120,
+        "order": 1,
+        "type": "theory",
+        "theoryContent": "# Ownership + Borrowing: Mental Model\n\n## Architecture (ASCII)\n\n```\n          move             borrow (&T)          borrow (&mut T)\n +--------+      +-------------------+      +-------------------+\n | Owner  | ---> |   New Owner       |      | Exclusive Borrow  |\n +--------+      +-------------------+      +-------------------+\n    |                     ^\n    | shared borrows      |\n    v                     |\n +-------------------+    |\n | Shared Borrowers  |----+\n +-------------------+\n```\n\n## Your task\n\nExplain:\n- what “move” means\n- why Rust forbids aliasing + mutation at the same time\n- the difference between `&T` and `&mut T`\n\nThen design an API for a function that:\n- takes a buffer\n- parses a header\n- returns a view into the buffer without copying\n\n## Deliverables\n\n- A short explanation of lifetimes as a *relationship*, not a “time”.\n- A function signature you’d propose (with lifetimes if needed) and why.\n",
+        "hints": [
+          "Think of lifetimes as constraints: “this reference can’t outlive that buffer.”",
+          "If you return slices/str views, you usually need a lifetime parameter.",
+          "Avoid cloning/copying unless you truly need owned data."
+        ]
+      },
+      {
+        "slug": "rust-programming-schema-job-queue",
+        "title": "Design a Schema: Job Queue for Rust Workers",
+        "description": "Schema challenge: [producer] -> [jobs table] -> [workers]; handle retries safely.",
+        "category": "Rust Programming",
+        "difficulty": 2,
+        "xpReward": 180,
+        "order": 2,
+        "type": "theory",
+        "theoryContent": "# Design a Schema: Job Queue for Rust Workers\n\n## Architecture (ASCII)\n\n```\n +-----------+         +------------------+         +-----------+\n | Producer  |  INSERT |   jobs (table)   |  CLAIM  | Workers   |\n +-----------+ ------> +------------------+ ------> +-----------+\n                                |\n                                v\n                          +-----+------+\n                          |  deadletter|\n                          +------------+\n```\n\n## Your task (schema design)\n\nYou are implementing a background job system. Workers are Rust services.\n\nDesign a schema that supports:\n- enqueue jobs\n- claim jobs safely (no two workers take the same job)\n- retries with backoff\n- dead-lettering after N failures\n- visibility timeout / lease (worker crashes)\n\n## Deliverables\n\n1) Propose a `jobs` table schema + indexes.\n2) Describe the “claim” operation as an **atomic** DB operation.\n3) Explain how you prevent a race where two workers claim the same job.\n\n## Bonus\n\nHow do you make job handlers idempotent (so retries don’t double-charge)?\n",
+        "hints": [
+          "Model a lease: claimed_until + claimed_by + attempt_count.",
+          "Claim with an atomic conditional update (status=READY and claimed_until < now).",
+          "Idempotency keys belong near the side-effect boundary, not deep inside the handler."
+        ]
+      },
+      {
+        "slug": "rust-programming-fix-async-race",
+        "title": "Fix a Race Condition: Async Cancellation + Shared State",
+        "description": "Race: task cancellation leaves shared state inconsistent. Fix with structured concurrency.",
+        "category": "Rust Programming",
+        "difficulty": 4,
+        "xpReward": 300,
+        "order": 3,
+        "type": "theory",
+        "theoryContent": "# Fix a Race Condition: Async Cancellation + Shared State\n\n## Architecture (ASCII)\n\n```\n +-----------+      spawn       +-----------------+\n | Request   |  ----------->    | Task A (writes) |\n +-----------+                   +-----------------+\n        |                                |\n        | cancel/timeout                  | updates shared state\n        v                                v\n +-----------+                     +------+------+\n | Runtime   |                     | Shared Map  |\n +-----------+                     +-------------+\n```\n\n## The bug\n\nYou have two async tasks that update shared state:\n- Task A starts writing `state[\"job\"]=IN_PROGRESS`\n- Task A is cancelled (timeout / client disconnect) before it writes `DONE`\n- Another task observes `IN_PROGRESS` forever\n\n## Your task\n\nPropose fixes using Rust async patterns (e.g., Tokio):\n- structured concurrency (ensure child tasks are joined/aborted deterministically)\n- “finally” cleanup via drop guards\n- atomic state machine transitions\n- store progress in durable storage rather than in-memory when needed\n\n## Deliverables\n\n- A state machine diagram with allowed transitions.\n- A design that guarantees cleanup even on cancellation.\n- One test strategy that reproduces the race (timeouts + controlled scheduling).\n",
+        "hints": [
+          "Cancellation is a control-flow path; treat it like an error path with cleanup.",
+          "Model state transitions explicitly; reject invalid transitions.",
+          "If correctness matters across processes, in-memory state is insufficient."
+        ]
+      },
+      {
+        "slug": "rust-programming-lifetimes-api-design",
+        "title": "Design an API with Lifetimes (Parser/Tokenizer)",
+        "description": "Design signatures: [input bytes] -> [tokens] -> [AST]. Avoid unnecessary allocations.",
+        "category": "Rust Programming",
+        "difficulty": 3,
+        "xpReward": 240,
+        "order": 4,
+        "type": "theory",
+        "theoryContent": "# Design an API with Lifetimes (Parser/Tokenizer)\n\n## Architecture (ASCII)\n\n```\n  &str / &[u8]  --->  tokenizer  --->  parser  --->  AST\n        |              |              |\n        | borrows      | borrows      | may own\n        v              v              v\n     slices          token spans     nodes\n```\n\n## Your task\n\nYou’re designing a tokenizer that returns tokens referencing the original input to avoid copies.\n\n1) Propose a `Token<'a>` type.\n2) Propose function signatures for:\n   - `tokenize(input: &'a str) -> Vec<Token<'a>>`\n   - `parse(tokens: &[Token<'a>]) -> Ast<'a>` OR an owned AST\n3) Decide: should the AST borrow from input or own strings? Justify based on usage.\n\n## Deliverables\n\n- Type definitions + function signatures.\n- A paragraph on tradeoffs (speed, memory, ergonomics).\n",
+        "hints": [
+          "Borrowing from input avoids allocations but ties lifetimes together.",
+          "If you need to store the AST long-term, owning is often easier.",
+          "Sometimes a hybrid works: intern strings or copy only identifiers."
+        ]
+      },
+      {
+        "slug": "rust-programming-traits-and-architecture",
+        "title": "Architecture with Traits: Storage + Services",
+        "description": "Design modular architecture: [trait Storage] <- [PgStorage] / [MemStorage].",
+        "category": "Rust Programming",
+        "difficulty": 2,
+        "xpReward": 200,
+        "order": 5,
+        "type": "theory",
+        "theoryContent": "# Architecture with Traits: Storage + Services\n\n## Architecture (ASCII)\n\n```\n                 +------------------+\n                 |   Service Layer  |\n                 +---------+--------+\n                           |\n                           v\n                 +---------+--------+\n                 |   trait Storage  |\n                 +----+--------+----+\n                      |        |\n                      v        v\n               +------+--+  +--+------+\n               | PgStore |  | MemStore|\n               +---------+  +---------+\n```\n\n## Your task\n\nDesign a storage abstraction for a small app (e.g., links, jobs, or users).\n\n1) Decide between:\n   - generics (`Service<S: Storage>`)\n   - trait objects (`Box<dyn Storage>`)\n2) Define the trait surface area (methods, error types, async considerations).\n3) Explain how you will test the service layer deterministically.\n\n## Deliverables\n\n- Trait definition sketch (methods + error type approach).\n- Explanation: why generics vs trait objects for your use case.\n",
+        "hints": [
+          "Generics give static dispatch; trait objects simplify wiring and reduce monomorphization.",
+          "Async traits require careful design; consider returning futures or using an async runtime.",
+          "In-memory implementations are great for unit tests when behavior matches real storage."
+        ]
+      },
+      {
+        "slug": "rust-programming-fix-atomics-race",
+        "title": "Fix a Race Condition: Atomics + Memory Ordering",
+        "description": "Race: stale reads due to weak ordering. Fix with Acquire/Release and invariants.",
+        "category": "Rust Programming",
+        "difficulty": 5,
+        "xpReward": 360,
+        "order": 6,
+        "type": "theory",
+        "theoryContent": "# Fix a Race Condition: Atomics + Memory Ordering\n\n## Architecture (ASCII)\n\n```\n Thread A (producer):          Thread B (consumer):\n  write data                   read flag\n  set flag                     read data\n\n        +-------------------------------+\n        |  shared memory (cache lines)  |\n        +-------------------------------+\n```\n\n## The bug\n\nYou use an atomic boolean flag to signal that some data is ready, but the consumer sometimes sees:\n- flag == true\n- data still looks uninitialized / old\n\nThis can happen if you use relaxed ordering everywhere.\n\n## Your task\n\n1) Explain the required invariant: “if flag is true, data writes must be visible.”\n2) Choose and justify memory orderings:\n   - producer: store(flag, Release)\n   - consumer: load(flag, Acquire)\n3) Describe when you’d still need stronger ordering (SeqCst) or fences.\n\n## Deliverables\n\n- A brief explanation of the reordering you’re preventing.\n- A corrected pseudo-implementation (no need to compile).\n- One test strategy (stress test + Loom model checking).\n",
+        "hints": [
+          "Acquire/Release creates a happens-before edge between threads.",
+          "Relaxed only provides atomicity for that variable, not visibility for surrounding data.",
+          "Model checking (Loom) can find reorderings that are rare in practice."
+        ]
+      }
+    ]
+  }
+]
