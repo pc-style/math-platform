@@ -14,7 +14,10 @@ import {
   FileText,
   Sparkles,
   Zap,
+  MessageSquare,
+  ArrowLeft,
 } from "lucide-react";
+import Link from "next/link";
 import { MathContent } from "@/components/MathContent";
 
 // Types
@@ -418,16 +421,25 @@ export default function SolverPage() {
     <div className="fixed inset-0 flex flex-col bg-[var(--background)]">
       {/* Header - minimal */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)] bg-[var(--surface)]/50 backdrop-blur-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">
-            <Zap className="w-4 h-4 text-[var(--primary)]" />
-          </div>
-          <div>
-            <h1 className="text-sm font-bold leading-tight">Solver</h1>
-            <p className="text-[9px] text-[var(--text-muted)] font-medium uppercase tracking-wider flex items-center gap-1">
-              <Sparkles className="w-2.5 h-2.5" />
-              Gemini 3 Flash
-            </p>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="p-2 -ml-2 text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors rounded-lg hover:bg-[var(--primary)]/5"
+            title="Powrót"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div className="flex items-center gap-2 border-l border-[var(--border)] pl-3">
+            <div className="w-8 h-8 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">
+              <Zap className="w-4 h-4 text-[var(--primary)]" />
+            </div>
+            <div>
+              <h1 className="text-sm font-bold leading-tight">Solver</h1>
+              <p className="text-[9px] text-[var(--text-muted)] font-medium uppercase tracking-wider flex items-center gap-1">
+                <Sparkles className="w-2.5 h-2.5" />
+                Gemini 3 Flash
+              </p>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -470,14 +482,14 @@ export default function SolverPage() {
               <span className="text-[var(--primary)] font-medium">Odpowiedź w sekundy.</span>
             </p>
             <div className="flex flex-wrap justify-center gap-2 text-xs text-[var(--text-muted)]">
-              <span className="px-2 py-1 bg-[var(--surface)] rounded-full border border-[var(--border)]">
-                📸 Aparat
+              <span className="px-2 py-1 bg-[var(--surface)] rounded-full border border-[var(--border)] flex items-center gap-1.5">
+                <Camera className="w-3.5 h-3.5" /> Aparat
               </span>
-              <span className="px-2 py-1 bg-[var(--surface)] rounded-full border border-[var(--border)]">
-                🖼️ Galeria
+              <span className="px-2 py-1 bg-[var(--surface)] rounded-full border border-[var(--border)] flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5" /> Galeria
               </span>
-              <span className="px-2 py-1 bg-[var(--surface)] rounded-full border border-[var(--border)]">
-                💬 Follow-up
+              <span className="px-2 py-1 bg-[var(--surface)] rounded-full border border-[var(--border)] flex items-center gap-1.5">
+                <MessageSquare className="w-3.5 h-3.5" /> Follow-up
               </span>
             </div>
           </div>
