@@ -58,7 +58,7 @@ ZASADY:
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash",
+      model: "gemini-3-flash-preview",
       contents: [{ role: "user", parts }],
     });
 
