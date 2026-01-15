@@ -6,13 +6,15 @@
     "dev": "bunx convex dev --once & next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:clear": "bunx convex run admin:clearAll"
   },
   "dependencies": {
     "@convex-dev/workos-authkit": "^0.1.5",
     "@google/genai": "^1.35.0",
     "@google/generative-ai": "^0.24.1",
     "@workos-inc/authkit-nextjs": "^2.13.0",
+    "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "convex": "^1.31.4",
     "date-fns": "^4.1.0",
@@ -32,6 +34,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

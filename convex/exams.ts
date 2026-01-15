@@ -140,6 +140,30 @@ export const storeFile = action({
 
 // --- AI Action ---
 
+export const renameExam = mutation({
+    args: { id: v.id("exams"), title: v.string() },
+    handler: async (ctx, args) => {
+        const user = await authKit.getAuthUser(ctx);
+        const exam = await ctx.db.get(args.id);
+        if (!exam || !user || exam.userId !== user.id) throw new Error("Unauthorized");
+
+        await ctx.db.patch(args.id, { title: args.title });
+    },
+});
+
+export const deleteExam = mutation({
+    args: { id: v.id("exams") },
+    handler: async (ctx, args) => {
+        const user = await authKit.getAuthUser(ctx);
+        const exam = await ctx.db.get(args.id);
+        if (!exam || !user || exam.userId !== user.id) throw new Error("Unauthorized");
+
+        await ctx.db.delete(args.id);
+        // Note: We are not deleting the storage files here to keep it simple, 
+        // but in production you might want to clean them up.
+    },
+});
+
 export const generateExam = action({
     args: { examId: v.id("exams"), storageIds: v.array(v.id("_storage")) },
     handler: async (ctx, args) => {
@@ -183,33 +207,38 @@ Analiza:
 - Wyciągnij kluczowe pojęcia, twierdzenia, wzory i metody rozwiązywania zadań.
 - Zidentyfikuj typowe błędy i pułapki.
 
-Generowanie Treści (WYMAGANE FORMATOWANIE LATEX DO WZORÓW MATEMATYCZNYCH):
-- Wszystkie wzory matematyczne muszą być objęte znakami dolara.
-- $E=mc^2$ dla wzorów w tekście.
-- $$ \int_0^\infty x^2 dx $$ dla wzorów w nowej linii (display mode).
-- Nie używaj \\( ... \\) ani \\[ ... \\]. Tylko $ i $$.
-- Upewnij się, że LaTeX jest poprawny składniowo.
+Generowanie Treści (WAŻNE: FORMATOWANIE I CZYTELNOŚĆ):
+- Treść musi być czytelna i "oddychająca". Dziel tekst na krótkie akapity (max 3-4 zdania).
+- Używaj często nowych linii, aby oddzielić myśli.
+- WAŻNE: Główne wzory matematyczne MUSZĄ być w osobnych liniach (display mode) przy użyciu $$.
+  Przykład:
+  Zamiast pisać "Wzór na delte to $ \Delta = b^2 - 4ac $ i jest ważny", napisz:
+  "Wzór na deltę to:
+  $$ \Delta = b^2 - 4ac $$
+  Jest on kluczowy w analizie..."
+- Używaj pogrubień dla ważnych pojęć.
+- Wzory w tekście (inline) używają pojedynczego dolara $.
 
 Struktura Planu:
 1. Faza 1 (Teoria):
    - Wyjaśnij pojęcia prostym, ale precyzyjnym językiem.
-   - Zawsze podawaj wzory w LaTeX.
+   - Pisz tak, jakbyś tłumaczył to inteligentnemu uczniowi, który widzi to pierwszy raz.
+   - Używaj wypunktowań, aby rozbić ściany tekstu.
    - Dodaj intuicyjne wyjaśnienia "dlaczego to działa".
-   - Użyj Markdown do formatowania tekstu (pogrubienia, listy).
 
 2. Faza 2 (Praktyka z Przewodnikiem):
    - To najważniejsza część. Stwórz zadania, które uczą myślenia.
    - Każde zadanie musi mieć 'steps' (kroki), które prowadzą ucznia za rękę.
-   - W 'tips' (wskazówkach) zawrzyj pytania pomocnicze lub uwagi o błędach, które pojawiają się w danym kroku.
-   - 'hints' (nowe pole) powinno zawierać serię małych podpowiedzi, które można odkrywać po kolei (np. strzałką).
+   - W 'tips' (wskazówkach) zawrzyj pytania pomocnicze lub uwagi o błędach.
+   - 'hints' (nowe pole) powinno zawierać serię małych podpowiedzi.
    - Sekcja ta powinna być bardzo rozbudowana.
 
 3. Faza 3 (Egzamin):
    - Zadania sprawdzające wiedzę z Fazy 1 i umiejętności z Fazy 2.
-   - Podaj tylko ostateczne odpowiedzi, aby uczeń mógł się sprawdzić.
+   - Podaj tylko ostateczne odpowiedzi.
 
 Bądź kreatywny, ale merytorycznie rygorystyczny. Traktuj użytkownika jak inteligentnego studenta, który chce zrozumieć, a nie tylko zdać.
-Wygeneruj dużo treści. Nie oszczędzaj na wyjaśnieniach.`,
+Wygeneruj dużo treści. Nie oszczędzaj na wyjaśnieniach. Twoim priorytetem jest JASNOŚĆ i CZYTELNOŚĆ.`,
                             },
                         ],
                     },

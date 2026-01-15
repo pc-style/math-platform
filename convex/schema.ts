@@ -41,6 +41,8 @@ export default defineSchema({
             })
         ),
         error: v.optional(v.string()),
+        isSpeedrun: v.optional(v.boolean()),
+        hoursAvailable: v.optional(v.number()),
         createdAt: v.number(),
     }).index("by_user", ["userId"]),
 
@@ -51,5 +53,8 @@ export default defineSchema({
         customizations: v.optional(v.object({
             primaryColor: v.optional(v.string()),
         })),
+        xp: v.optional(v.number()),
+        streak: v.optional(v.number()),
+        lastLogin: v.optional(v.number()),
     }).index("by_user", ["userId"]),
 });

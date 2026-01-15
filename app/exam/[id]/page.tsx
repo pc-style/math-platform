@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useMemo, useEffect } from "react";
@@ -10,8 +10,9 @@ import {
     Brain, BookOpen, PenTool, Award, ChevronDown,
     CheckCircle2, Circle, ArrowLeft,
     Sparkles, Lightbulb, GraduationCap, ChevronRight,
-    MessageSquare
+    MessageSquare, Wand2, X, ArrowRight
 } from "lucide-react";
+import confetti from "canvas-confetti";
 import { Header } from "@/components/Header";
 import { useThemeLabels } from "@/hooks/useThemeLabels";
 import { Id } from "../../../convex/_generated/dataModel";
@@ -26,16 +27,21 @@ export default function ExamStudyView() {
     const { getLabel, isCyber } = useThemeLabels();
 
     const [activePhase, setActivePhase] = useState<1 | 2 | 3>(1);
-    const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set([0]));
     const [revealedSolutions, setRevealedSolutions] = useState<Set<number>>(new Set());
     const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
     const [hintIndices, setHintIndices] = useState<Record<number, number>>({});
-    const [activeChatProblem, setActiveChatProblem] = useState<number | null>(null);
-    const [chatMessages, setChatMessages] = useState<Record<number, { role: 'user' | 'model', text: string }[]>>({});
+    const [activeChatProblem, setActiveChatProblem] = useState<string | null>(null);
+    const [chatMessages, setChatMessages] = useState<Record<string, { role: 'user' | 'model', text: string }[]>>({});
     const [chatInput, setChatInput] = useState("");
     const [isThinking, setIsThinking] = useState(false);
 
     const askQuestionValue = useAction(api.chat.askQuestion);
+    const explainTheory = useAction(api.chat.explainTheory);
+
+    const [activeTheoryIndex, setActiveTheoryIndex] = useState(0);
+    const [explanation, setExplanation] = useState<string | null>(null);
+    const [isExplaining, setIsExplaining] = useState(false);
+    const [showExplanation, setShowExplanation] = useState(false);
 
     useEffect(() => {
         if (exam) {
@@ -43,18 +49,28 @@ export default function ExamStudyView() {
         }
     }, [exam]);
 
+    const addXp = useMutation(api.users.addXp);
+
     const progress = useMemo(() => {
         if (!exam?.data) return 0;
         const total = exam.data.phase1_theory.length + exam.data.phase2_guided.length + exam.data.phase3_exam.length;
         return Math.round((completedSteps.size / total) * 100);
     }, [completedSteps, exam]);
 
-    const toggleStep = (idx: number) => {
-        const next = new Set(expandedSteps);
-        if (next.has(idx)) next.delete(idx);
-        else next.add(idx);
-        setExpandedSteps(next);
-    };
+    useEffect(() => {
+        if (progress === 100) {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: isCyber ? ['#00ff9d', '#00bcd4', '#ffffff'] : undefined
+            });
+            // Bonus XP for completion
+            addXp({ amount: 50 });
+        }
+    }, [progress, isCyber, addXp]);
+
+
 
     const toggleSolution = (idx: number) => {
         const next = new Set(revealedSolutions);
@@ -66,8 +82,22 @@ export default function ExamStudyView() {
     const toggleCompletion = (phase: number, idx: number) => {
         const key = `${phase}-${idx}`;
         const next = new Set(completedSteps);
-        if (next.has(key)) next.delete(key);
-        else next.add(key);
+        if (next.has(key)) {
+            next.delete(key);
+        } else {
+            next.add(key);
+            // Award XP for completing a step
+            addXp({ amount: 10 });
+            // Small confetti burst for step completion
+            confetti({
+                particleCount: 30,
+                spread: 50,
+                origin: { x: 0.5, y: 0.8 }, // Bottom center-ish
+                gravity: 0.8,
+                scalar: 0.8,
+                colors: isCyber ? ['#00ff9d'] : undefined
+            });
+        }
         setCompletedSteps(next);
     };
 
@@ -152,15 +182,15 @@ export default function ExamStudyView() {
 
     // const askQuestion defined above
 
-    const handleAskAI = async (problemIdx: number, context: string) => {
+    const handleAskAI = async (problemId: string, context: string) => {
         if (!chatInput.trim()) return;
         const msg = chatInput;
         setChatInput("");
         setIsThinking(true);
 
-        const currentHistory = chatMessages[problemIdx] || [];
+        const currentHistory = chatMessages[problemId] || [];
         const newHistory = [...currentHistory, { role: 'user' as const, text: msg }];
-        setChatMessages(prev => ({ ...prev, [problemIdx]: newHistory }));
+        setChatMessages(prev => ({ ...prev, [problemId]: newHistory }));
 
         try {
             const answer = await askQuestionValue({
@@ -175,13 +205,52 @@ export default function ExamStudyView() {
             if (answer !== null) {
                 setChatMessages(prev => ({
                     ...prev,
-                    [problemIdx]: [...newHistory, { role: 'model', text: answer }]
+                    [problemId]: [...newHistory, { role: 'model', text: answer }]
                 }));
             }
         } catch (e) {
             console.error("Chat error", e);
         } finally {
             setIsThinking(false);
+        }
+    };
+
+    const handleExplain = async (item: { topic: string; content: string }) => {
+        setIsExplaining(true);
+        setShowExplanation(true);
+        try {
+            const result = await explainTheory({
+                topic: item.topic,
+                content: item.content
+            });
+            setExplanation(result);
+        } catch (e) {
+            console.error(e);
+            setExplanation("Przepraszam, wystąpił błąd podczas generowania wyjaśnienia.");
+        } finally {
+            setIsExplaining(false);
+        }
+    };
+
+    const handleNextTheory = () => {
+        if (!exam?.data) return;
+        const total = exam.data.phase1_theory.length;
+        if (activeTheoryIndex < total - 1) {
+            setActiveTheoryIndex(prev => prev + 1);
+            setExplanation(null);
+            setShowExplanation(false);
+            // Mark previous as completed? Maybe.
+            toggleCompletion(1, activeTheoryIndex);
+            // Only toggle if not already marked? 
+            // Logic: if user moves next, they probably read it. 
+        }
+    };
+
+    const handlePrevTheory = () => {
+        if (activeTheoryIndex > 0) {
+            setActiveTheoryIndex(prev => prev - 1);
+            setExplanation(null);
+            setShowExplanation(false);
         }
     };
 
@@ -225,7 +294,7 @@ export default function ExamStudyView() {
                     ].map((phase) => (
                         <button
                             key={phase.id}
-                            onClick={() => { setActivePhase(phase.id); setExpandedSteps(new Set([0])); }}
+                            onClick={() => { setActivePhase(phase.id); }}
                             className={`pb-3 flex items-center gap-2 transition-all relative ${activePhase === phase.id ? "text-[var(--foreground)]" : "text-[var(--text-muted)] hover:text-[var(--foreground)]"}`}
                         >
                             <span className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${activePhase === phase.id ? "bg-[var(--foreground)] text-[var(--background)]" : "bg-[var(--surface)] border border-[var(--border)]"}`}>
@@ -244,49 +313,205 @@ export default function ExamStudyView() {
                     <AnimatePresence mode="wait">
                         {activePhase === 1 && (
                             <motion.div
-                                key="theory-list"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="space-y-3"
+                                key="theory-carousel"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-6"
                             >
-                                {phase1_theory.map((item, idx) => (
-                                    <div key={idx} className="glass overflow-hidden transition-all duration-300">
+                                {/* Progress Bar for Theory */}
+                                <div className="flex items-center gap-2 mb-4">
+                                    {phase1_theory.map((_, idx) => (
                                         <div
-                                            className={`p-4 flex items-center justify-between cursor-pointer group ${expandedSteps.has(idx) ? "bg-[var(--primary)]/5" : "hover:bg-[var(--surface)]"}`}
-                                            onClick={() => toggleStep(idx)}
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); toggleCompletion(1, idx); }}
-                                                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${completedSteps.has(`1-${idx}`)
-                                                        ? "border-[var(--primary)] bg-[var(--primary)] text-[var(--background)]"
-                                                        : "border-[var(--border)] group-hover:border-[var(--primary)]"
-                                                        }`}
-                                                >
-                                                    {completedSteps.has(`1-${idx}`) && <CheckCircle2 className="w-3 h-3" />}
-                                                </button>
-                                                <h3 className="text-base font-bold">{item.topic}</h3>
-                                            </div>
-                                            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expandedSteps.has(idx) ? "rotate-180" : ""}`} />
-                                        </div>
+                                            key={idx}
+                                            className={`h-1.5 rounded-full flex-1 transition-all ${idx === activeTheoryIndex ? "bg-[var(--primary)]" :
+                                                idx < activeTheoryIndex ? "bg-[var(--primary)]/30" : "bg-[var(--border)]"
+                                                }`}
+                                        />
+                                    ))}
+                                </div>
 
-                                        <AnimatePresence>
-                                            {expandedSteps.has(idx) && (
-                                                <motion.div
-                                                    initial={{ height: 0, opacity: 0 }}
-                                                    animate={{ height: "auto", opacity: 1 }}
-                                                    exit={{ height: 0, opacity: 0 }}
-                                                    className="border-t border-[var(--border)]"
-                                                >
-                                                    <div className="p-6 text-sm">
-                                                        <MathContent content={item.content} />
-                                                    </div>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
+                                <div className="card-premium relative min-h-[400px] flex flex-col justify-between">
+                                    {/* Action Bar */}
+                                    <div className="flex justify-between items-start mb-6 border-b border-[var(--border)] pb-4">
+                                        <div>
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] block mb-1">
+                                                Koncept {activeTheoryIndex + 1} / {phase1_theory.length}
+                                            </span>
+                                            <h2 className="text-2xl font-black font-serif italic text-[var(--foreground)]">
+                                                {phase1_theory[activeTheoryIndex].topic}
+                                            </h2>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => handleExplain(phase1_theory[activeTheoryIndex])}
+                                                className="p-2 rounded-lg bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 transition-colors tooltip flex items-center gap-2 text-xs font-bold"
+                                                title="Wyjaśnij prościej"
+                                            >
+                                                <Wand2 className="w-4 h-4" />
+                                                <span className="hidden sm:inline">Wyjaśnij (Feynman)</span>
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    const chatId = `p1-${activeTheoryIndex}`;
+                                                    if (activeChatProblem === chatId) {
+                                                        setActiveChatProblem(null);
+                                                    } else {
+                                                        setActiveChatProblem(chatId);
+                                                    }
+                                                }}
+                                                className={`p-2 rounded-lg transition-colors flex items-center gap-2 text-xs font-bold ${activeChatProblem === `p1-${activeTheoryIndex}` ? "bg-[var(--primary)] text-white" : "bg-[var(--primary)]/10 text-[var(--primary)] hover:bg-[var(--primary)]/20"}`}
+                                            >
+                                                <MessageSquare className="w-4 h-4" />
+                                                <span className="hidden sm:inline">Zapytaj</span>
+                                            </button>
+                                        </div>
                                     </div>
-                                ))}
+
+                                    {/* Phase 1 Chat Overlay */}
+                                    <AnimatePresence>
+                                        {activeChatProblem === `p1-${activeTheoryIndex}` && (
+                                            <motion.div
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: "auto" }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                className="mb-6 rounded-xl overflow-hidden glass border border-[var(--primary)]/30"
+                                            >
+                                                <div className="bg-[var(--primary)] text-white p-3 flex justify-between items-center">
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                                                        <Brain className="w-3 h-3" /> Asystent Teorii
+                                                    </span>
+                                                    <button onClick={() => setActiveChatProblem(null)}>
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                                <div className="h-[250px] overflow-y-auto p-4 space-y-3 bg-[var(--surface)]">
+                                                    {(!chatMessages[`p1-${activeTheoryIndex}`] || chatMessages[`p1-${activeTheoryIndex}`].length === 0) && (
+                                                        <p className="text-xs text-[var(--text-muted)] text-center mt-8">
+                                                            Masz pytania do tego tematu? Pisz śmiało!
+                                                        </p>
+                                                    )}
+                                                    {chatMessages[`p1-${activeTheoryIndex}`]?.map((msg, i) => (
+                                                        <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                            <div className={`max-w-[90%] rounded-xl p-3 text-xs md:text-sm font-medium leading-relaxed shadow-sm ${msg.role === 'user'
+                                                                ? 'bg-[var(--primary)] text-white'
+                                                                : 'bg-[var(--background)] border border-[var(--border)]'
+                                                                }`}>
+                                                                <MathContent content={msg.text} />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                    {isThinking && (
+                                                        <div className="flex justify-start">
+                                                            <div className="bg-[var(--background)] border border-[var(--border)] rounded-xl p-3 text-xs text-[var(--text-muted)] animate-pulse shadow-sm">
+                                                                AI myśli...
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="p-3 bg-[var(--background)] border-t border-[var(--border)]">
+                                                    <form
+                                                        onSubmit={(e) => {
+                                                            e.preventDefault();
+                                                            handleAskAI(`p1-${activeTheoryIndex}`, `Temat: ${phase1_theory[activeTheoryIndex].topic}\nTreść: ${phase1_theory[activeTheoryIndex].content}`);
+                                                        }}
+                                                        className="flex gap-2"
+                                                    >
+                                                        <input
+                                                            type="text"
+                                                            value={chatInput}
+                                                            onChange={(e) => setChatInput(e.target.value)}
+                                                            className="flex-1 bg-[var(--surface)] text-sm px-4 py-2 rounded-lg border border-[var(--border)] focus:outline-none focus:border-[var(--primary)]"
+                                                            placeholder="Zadaj pytanie..."
+                                                            autoFocus
+                                                        />
+                                                        <button type="submit" disabled={isThinking || !chatInput.trim()} className="p-2 bg-[var(--primary)] text-white rounded-lg disabled:opacity-50 hover:bg-[var(--primary)]/90 transition-colors">
+                                                            <ArrowRight className="w-4 h-4" />
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+
+                                    {/* Content */}
+                                    <div className="text-lg leading-relaxed mb-8 flex-1">
+                                        <MathContent content={phase1_theory[activeTheoryIndex].content} />
+                                    </div>
+
+                                    {/* Navigation */}
+                                    <div className="flex items-center justify-between pt-6 border-t border-[var(--border)]">
+                                        <button
+                                            onClick={handlePrevTheory}
+                                            disabled={activeTheoryIndex === 0}
+                                            className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--foreground)] disabled:opacity-30 disabled:hover:text-[var(--text-muted)] font-bold uppercase tracking-widest text-xs transition-colors"
+                                        >
+                                            <ArrowLeft className="w-4 h-4" />
+                                            Poprzedni
+                                        </button>
+
+                                        <button
+                                            onClick={() => toggleCompletion(1, activeTheoryIndex)}
+                                            className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${completedSteps.has(`1-${activeTheoryIndex}`)
+                                                ? "bg-green-500/10 text-green-600"
+                                                : "bg-[var(--surface)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)]"
+                                                }`}
+                                        >
+                                            {completedSteps.has(`1-${activeTheoryIndex}`) ? (
+                                                <>
+                                                    <CheckCircle2 className="w-4 h-4" /> Zrozumiano
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Circle className="w-4 h-4" /> Oznacz jako zrozumiałe
+                                                </>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={handleNextTheory}
+                                            disabled={activeTheoryIndex === phase1_theory.length - 1}
+                                            className="flex items-center gap-2 text-[var(--primary)] hover:translate-x-1 font-bold uppercase tracking-widest text-xs transition-all disabled:opacity-30 disabled:translate-x-0 disabled:text-[var(--text-muted)]"
+                                        >
+                                            Następny
+                                            <ArrowRight className="w-4 h-4" />
+                                        </button>
+                                    </div>
+
+                                    {/* AI Explanation Overlay/Section */}
+                                    <AnimatePresence>
+                                        {showExplanation && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                className="absolute inset-0 bg-[var(--surface)]/95 backdrop-blur-xl z-20 p-6 flex flex-col rounded-[var(--radius)]"
+                                            >
+                                                <div className="flex justify-between items-center mb-4">
+                                                    <h3 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2 text-amber-600">
+                                                        <Sparkles className="w-4 h-4" />
+                                                        Proste Wyjaśnienie
+                                                    </h3>
+                                                    <button onClick={() => setShowExplanation(false)} className="p-1 hover:bg-[var(--border)] rounded-full transition-colors">
+                                                        <X className="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                                <div className="flex-1 overflow-y-auto pr-2">
+                                                    {isExplaining ? (
+                                                        <div className="flex flex-col items-center justify-center h-full text-[var(--text-muted)] gap-4">
+                                                            <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                                                            <p className="text-xs font-bold animate-pulse">Generuję wyjaśnienie...</p>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                                                            <MathContent content={explanation || ""} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             </motion.div>
                         )}
 
@@ -430,9 +655,9 @@ export default function ExamStudyView() {
 
                                                 {/* AI Chat Button/Window */}
                                                 <div>
-                                                    {activeChatProblem !== idx ? (
+                                                    {activeChatProblem !== `p2-${idx}` ? (
                                                         <button
-                                                            onClick={() => setActiveChatProblem(idx)}
+                                                            onClick={() => setActiveChatProblem(`p2-${idx}`)}
                                                             className="w-full py-3 px-4 rounded-xl border border-[var(--primary)] text-[var(--primary)] font-bold text-xs hover:bg-[var(--primary)] hover:text-white transition-all flex items-center justify-center gap-2 uppercase tracking-wide shadow-sm"
                                                         >
                                                             <MessageSquare className="w-3 h-3" />
@@ -449,10 +674,10 @@ export default function ExamStudyView() {
                                                                 </button>
                                                             </div>
                                                             <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-[var(--surface)]">
-                                                                {(!chatMessages[idx] || chatMessages[idx].length === 0) && (
+                                                                {(!chatMessages[`p2-${idx}`] || chatMessages[`p2-${idx}`].length === 0) && (
                                                                     <p className="text-[10px] text-[var(--text-muted)] text-center mt-4">Napisz, z czym masz problem w tym zadaniu.</p>
                                                                 )}
-                                                                {chatMessages[idx]?.map((msg, i) => (
+                                                                {chatMessages[`p2-${idx}`]?.map((msg, i) => (
                                                                     <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                                                         <div className={`max-w-[90%] rounded-xl p-2.5 text-xs font-medium leading-relaxed ${msg.role === 'user'
                                                                             ? 'bg-[var(--primary)] text-white shadow-sm'
@@ -472,7 +697,7 @@ export default function ExamStudyView() {
                                                             </div>
                                                             <div className="p-2 bg-[var(--background)] border-t border-[var(--border)]">
                                                                 <form
-                                                                    onSubmit={(e) => { e.preventDefault(); handleAskAI(idx, `Zadanie: ${item.question}\nKroki: ${JSON.stringify(item.steps)}`); }}
+                                                                    onSubmit={(e) => { e.preventDefault(); handleAskAI(`p2-${idx}`, `Zadanie: ${item.question}\nKroki: ${JSON.stringify(item.steps)}`); }}
                                                                     className="flex gap-2"
                                                                 >
                                                                     <input
