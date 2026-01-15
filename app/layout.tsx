@@ -3,7 +3,6 @@ import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { DebugOverlay } from "@/components/DebugOverlay";
 import { ThemeEffects } from "@/components/ThemeEffects";
 import { TutorProvider } from "@/context/TutorContext";
 import { TutorSidebar } from "@/components/TutorSidebar";
@@ -33,7 +32,6 @@ export default function RootLayout({
               <ThemeEffects />
               <div className="relative z-10">{children}</div>
               <TutorSidebar />
-              <DebugOverlay />
             </TutorProvider>
           </ThemeProvider>
         </ConvexClientProvider>

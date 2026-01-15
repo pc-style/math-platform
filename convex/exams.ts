@@ -112,6 +112,26 @@ export const createExam = mutation({
         const user = await authKit.getAuthUser(ctx);
         if (!user) throw new Error("Unauthorized");
 
+        const userRecord = await ctx.db
+            .query("users")
+            .withIndex("by_user", (q) => q.eq("userId", user.id))
+            .first();
+
+        const role = userRecord?.role || "member";
+        if (role === "member") {
+            const activeProjects = await ctx.db
+                .query("exams")
+                .withIndex("by_user", (q) => q.eq("userId", user.id))
+                .collect();
+            if (activeProjects.length >= 3) {
+                throw new Error("Limit projektów osiągnięty (max 3). Skasuj starszy projekt lub przejdź na Premium!");
+            }
+
+            if ((userRecord?.monthlyGenerations || 0) >= 5) {
+                throw new Error("Miesięczny limit generowań osiągnięty (max 5). Przejdź na Premium!");
+            }
+        }
+
         const examId = await ctx.db.insert("exams", {
             userId: user.id,
             title: args.title,
@@ -121,6 +141,13 @@ export const createExam = mutation({
             hoursAvailable: args.hoursAvailable,
             createdAt: Date.now(),
         });
+
+        // Increment usage for members
+        if (role === "member" && userRecord) {
+            await ctx.db.patch(userRecord._id, {
+                monthlyGenerations: (userRecord.monthlyGenerations || 0) + 1,
+            });
+        }
 
         return examId;
     },

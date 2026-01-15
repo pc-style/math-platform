@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useTutor } from "@/context/TutorContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Brain, Sparkles, MessageSquare, Mic, Volume2 } from "lucide-react";
-import { useAction } from "convex/react";
+import { useAction, useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { MathContent } from "@/components/MathContent";
 
@@ -18,7 +18,10 @@ export function TutorSidebar() {
     const askQuestion = useAction(api.chat.askQuestion);
 
     // Voice Mode
-    const { start: startVoice, stop: stopVoice, isActive: isVoiceActive, isConnecting: isVoiceConnecting } = useGeminiLive();
+    const incrementUsage = useMutation(api.users.incrementUsage);
+    const { start: startVoice, stop: stopVoice, isActive: isVoiceActive, isConnecting: isVoiceConnecting } = useGeminiLive((duration) => {
+        incrementUsage({ type: "audio", amount: duration });
+    });
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -26,8 +29,16 @@ export function TutorSidebar() {
         }
     }, [messages, isOpen]);
 
+    const userDetails = useQuery(api.users.getUserDetails);
+
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
+
+        // Optimistic limit check (server will verify too)
+        if (userDetails?.role === "member" && (userDetails.monthlyMessages || 0) >= 100) {
+            addMessage("ai", "Osiągnąłeś limit 100 wiadomości. Przejdź na Premium!");
+            return;
+        }
 
         const userMessage = input.trim();
         setInput("");
@@ -57,7 +68,15 @@ export function TutorSidebar() {
         if (isVoiceActive) {
             stopVoice();
             addMessage("ai", "Tryb głosowy wyłączony.");
+
+            // Note: useGeminiLive should ideally return the duration or we track it here
+            // For now we'll simplify and increment by a reasonable chunk if it was a real session
         } else {
+            if (userDetails?.role === "member" && (userDetails.monthlyAudioSeconds || 0) >= 300) {
+                addMessage("ai", "Limit 5 minut rozmowy audio wyczerpany. Przejdź na Premium!");
+                return;
+            }
+
             addMessage("ai", "Łączenie z trybem głosowym...");
             // WARNING: API Key handling - usually should be proxied
             // For now assuming it's available or provided by user
@@ -176,10 +195,26 @@ export function TutorSidebar() {
                                     </button>
                                 </div>
                             </div>
-                            <p className="mt-4 text-[10px] text-[var(--text-muted)] text-center font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                                <Sparkles className="w-3 h-3 text-[var(--primary)]" />
-                                Powered by Gemini 3 Flash
-                            </p>
+                            <div className="mt-4 flex flex-col gap-2">
+                                <p className="text-[10px] text-[var(--text-muted)] text-center font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                                    <Sparkles className="w-3 h-3 text-[var(--primary)]" />
+                                    Powered by Gemini 3 Flash
+                                </p>
+                                {userDetails?.role === 'member' && (
+                                    <div className="flex justify-center gap-4 border-t border-[var(--border)] mt-2 pt-2">
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-[9px] text-[var(--text-muted)] uppercase font-black">Wiadomości</span>
+                                            <span className="text-[10px] font-mono text-[var(--primary)] font-bold">{userDetails.monthlyMessages || 0}/100</span>
+                                        </div>
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-[9px] text-[var(--text-muted)] uppercase font-black">Audio</span>
+                                            <span className="text-[10px] font-mono text-[var(--primary)] font-bold">
+                                                {Math.round((userDetails.monthlyAudioSeconds || 0) / 60)}/5 min
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </motion.div>
                 )}

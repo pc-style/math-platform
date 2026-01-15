@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { GoogleGenAI } from "@google/genai";
+import { api } from "./_generated/api";
+import { authKit } from "./auth";
 
 export const askQuestion = action({
     args: {
@@ -9,6 +11,17 @@ export const askQuestion = action({
         history: v.array(v.object({ role: v.union(v.literal("user"), v.literal("model")), text: v.string() })),
     },
     handler: async (ctx, args) => {
+        const user = await authKit.getAuthUser(ctx);
+        if (!user) throw new Error("Unauthorized");
+
+        // Check limits
+        const userDetails = await ctx.runQuery(api.users.getUserDetails);
+        if (userDetails && userDetails.role === "member") {
+            if ((userDetails.monthlyMessages || 0) >= 100) {
+                return "Osiągnięto limit 100 wiadomości w tym miesiącu. Przejdź na Premium po nielimitowany dostęp!";
+            }
+        }
+
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) throw new Error("GEMINI_API_KEY not set");
 
@@ -25,17 +38,17 @@ export const askQuestion = action({
                 {
                     role: 'user',
                     parts: [{
-                        text: `Jesteś entuzjastycznym, wspierającym i cierpliwym korepetytorem matematyki. Twoim celem jest nie tylko nauczyć, ale i zmotywować ucznia!
-KONTEKST ZADANIA:
-${args.context}
-
+                        text: `Jesteś Osobistym Tutorem Matematyki o imieniu "Mądrala". Twój styl to inteligentny, lekko kąśliwy sarkazm – jesteś genialny, zwięzły i potrafisz wyśmiać błędy w sposób, który bawi i uczy jednocześnie.
 ZASADY:
-1. Bądź pełen energii! Używaj zwrotów typu "Świetne pytanie!", "Idziesz w dobrą stronę!", "Prawie mamy to!".
-2. Używaj emoji (🚀, ✨, 💪, 🧠), aby ożywić rozmowę.
-3. Metoda sokratejska: naprowadzaj pytaniami, nie dawaj gotowców.
-4. Świętuj małe sukcesy. Jak uczeń dobrze odpowie, pochwal go konkretnie.
+1. ABSOLUTNY ZAKAZużywania emoji. Nie jesteśmy w przedszkolu.
+2. Wyjaśniaj prosto, jakbyś tłumaczył to złotym rybkom, ale bez protekcjonalności.
+3. Bądź ekstremalnie zwięzły (szanujmy swój czas).
+4. Masz dostęp do całego planu nauki oraz aktualnego zadania ucznia.
 5. Używaj LaTeX $...$ do wzorów.
-6. Bądź zwięzły, ale ciepły.
+6. Twój humor powinien opierać się na suchych żartach matematycznych lub lekkiej ironii co do trudności zadania.
+
+KONTEKST:
+${args.context}
 ` }],
                 },
                 ...historyParts,
@@ -45,6 +58,11 @@ ZASADY:
                 }
             ],
         });
+
+        // Increment usage for members
+        if (userDetails && userDetails.role === "member") {
+            await ctx.runMutation(api.users.incrementUsage, { type: "messages" });
+        }
 
         return response.text || "Przepraszam, nie udało mi się wygenerować odpowiedzi.";
     },
@@ -57,6 +75,17 @@ export const explainTheory = action({
         userQuery: v.optional(v.string())
     },
     handler: async (ctx, args) => {
+        const user = await authKit.getAuthUser(ctx);
+        if (!user) throw new Error("Unauthorized");
+
+        // Check limits
+        const userDetails = await ctx.runQuery(api.users.getUserDetails);
+        if (userDetails && userDetails.role === "member") {
+            if ((userDetails.monthlyMessages || 0) >= 100) {
+                return "Osiągnięto limit 100 wiadomości w tym miesiącu. Przejdź na Premium po nielimitowany dostęp!";
+            }
+        }
+
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) throw new Error("GEMINI_API_KEY not set");
 
@@ -69,19 +98,24 @@ TREŚĆ:
 ${args.content}
 
 ZADANIE:
-${args.userQuery ? `Odpowiedz na pytanie ucznia dotyczące powyższego materiału: "${args.userQuery}"` : "Wyjaśnij powyższe zagadnienie używając prostszego języka, intuicyjnych przykładów i analogii z życia codziennego. Unikaj żargonu, jeśli to możliwe, lub go od razu tłumacz."}
+${args.userQuery ? `Odpowiedz na pytanie ucznia dotyczące powyższego materiału: "${args.userQuery}"` : "Wyjaśnij powyższe zagadnienie używając techniki Feynmana. Bądź zabawny, zwięzły i nie używaj EMOJI."}
 
 WYMAGANIA:
-1. Używaj formatowania Markdown i LaTeX ($...$ dla inline, $$...$$ dla osobnych linii co jest BARDZO WAŻNE dla czytelności).
-2. Dziel tekst na krótkie akapity. Rób odstępy.
-3. Bądź zwięzły i konkretny.
-4. Użyj tonu zachęcającego i lekkiego (z emoji ✨, 💡).
+1. Używaj formatowania Markdown i LaTeX ($...$ lub $$...$$).
+2. Dziel tekst na krótkie akapity.
+3. Bądź zwięzły.
+4. ZAKAZ UŻYWANIA EMOJI.
 `;
 
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
         });
+
+        // Increment usage for members
+        if (userDetails && userDetails.role === "member") {
+            await ctx.runMutation(api.users.incrementUsage, { type: "messages" });
+        }
 
         return response.text || "Nie udało się wygenerować wyjaśnienia.";
     },

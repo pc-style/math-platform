@@ -24,7 +24,7 @@ export function TutorProvider({ children }: { children: ReactNode }) {
     const [messages, setMessages] = useState<Message[]>([
         {
             role: "ai",
-            content: "Cześć! Jestem Twoim osobistym nauczycielem matematyki. W czym mogę Ci dzisiaj pomóc?",
+            content: "Cześć! Jestem Twoim osobistym nauczycielem matematyki. W czym możemy dzisiaj namieszać?",
             timestamp: Date.now(),
         },
     ]);

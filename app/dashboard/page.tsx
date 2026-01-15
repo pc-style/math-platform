@@ -16,7 +16,7 @@ import { useThemeLabels } from "@/hooks/useThemeLabels";
 export default function Dashboard() {
     const exams = useQuery(api.exams.getExams);
     const syncStats = useMutation(api.users.syncStats);
-    const [stats, setStats] = useState<{ xp: number; streak: number } | null>(null);
+    const [stats, setStats] = useState<any>(null);
     const { getLabel, isCyber } = useThemeLabels();
 
     const renameExam = useMutation(api.exams.renameExam);
@@ -73,33 +73,61 @@ export default function Dashboard() {
                     </Link>
                 </div>
 
-                {/* Stats Overview */}
-                {stats && (
-                    <div className="grid grid-cols-2 gap-6 mb-12">
-                        <div className={`p-6 flex items-center gap-6 ${isCyber ? "border border-[var(--primary)] bg-[var(--primary)]/5" : "bg-gradient-to-br from-orange-500/10 to-orange-500/5 rounded-3xl"}`}>
-                            <div className="p-4 bg-orange-500/10 text-orange-500 rounded-2xl">
-                                <Flame className="w-8 h-8 animate-pulse" />
+                {/* Stats & Limits Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    {stats && (
+                        <>
+                            <div className={`p-6 flex items-center gap-6 ${isCyber ? "border border-[var(--primary)] bg-[var(--primary)]/5" : "bg-gradient-to-br from-orange-500/10 to-orange-500/5 rounded-3xl"}`}>
+                                <div className="p-4 bg-orange-500/10 text-orange-500 rounded-2xl">
+                                    <Flame className="w-8 h-8 animate-pulse" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold uppercase tracking-wider text-[var(--text-muted)]">Dni z rzędu</p>
+                                    <p className={`text-4xl font-black ${isCyber ? "font-mono text-[var(--primary)]" : "text-orange-500"}`}>
+                                        {stats.streak}
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-sm font-bold uppercase tracking-wider text-[var(--text-muted)]">Dni z rzędu</p>
-                                <p className={`text-4xl font-black ${isCyber ? "font-mono text-[var(--primary)]" : "text-orange-500"}`}>
-                                    {stats.streak}
-                                </p>
+                            <div className={`p-6 flex items-center gap-6 ${isCyber ? "border border-[var(--primary)] bg-[var(--primary)]/5" : "bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 rounded-3xl"}`}>
+                                <div className="p-4 bg-yellow-500/10 text-yellow-500 rounded-2xl">
+                                    <Trophy className="w-8 h-8" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold uppercase tracking-wider text-[var(--text-muted)]">Twój wynik (XP)</p>
+                                    <p className={`text-4xl font-black ${isCyber ? "font-mono text-[var(--primary)]" : "text-yellow-500"}`}>
+                                        {stats.xp}
+                                    </p>
+                                </div>
                             </div>
+                        </>
+                    )}
+
+                    <div className={`p-6 flex flex-col justify-center gap-4 ${isCyber ? "border border-[var(--primary)] bg-[var(--primary)]/5" : "bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-3xl"}`}>
+                        <div className="flex justify-between items-center w-full">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Twój Plan</span>
+                            <span className={`px-2 py-0.5 text-[10px] font-black uppercase rounded ${stats?.role === 'premium' || stats?.role === 'admin'
+                                ? 'bg-[var(--primary)] text-black'
+                                : 'bg-[var(--surface)] text-[var(--text-muted)]'
+                                }`}>
+                                {stats?.role === 'premium' ? 'Premium' : stats?.role === 'admin' ? 'Admin' : 'Darmowy'}
+                            </span>
                         </div>
-                        <div className={`p-6 flex items-center gap-6 ${isCyber ? "border border-[var(--primary)] bg-[var(--primary)]/5" : "bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 rounded-3xl"}`}>
-                            <div className="p-4 bg-yellow-500/10 text-yellow-500 rounded-2xl">
-                                <Trophy className="w-8 h-8" />
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-end">
+                                <span className="text-xs font-bold text-[var(--foreground)]">Generowania (mies.)</span>
+                                <span className="text-xs font-mono font-bold text-[var(--primary)]">
+                                    {stats?.role === 'premium' || stats?.role === 'admin' ? '∞' : `${stats?.usage?.generations || 0}/5`}
+                                </span>
                             </div>
-                            <div>
-                                <p className="text-sm font-bold uppercase tracking-wider text-[var(--text-muted)]">Twój wynik (XP)</p>
-                                <p className={`text-4xl font-black ${isCyber ? "font-mono text-[var(--primary)]" : "text-yellow-500"}`}>
-                                    {stats.xp}
-                                </p>
+                            <div className="w-full bg-[var(--border)] h-1 rounded-full overflow-hidden">
+                                <div
+                                    className="bg-[var(--primary)] h-full transition-all duration-1000"
+                                    style={{ width: stats?.role === 'premium' || stats?.role === 'admin' ? '100%' : `${((stats?.usage?.generations || 0) / 5) * 100}%` }}
+                                />
                             </div>
                         </div>
                     </div>
-                )}
+                </div>
 
                 {exams.length === 0 ? (
                     <div className="card-premium text-center py-24">

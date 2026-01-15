@@ -55,6 +55,8 @@ export default defineSchema({
     // User Settings & Theme Preferences
     users: defineTable({
         userId: v.string(), // WorkOS User ID
+        email: v.optional(v.string()),
+        role: v.optional(v.string()), // 'member', 'admin', 'premium'
         theme: v.string(), // e.g., 'cybernetic-dark', 'normal-light', etc.
         customizations: v.optional(v.object({
             primaryColor: v.optional(v.string()),
@@ -62,5 +64,12 @@ export default defineSchema({
         xp: v.optional(v.number()),
         streak: v.optional(v.number()),
         lastLogin: v.optional(v.number()),
-    }).index("by_user", ["userId"]),
+
+        // Monthly Usage Tracking
+        lastResetAt: v.optional(v.number()), // Timestamp of month start
+        monthlyGenerations: v.optional(v.number()),
+        monthlyMessages: v.optional(v.number()),
+        monthlyAudioSeconds: v.optional(v.number()),
+    }).index("by_user", ["userId"])
+        .index("by_email", ["email"]),
 });

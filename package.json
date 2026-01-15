@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:clear": "bunx convex run admin:clearAll"
+    "db:clear": "bunx convex run admin:clearAll",
+    "db:premium": "bun scripts/make-premium.ts"
   },
   "dependencies": {
     "@convex-dev/workos-authkit": "^0.1.5",

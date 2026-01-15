@@ -3,6 +3,21 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { authKit } from "./auth";
 
+export const LIMITS = {
+    MEMBER: {
+        PROJECTS_AT_ONCE: 3,
+        MONTHLY_GENERATIONS: 5,
+        MONTHLY_MESSAGES: 100,
+        MONTHLY_AUDIO_SECONDS: 300, // 5 min
+    },
+};
+
+const getRole = (user: any) => {
+    // If WorkOS passes roles in metadata or another field
+    // For now we assume 'member' as default unless specified
+    return user.metadata?.role || "member";
+};
+
 export const getSettings = query({
     args: {},
     handler: async (ctx) => {
@@ -14,7 +29,7 @@ export const getSettings = query({
             .withIndex("by_user", (q) => q.eq("userId", user.id))
             .first();
 
-        return settings || { theme: "minimalistic-warm" };
+        return settings || { theme: "minimalistic-warm", role: "member" };
     },
 });
 
@@ -40,13 +55,24 @@ export const updateSettings = mutation({
                 ...(args.customizations && { customizations: args.customizations }),
             });
         } else {
+            const now = Date.now();
+            const startOfMonth = new Date(now);
+            startOfMonth.setDate(1);
+            startOfMonth.setHours(0, 0, 0, 0);
+
             await ctx.db.insert("users", {
                 userId: user.id,
+                email: user.email,
+                role: getRole(user),
                 theme: args.theme || "minimalistic-warm",
                 customizations: args.customizations,
                 xp: 0,
                 streak: 1,
-                lastLogin: Date.now(),
+                lastLogin: now,
+                lastResetAt: startOfMonth.getTime(),
+                monthlyGenerations: 0,
+                monthlyMessages: 0,
+                monthlyAudioSeconds: 0,
             });
         }
     },
@@ -58,58 +84,74 @@ export const syncStats = mutation({
         const user = await authKit.getAuthUser(ctx);
         if (!user) return null;
 
+        const role = getRole(user);
+        const now = Date.now();
+        const startOfMonth = new Date(now);
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+        const startOfMonthTs = startOfMonth.getTime();
+
         const record = await ctx.db
             .query("users")
             .withIndex("by_user", (q) => q.eq("userId", user.id))
             .first();
 
-        const now = Date.now();
-        const oneDayMs = 24 * 60 * 60 * 1000;
-
         if (!record) {
-            // New user record if somehow missing
-            const id = await ctx.db.insert("users", {
+            await ctx.db.insert("users", {
                 userId: user.id,
+                email: user.email,
+                role,
                 theme: "minimalistic-warm",
                 xp: 0,
                 streak: 1,
                 lastLogin: now,
+                lastResetAt: startOfMonthTs,
+                monthlyGenerations: 0,
+                monthlyMessages: 0,
+                monthlyAudioSeconds: 0,
             });
-            return { xp: 0, streak: 1 };
+            return { xp: 0, streak: 1, role };
         }
 
-        const lastLogin = record.lastLogin || 0;
-        const diff = now - lastLogin;
+        const patch: any = { lastLogin: now, role, email: user.email };
 
-        // Logical day check (naive 24h window for simplicity, or calendar day match)
-        // Better: Check if `lastLogin` is from "yesterday" relative to "today".
+        // Monthly Reset
+        if ((record.lastResetAt || 0) < startOfMonthTs) {
+            patch.lastResetAt = startOfMonthTs;
+            patch.monthlyGenerations = 0;
+            patch.monthlyMessages = 0;
+            patch.monthlyAudioSeconds = 0;
+        }
+
+        // Streak logic
+        const lastLogin = record.lastLogin || 0;
         const lastDate = new Date(lastLogin).toDateString();
         const todayDate = new Date(now).toDateString();
-
-        // If logged in today, do nothing
-        if (lastDate === todayDate) {
-            return { xp: record.xp || 0, streak: record.streak || 1 };
-        }
-
-        // Using simple time diff to check if within 48h (streak valid) or more (streak broken)
-        // But checking consecutive calendar days is robust enough for now.
-        // If more than 1 calendar day passed, reset.
+        const oneDayMs = 24 * 60 * 60 * 1000;
         const yesterdayDate = new Date(now - oneDayMs).toDateString();
 
-        let newStreak = record.streak || 1;
-        if (lastDate === yesterdayDate) {
-            newStreak++;
-        } else {
-            // Streak broken (missed at least one day)
-            newStreak = 1;
+        if (lastDate !== todayDate) {
+            let newStreak = record.streak || 1;
+            if (lastDate === yesterdayDate) {
+                newStreak++;
+            } else {
+                newStreak = 1;
+            }
+            patch.streak = newStreak;
         }
 
-        await ctx.db.patch(record._id, {
-            streak: newStreak,
-            lastLogin: now,
-        });
+        await ctx.db.patch(record._id, patch);
 
-        return { xp: record.xp || 0, streak: newStreak };
+        return {
+            xp: record.xp || 0,
+            streak: patch.streak || record.streak || 1,
+            role,
+            usage: {
+                generations: patch.monthlyGenerations ?? record.monthlyGenerations ?? 0,
+                messages: patch.monthlyMessages ?? record.monthlyMessages ?? 0,
+                audioSeconds: patch.monthlyAudioSeconds ?? record.monthlyAudioSeconds ?? 0,
+            }
+        };
     },
 });
 
@@ -131,3 +173,51 @@ export const addXp = mutation({
         }
     },
 });
+
+export const incrementUsage = mutation({
+    args: {
+        type: v.union(v.literal("generations"), v.literal("messages"), v.literal("audio")),
+        amount: v.optional(v.number())
+    },
+    handler: async (ctx, args) => {
+        const user = await authKit.getAuthUser(ctx);
+        if (!user) return;
+
+        const record = await ctx.db
+            .query("users")
+            .withIndex("by_user", (q) => q.eq("userId", user.id))
+            .first();
+
+        if (record) {
+            const patch: any = {};
+            if (args.type === "generations") patch.monthlyGenerations = (record.monthlyGenerations || 0) + 1;
+            if (args.type === "messages") patch.monthlyMessages = (record.monthlyMessages || 0) + 1;
+            if (args.type === "audio") patch.monthlyAudioSeconds = (record.monthlyAudioSeconds || 0) + (args.amount || 0);
+            await ctx.db.patch(record._id, patch);
+        }
+    },
+});
+
+export const getUserDetails = query({
+    args: {},
+    handler: async (ctx) => {
+        const user = await authKit.getAuthUser(ctx);
+        if (!user) return null;
+
+        const record = await ctx.db
+            .query("users")
+            .withIndex("by_user", (q) => q.eq("userId", user.id))
+            .first();
+
+        if (!record) return null;
+
+        return {
+            ...record,
+            limits: roleIsPremium(record.role) ? null : LIMITS.MEMBER
+        };
+    }
+});
+
+function roleIsPremium(role?: string) {
+    return role === "admin" || role === "premium";
+}

@@ -1,3 +1,4 @@
+import { v } from "convex/values";
 import { mutation } from "./_generated/server";
 
 export const clearAll = mutation({
@@ -18,5 +19,20 @@ export const clearAll = mutation({
         console.log(`Deleted ${users.length} users`);
 
         return `Cleared ${exams.length} exams and ${users.length} users`;
+    },
+});
+
+export const makePremium = mutation({
+    args: { email: v.string() },
+    handler: async (ctx, args) => {
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_email", (q) => q.eq("email", args.email))
+            .first();
+        if (!user) {
+            throw new Error(`User with email ${args.email} not found. They must log in at least once so their email is synced.`);
+        }
+        await ctx.db.patch(user._id, { role: "premium" });
+        return { success: true, email: args.email };
     },
 });

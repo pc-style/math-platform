@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export function useGeminiLive() {
+export function useGeminiLive(onStop?: (durationSeconds: number) => void) {
     const [isActive, setIsActive] = useState(false);
     const [isConnecting, setIsConnecting] = useState(false);
     const socketRef = useRef<WebSocket | null>(null);
@@ -10,10 +10,21 @@ export function useGeminiLive() {
     const streamRef = useRef<MediaStream | null>(null);
     const processorRef = useRef<ScriptProcessorNode | null>(null);
 
-    const stop = () => {
+    const startTimeRef = useRef<number | null>(null);
+
+    const stop = async () => {
         if (socketRef.current) socketRef.current.close();
         if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
         if (audioContextRef.current) audioContextRef.current.close();
+
+        // Track duration
+        if (startTimeRef.current) {
+            const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
+            if (duration > 0 && onStop) {
+                onStop(duration);
+            }
+            startTimeRef.current = null;
+        }
 
         setIsActive(false);
         setIsConnecting(false);
@@ -22,6 +33,7 @@ export function useGeminiLive() {
     const start = async (apiKey: string) => {
         if (isActive) return;
         setIsConnecting(true);
+        startTimeRef.current = Date.now();
 
         try {
             // 1. Initialize WebSocket
@@ -37,14 +49,28 @@ export function useGeminiLive() {
             };
 
             socket.onmessage = async (event) => {
-                const data = JSON.parse(event.data);
-                if (data.setupComplete) {
-                    setIsConnecting(false);
-                    setIsActive(true);
-                    startRecording();
+                let text = "";
+                if (typeof event.data === "string") {
+                    text = event.data;
+                } else if (event.data instanceof Blob) {
+                    text = await event.data.text();
+                } else {
+                    console.error("Unknown message type:", typeof event.data);
+                    return;
                 }
-                if (data.serverContent?.modelTurn?.parts?.[0]?.inlineData) {
-                    playAudio(data.serverContent.modelTurn.parts[0].inlineData.data);
+
+                try {
+                    const data = JSON.parse(text);
+                    if (data.setupComplete) {
+                        setIsConnecting(false);
+                        setIsActive(true);
+                        startRecording();
+                    }
+                    if (data.serverContent?.modelTurn?.parts?.[0]?.inlineData) {
+                        playAudio(data.serverContent.modelTurn.parts[0].inlineData.data);
+                    }
+                } catch (e) {
+                    console.error("Failed to parse message as JSON:", text, e);
                 }
             };
 

@@ -18,8 +18,10 @@ import { useThemeLabels } from "@/hooks/useThemeLabels";
 import { Id } from "../../../convex/_generated/dataModel";
 import { useAction } from "convex/react";
 import { MathContent } from "@/components/MathContent";
+import { useTutor } from "@/context/TutorContext";
 
 export default function ExamStudyView() {
+    const { setCurrentContext } = useTutor();
     const params = useParams();
     const router = useRouter();
     const examId = params.id as Id<"exams">;
@@ -49,10 +51,35 @@ export default function ExamStudyView() {
     const [showExplanation, setShowExplanation] = useState(false);
 
     useEffect(() => {
-        if (exam) {
+        if (exam?.data) {
             console.log(`[ExamView] Załadowano projekt: ${exam.title}. Status: ${exam.status}`);
+
+            // Sync context with Tutor
+            let currentItemContext = "";
+            if (activePhase === 1) {
+                const item = exam.data.phase1_theory[activeTheoryIndex];
+                currentItemContext = `AKTUALNY TEMAT TEORII: ${item.topic}\nTREŚĆ: ${item.content}`;
+            } else if (activePhase === 2) {
+                const item = exam.data.phase2_guided[0]; // Simplification for guided
+                currentItemContext = `AKTUALNE ZADANIE PROWADZONE: ${item.question}`;
+            } else if (activePhase === 3) {
+                currentItemContext = `ETAP EGZAMINU. ROZWIĄZYWANIE ZADAŃ KOŃCOWYCH.`;
+            }
+
+            const fullContext = `
+PROJEKT: ${exam.title}
+STRUKTURA PLANU:
+- TEORIA: ${exam.data.phase1_theory.map(t => t.topic).join(", ")}
+- ZADANIA: ${exam.data.phase2_guided.length + exam.data.phase3_exam.length} zadań łącznie
+
+${currentItemContext}
+
+DODATKOWE INFO: Jesteś zintegrowany z interfejsem. Uczeń właśnie przegląda fazę ${activePhase}.
+            `.trim();
+
+            setCurrentContext(fullContext);
         }
-    }, [exam]);
+    }, [exam, activePhase, activeTheoryIndex, setCurrentContext]);
 
     const addXp = useMutation(api.users.addXp);
 
