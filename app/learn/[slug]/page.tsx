@@ -9,6 +9,10 @@ import { CodePreview } from "@/components/learn/CodePreview";
 import { ChallengeCard } from "@/components/learn/ChallengeCard";
 import { ValidationFeedback } from "@/components/learn/ValidationFeedback";
 import { useChallengeValidation } from "@/hooks/useChallengeValidation";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 export default function ChallengePage() {
   const params = useParams();
@@ -27,7 +31,7 @@ export default function ChallengePage() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    if (challenge) {
+    if (challenge && challenge.starterCode) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setFiles({
         html: challenge.starterCode.html,
@@ -53,9 +57,20 @@ export default function ChallengePage() {
     setIsSubmitting(true);
     setValidationStatus("idle");
 
-    const result = validate(iframeRef.current, challenge.validation.rules);
+    let passed = false;
 
-    if (result.passed) {
+    if (challenge.type === "theory") {
+      passed = true;
+    } else {
+      const result = validate(iframeRef.current, challenge.validation?.rules || []);
+      passed = result.passed;
+      if (!passed) {
+        setValidationStatus("failure");
+        setFeedbackMessage(result.failedRule?.hint || "Something isn't quite right. Try again!");
+      }
+    }
+
+    if (passed) {
       setValidationStatus("success");
       setFeedbackMessage(`Congratulations! You've earned ${challenge.xpReward} XP.`);
 
@@ -74,8 +89,6 @@ export default function ChallengePage() {
 
       setIsSubmitting(false);
     } else {
-      setValidationStatus("failure");
-      setFeedbackMessage(result.failedRule?.hint || "Something isn't quite right. Try again!");
       setIsSubmitting(false);
     }
   };
@@ -88,6 +101,8 @@ export default function ChallengePage() {
     );
   }
 
+  const isTheory = challenge.type === "theory";
+
   return (
     <main className="flex h-screen bg-background overflow-hidden p-4 gap-4">
       {/* Sidebar - Challenge Info */}
@@ -95,27 +110,37 @@ export default function ChallengePage() {
         <ChallengeCard
           title={challenge.title}
           description={challenge.description}
-          hints={challenge.hints}
+          hints={challenge.hints || []}
           difficulty={challenge.difficulty}
           xpReward={challenge.xpReward}
-          onRun={handleRun}
+          onRun={isTheory ? () => {} : handleRun}
           onSubmit={handleSubmit}
         />
       </div>
 
-      {/* Main Content - Editor & Preview */}
-      <div className="flex-1 flex flex-col gap-4">
-        <div className="flex-1">
-          <CodeEditor
-            files={files}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            onChange={handleCodeChange}
-          />
-        </div>
-        <div className="h-[300px]">
-          <CodePreview ref={iframeRef} html={files.html} css={files.css} js={files.js} />
-        </div>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col gap-4 h-full overflow-hidden">
+        {isTheory ? (
+          <div className="flex-1 overflow-y-auto p-8 glass rounded-2xl border border-white/10 prose prose-invert prose-lg max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+              {challenge.theoryContent || challenge.description}
+            </ReactMarkdown>
+          </div>
+        ) : (
+          <>
+            <div className="flex-1">
+              <CodeEditor
+                files={files}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                onChange={handleCodeChange}
+              />
+            </div>
+            <div className="h-[300px]">
+              <CodePreview ref={iframeRef} html={files.html} css={files.css} js={files.js} />
+            </div>
+          </>
+        )}
       </div>
 
       <ValidationFeedback

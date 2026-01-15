@@ -101,35 +101,52 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_user", ["userId", "createdAt"]),
 
+  // Learning Engine: Courses
+  courses: defineTable({
+    title: v.string(),
+    slug: v.string(),
+    description: v.string(),
+    icon: v.string(),
+    order: v.number(),
+  }).index("by_slug", ["slug"]),
+
   // Learning Engine: Challenges
   challenges: defineTable({
     slug: v.string(), // "center-the-div"
+    courseId: v.optional(v.id("courses")), // Linked Course
+    type: v.optional(v.union(v.literal("coding"), v.literal("theory"))),
+    theoryContent: v.optional(v.string()), // Markdown for theory lessons
     title: v.string(),
     description: v.string(), // Markdown prompt
-    category: v.string(), // "css-basics", "flexbox", etc.
+    category: v.string(), // "css-basics", "flexbox", etc. (Keep for backward compatibility)
     difficulty: v.number(), // 1-5
     xpReward: v.number(),
-    starterCode: v.object({
-      html: v.string(),
-      css: v.string(),
-      js: v.optional(v.string()),
-    }),
-    validation: v.object({
-      type: v.string(), // "computed-style", "dom-check"
-      rules: v.array(
-        v.object({
-          selector: v.string(), // e.g., "#target"
-          property: v.string(), // e.g., "display"
-          expected: v.string(), // e.g., "flex"
-          hint: v.string(), // Hint on failure
-        }),
-      ),
-    }),
-    hints: v.array(v.string()), // Progressive hints
+    starterCode: v.optional(
+      v.object({
+        html: v.string(),
+        css: v.string(),
+        js: v.optional(v.string()),
+      }),
+    ),
+    validation: v.optional(
+      v.object({
+        type: v.string(), // "computed-style", "dom-check"
+        rules: v.array(
+          v.object({
+            selector: v.string(), // e.g., "#target"
+            property: v.string(), // e.g., "display"
+            expected: v.string(), // e.g., "flex"
+            hint: v.string(), // Hint on failure
+          }),
+        ),
+      }),
+    ),
+    hints: v.optional(v.array(v.string())), // Progressive hints
     order: v.number(),
   })
     .index("by_slug", ["slug"])
-    .index("by_category", ["category"]),
+    .index("by_category", ["category"])
+    .index("by_course", ["courseId"]),
 
   // Learning Engine: User Progress
   challengeProgress: defineTable({

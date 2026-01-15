@@ -9,6 +9,7 @@ import Link from "next/link";
 import { ProgressTracker } from "@/components/learn/ProgressTracker";
 
 export default function LearnDashboard() {
+  const courses = useQuery(api.courses.list);
   const challenges = useQuery(api.challenges.list);
   const user = useQuery(api.users.getUserDetails); // Assuming there's a current user query
 
@@ -16,8 +17,6 @@ export default function LearnDashboard() {
   const userXP = user?.xp || 1250;
   const userLevel = Math.floor(userXP / 1000) + 1;
   const userStreak = user?.streak || 5;
-
-  const categories = ["CSS Basics", "Flexbox", "Grid", "JavaScript DOM"];
 
   return (
     <main className="min-h-screen bg-background p-8 max-w-6xl mx-auto space-y-12">
@@ -36,16 +35,18 @@ export default function LearnDashboard() {
         </div>
       </header>
 
-      {/* Category Grid */}
+      {/* Course Grid */}
       <div className="space-y-12">
-        {categories.map((category) => (
-          <section key={category} className="space-y-6">
+        {courses?.map((course) => (
+          <section key={course._id} className="space-y-6">
             <h2 className="text-xl font-bold tracking-tight text-foreground/80 flex items-center gap-2">
-              <Star className="w-5 h-5 text-primary fill-primary/20" /> {category}
+              <Star className="w-5 h-5 text-primary fill-primary/20" /> {course.title}
             </h2>
+            <p className="text-sm text-muted-foreground">{course.description}</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {challenges
-                ?.filter((c) => c.category === category)
+                ?.filter((c) => c.courseId === course._id)
+                .sort((a, b) => a.order - b.order)
                 .map((challenge) => (
                   <Link key={challenge._id} href={`/learn/${challenge.slug}`} className="group">
                     <motion.div
@@ -54,18 +55,20 @@ export default function LearnDashboard() {
                     >
                       <div className="flex justify-between items-start mb-4">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
-                          LEVEL {challenge.difficulty}
+                          {challenge.type === "theory" ? "THEORY" : `LEVEL ${challenge.difficulty}`}
                         </span>
-                        <div className="flex gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <div
-                              key={i}
-                              className={`w-1 h-1 rounded-full ${
-                                i < challenge.difficulty ? "bg-primary" : "bg-white/10"
-                              }`}
-                            />
-                          ))}
-                        </div>
+                        {challenge.type !== "theory" && (
+                          <div className="flex gap-1">
+                            {[...Array(5)].map((_, i) => (
+                              <div
+                                key={i}
+                                className={`w-1 h-1 rounded-full ${
+                                  i < challenge.difficulty ? "bg-primary" : "bg-white/10"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">
                         {challenge.title}
@@ -74,20 +77,24 @@ export default function LearnDashboard() {
                         {challenge.description}
                       </p>
                       <div className="mt-auto flex items-center justify-between text-xs font-mono">
-                        <span className="text-muted-foreground">{challenge.xpReward} XP</span>
+                        <span className="text-muted-foreground">+{challenge.xpReward} XP</span>
                         <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors group-hover:translate-x-1" />
                       </div>
                     </motion.div>
                   </Link>
                 )) || (
-                // Empty state for category
                 <div className="col-span-full p-12 border border-dashed border-white/10 rounded-3xl flex flex-col items-center justify-center text-muted-foreground">
-                  <p className="text-sm">No challenges yet for this category.</p>
+                  <p className="text-sm">No lessons yet for this course.</p>
                 </div>
               )}
             </div>
           </section>
         ))}
+        {(!courses || courses.length === 0) && (
+          <div className="p-12 text-center text-muted-foreground">
+            Loading courses or no courses available. Run the generation script!
+          </div>
+        )}
       </div>
     </main>
   );

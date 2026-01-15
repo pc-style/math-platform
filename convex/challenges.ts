@@ -207,3 +207,53 @@ export const seed = mutation({
     }
   },
 });
+
+export const insertBatch = mutation({
+  args: {
+    challenges: v.array(
+      v.object({
+        slug: v.string(),
+        title: v.string(),
+        description: v.string(),
+        category: v.string(),
+        difficulty: v.number(),
+        xpReward: v.number(),
+        starterCode: v.object({
+          html: v.string(),
+          css: v.string(),
+          js: v.optional(v.string()),
+        }),
+        validation: v.object({
+          type: v.string(),
+          rules: v.array(
+            v.object({
+              selector: v.string(),
+              property: v.string(),
+              expected: v.string(),
+              hint: v.string(),
+            }),
+          ),
+        }),
+        hints: v.array(v.string()),
+        order: v.number(),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    for (const challenge of args.challenges) {
+      const existing = await ctx.db
+        .query("challenges")
+        .withIndex("by_slug", (q) => q.eq("slug", challenge.slug))
+        .unique();
+
+      if (!existing) {
+        await ctx.db.insert("challenges", challenge);
+      } else {
+        // Optional: Update existing? For now, skip or patch.
+        // Let's patch to allow updates.
+        await ctx.db.patch(existing._id, challenge);
+      }
+    }
+    return { count: args.challenges.length };
+  },
+});
