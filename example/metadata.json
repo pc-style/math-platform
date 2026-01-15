@@ -1,5 +1,0 @@
-{
-  "name": "Function calling",
-  "description": "Provide Gemini with functions it can use to create responses",
-  "requestFramePermissions": []
-}
