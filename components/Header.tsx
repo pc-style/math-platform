@@ -1,9 +1,10 @@
 "use client";
 
-import { Brain, Settings, LogOut, Menu, X } from "lucide-react";
+import { Brain, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useThemeLabels } from "@/hooks/useThemeLabels";
+import { AuthButton } from "@/components/AuthButton";
 
 export const Header = () => {
   const { getLabel, isCyber } = useThemeLabels();
@@ -12,9 +13,7 @@ export const Header = () => {
   const renderAuthActions = (className: string) => {
     return (
       <div className={className}>
-        <span className="text-xs font-bold text-[var(--primary)] uppercase tracking-widest">
-          {isCyber ? "> session_public" : "Tryb Publiczny"}
-        </span>
+        <AuthButton />
       </div>
     );
   };
@@ -24,10 +23,11 @@ export const Header = () => {
       <div className="flex items-center justify-between gap-6">
         <Link href="/" className="flex items-center gap-3 group cursor-pointer">
           <div
-            className={`p-2 transition-all duration-300 ${isCyber
-              ? "border border-[var(--primary)] group-hover:bg-[var(--primary)] group-hover:shadow-[0_0_20px_var(--primary)]"
-              : "bg-[var(--primary)] text-white rounded-[var(--radius)]"
-              }`}
+            className={`p-2 transition-all duration-300 ${
+              isCyber
+                ? "border border-[var(--primary)] group-hover:bg-[var(--primary)] group-hover:shadow-[0_0_20px_var(--primary)]"
+                : "bg-[var(--primary)] text-white rounded-[var(--radius)]"
+            }`}
           >
             <Brain
               className={`w-7 h-7 ${isCyber ? "text-[var(--primary)] group-hover:text-black" : "text-white"}`}

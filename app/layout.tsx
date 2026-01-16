@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
+import { AuthKitProvider } from "@workos-inc/authkit-nextjs/components";
 import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -35,18 +36,20 @@ export default function RootLayout({
   return (
     <html lang="pl">
       <body className={`${jetbrainsMono.variable} antialiased`}>
-        <ConvexClientProvider>
-          <ThemeProvider>
-            <TutorProvider>
-              <ThemeEffects />
-              <ServiceWorkerRegistrar />
-              <PWAUpdateToast />
-              <HomepageRedirect />
-              <div className="relative z-10">{children}</div>
-              <TutorSidebar />
-            </TutorProvider>
-          </ThemeProvider>
-        </ConvexClientProvider>
+        <AuthKitProvider>
+          <ConvexClientProvider>
+            <ThemeProvider>
+              <TutorProvider>
+                <ThemeEffects />
+                <ServiceWorkerRegistrar />
+                <PWAUpdateToast />
+                <HomepageRedirect />
+                <div className="relative z-10">{children}</div>
+                <TutorSidebar />
+              </TutorProvider>
+            </ThemeProvider>
+          </ConvexClientProvider>
+        </AuthKitProvider>
       </body>
     </html>
   );
