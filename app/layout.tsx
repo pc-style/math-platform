@@ -6,7 +6,6 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeEffects } from "@/components/ThemeEffects";
 import { TutorProvider } from "@/context/TutorContext";
 import { TutorSidebar } from "@/components/TutorSidebar";
-import { UserSync } from "@/components/UserSync";
 import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
 import { HomepageRedirect } from "@/components/HomepageRedirect";
 import { PWAUpdateToast } from "@/components/PWAUpdateToast";
@@ -37,7 +36,6 @@ export default function RootLayout({
     <html lang="pl">
       <body className={`${jetbrainsMono.variable} antialiased`}>
         <ConvexClientProvider>
-          <UserSync />
           <ThemeProvider>
             <TutorProvider>
               <ThemeEffects />

@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, action } from "./_generated/server";
 import { api } from "./_generated/api";
-import { authKit } from "./auth";
+const mockUser = { id: "public-user" };
 import { GoogleGenAI, Type } from "@google/genai";
 
 // --- Schema Definition ---
@@ -93,8 +93,7 @@ const learningPathSchema = {
 export const getExams = query({
   args: {},
   handler: async (ctx) => {
-    const user = await authKit.getAuthUser(ctx);
-    if (!user) return [];
+    const user = mockUser;
     return await ctx.db
       .query("exams")
       .withIndex("by_user", (q) => q.eq("userId", user.id))
@@ -106,7 +105,7 @@ export const getExams = query({
 export const getExam = query({
   args: { id: v.id("exams") },
   handler: async (ctx, args) => {
-    const user = await authKit.getAuthUser(ctx);
+    const user = mockUser;
     const exam = await ctx.db.get(args.id);
     if (!exam || !user || exam.userId !== user.id) return null;
     return exam;
@@ -121,30 +120,9 @@ export const createExam = mutation({
     hoursAvailable: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const user = await authKit.getAuthUser(ctx);
-    if (!user) throw new Error("Unauthorized");
-
-    const userRecord = await ctx.db
-      .query("users")
-      .withIndex("by_user", (q) => q.eq("userId", user.id))
-      .first();
-
-    const role = userRecord?.role || "member";
-    if (role === "member") {
-      const activeProjects = await ctx.db
-        .query("exams")
-        .withIndex("by_user", (q) => q.eq("userId", user.id))
-        .collect();
-      if (activeProjects.length >= 3) {
-        throw new Error(
-          "Limit projektów osiągnięty (max 3). Skasuj starszy projekt lub przejdź na Premium!",
-        );
-      }
-
-      if ((userRecord?.monthlyGenerations || 0) >= 5) {
-        throw new Error("Miesięczny limit generowań osiągnięty (max 5). Przejdź na Premium!");
-      }
-    }
+    const user = mockUser;
+    // Limits removed for public access
+    const role = "premium";
 
     const examId = await ctx.db.insert("exams", {
       userId: user.id,
@@ -155,13 +133,6 @@ export const createExam = mutation({
       hoursAvailable: args.hoursAvailable,
       createdAt: Date.now(),
     });
-
-    // Increment usage for members
-    if (role === "member" && userRecord) {
-      await ctx.db.patch(userRecord._id, {
-        monthlyGenerations: (userRecord.monthlyGenerations || 0) + 1,
-      });
-    }
 
     return examId;
   },
@@ -192,8 +163,7 @@ export const generateUploadUrl = mutation(async (ctx) => {
 export const storeFile = action({
   args: { file: v.bytes(), contentType: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const user = await authKit.getAuthUser(ctx);
-    if (!user) throw new Error("Unauthorized");
+    const user = mockUser;
     // Convert bytes to Blob for storage.store
     const blob = new Blob([args.file], { type: args.contentType });
     return await ctx.storage.store(blob);
@@ -205,7 +175,7 @@ export const storeFile = action({
 export const renameExam = mutation({
   args: { id: v.id("exams"), title: v.string() },
   handler: async (ctx, args) => {
-    const user = await authKit.getAuthUser(ctx);
+    const user = mockUser;
     const exam = await ctx.db.get(args.id);
     if (!exam || !user || exam.userId !== user.id) throw new Error("Unauthorized");
 
@@ -216,7 +186,7 @@ export const renameExam = mutation({
 export const deleteExam = mutation({
   args: { id: v.id("exams") },
   handler: async (ctx, args) => {
-    const user = await authKit.getAuthUser(ctx);
+    const user = mockUser;
     const exam = await ctx.db.get(args.id);
     if (!exam || !user || exam.userId !== user.id) throw new Error("Unauthorized");
 
@@ -265,9 +235,8 @@ export const generateExam = action({
               ...pdfParts,
               {
                 text: `Jesteś wybitnym profesorem matematyki i ekspertem od dydaktyki. Twoim celem jest stworzenie SZCZEGÓŁOWEGO, ANGARAŻUJĄCEGO i SKUTECZNEGO planu nauki na podstawie przesłanych materiałów (PDF).
-${
-  args.isSpeedrun
-    ? `
+${args.isSpeedrun
+                    ? `
 🚨 TRYB ALARMOWY (SPEEDRUN): Użytkownik ma tylko ${args.hoursAvailable} godzin do egzaminu! 
 TWOJE ZADANIE:
 - Zastosuj zasadę Pareto (80/20). Skup się WYŁĄCZNIE na tematach, które pojawiają się najczęściej i mają największy wpływ na wynik.
@@ -277,8 +246,8 @@ TWOJE ZADANIE:
 - Phase 1 (Teoria) powinna zawierać tylko esencję + najważniejsze wzory.
 - Phase 2 (Praktyka) powinna skupić się na typowych zadaniach egzaminacyjnych.
 `
-    : ""
-}
+                    : ""
+                  }
 
 Analiza:
 - Przeanalizuj dokładnie każdy przesłany plik.

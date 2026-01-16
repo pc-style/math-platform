@@ -1,8 +1,7 @@
 "use client";
 
-import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
-import { ReactNode, useCallback, useMemo } from "react";
-import { AuthKitProvider, useAuth, useAccessToken } from "@workos-inc/authkit-nextjs/components";
+import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ReactNode } from "react";
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -19,43 +18,10 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   };
 }
 
-function useWorkOSAuthBridge() {
-  const { user, loading: isLoading } = useAuth();
-  const { accessToken, loading: tokenLoading, error: tokenError } = useAccessToken();
-  const loading = (isLoading ?? false) || (tokenLoading ?? false);
-  const authenticated = !!user && !!accessToken && !loading;
-
-  const fetchAccessToken = useCallback(async () => {
-    if (accessToken && !tokenError) {
-      return accessToken;
-    }
-    return null;
-  }, [accessToken, tokenError]);
-
-  return useMemo(
-    () => ({
-      isLoading: loading,
-      isAuthenticated: authenticated,
-      fetchAccessToken,
-    }),
-    [loading, authenticated, fetchAccessToken],
-  );
-}
-
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
   return (
-    <AuthKitProvider>
-      <ConvexProviderWithAuth client={convex} useAuth={useWorkOSAuthBridge}>
-        <AuthBoundary>{children}</AuthBoundary>
-      </ConvexProviderWithAuth>
-    </AuthKitProvider>
+    <ConvexProvider client={convex}>
+      {children}
+    </ConvexProvider>
   );
-}
-
-function AuthBoundary({ children }: { children: ReactNode }) {
-  const { loading } = useAuth();
-  // Prevent rendering children (which often contain useQuery) while AuthKit is still loading the session
-  // This helps avoid the "Failed to Fetch" if Convex tries to use an uninitialized token
-  if (loading) return null;
-  return <>{children}</>;
 }

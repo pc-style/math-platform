@@ -54,11 +54,7 @@ export function TutorSidebar() {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    // Optimistic limit check (server will verify too)
-    if (userDetails?.role === "member" && (userDetails.monthlyMessages || 0) >= 100) {
-      addMessage("ai", "Osiągnąłeś limit 100 wiadomości. Przejdź na Premium!");
-      return;
-    }
+    // No limits for public premium mock
 
     const userMessage = input.trim();
     setInput("");
@@ -92,10 +88,7 @@ export function TutorSidebar() {
       // Note: useGeminiLive should ideally return the duration or we track it here
       // For now we'll simplify and increment by a reasonable chunk if it was a real session
     } else {
-      if (userDetails?.role === "member" && (userDetails.monthlyAudioSeconds || 0) >= 300) {
-        addMessage("ai", "Limit 5 minut rozmowy audio wyczerpany. Przejdź na Premium!");
-        return;
-      }
+      // No limits for public premium mock
 
       addMessage("ai", "Łączenie z trybem głosowym...");
       // WARNING: API Key handling - usually should be proxied
@@ -174,11 +167,10 @@ export function TutorSidebar() {
                   className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[85%] p-4 ${
-                      msg.role === "user"
+                    className={`max-w-[85%] p-4 ${msg.role === "user"
                         ? "bg-[var(--primary)] text-black font-medium"
                         : "bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)]"
-                    } ${msg.role === "user" ? "rounded-2xl rounded-tr-none" : "rounded-2xl rounded-tl-none"}`}
+                      } ${msg.role === "user" ? "rounded-2xl rounded-tr-none" : "rounded-2xl rounded-tl-none"}`}
                   >
                     {msg.role === "ai" ? (
                       <MathContent content={msg.content} />
@@ -234,26 +226,6 @@ export function TutorSidebar() {
                   <Sparkles className="w-3 h-3 text-[var(--primary)]" />
                   Powered by Gemini 3 Flash
                 </p>
-                {userDetails?.role === "member" && (
-                  <div className="flex justify-center gap-4 border-t border-[var(--border)] mt-2 pt-2">
-                    <div className="flex flex-col items-center">
-                      <span className="text-[9px] text-[var(--text-muted)] uppercase font-black">
-                        Wiadomości
-                      </span>
-                      <span className="text-[10px] font-mono text-[var(--primary)] font-bold">
-                        {userDetails.monthlyMessages || 0}/100
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <span className="text-[9px] text-[var(--text-muted)] uppercase font-black">
-                        Audio
-                      </span>
-                      <span className="text-[10px] font-mono text-[var(--primary)] font-bold">
-                        {Math.round((userDetails.monthlyAudioSeconds || 0) / 60)}/5 min
-                      </span>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </motion.div>

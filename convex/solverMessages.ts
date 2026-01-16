@@ -1,19 +1,17 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { authKit } from "./auth";
+
+const mockUser = { id: "public-user" };
 
 /**
- * Lists the last 50 messages for the current user in the solver.
+ * Lists the last 50 messages for the public user in the solver.
  */
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    const user = await authKit.getAuthUser(ctx);
-    if (!user) return [];
-
     return await ctx.db
       .query("solverMessages")
-      .withIndex("by_user", (q) => q.eq("userId", user.id))
+      .withIndex("by_user", (q) => q.eq("userId", mockUser.id))
       .order("desc")
       .take(50);
   },
@@ -34,11 +32,8 @@ export const add = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const user = await authKit.getAuthUser(ctx);
-    if (!user) throw new Error("Unauthorized");
-
     await ctx.db.insert("solverMessages", {
-      userId: user.id,
+      userId: mockUser.id,
       role: args.role,
       content: args.content,
       attachment: args.attachment,
@@ -48,17 +43,14 @@ export const add = mutation({
 });
 
 /**
- * Clears the entire history for the current user.
+ * Clears the entire history for the public user.
  */
 export const clear = mutation({
   args: {},
   handler: async (ctx) => {
-    const user = await authKit.getAuthUser(ctx);
-    if (!user) throw new Error("Unauthorized");
-
     const messages = await ctx.db
       .query("solverMessages")
-      .withIndex("by_user", (q) => q.eq("userId", user.id))
+      .withIndex("by_user", (q) => q.eq("userId", mockUser.id))
       .collect();
 
     for (const msg of messages) {

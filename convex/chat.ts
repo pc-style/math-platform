@@ -1,31 +1,18 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { GoogleGenAI } from "@google/genai";
-import { api } from "./_generated/api";
-import { authKit } from "./auth";
+
+const mockUser = { id: "public-user" };
 
 export const askQuestion = action({
   args: {
     question: v.string(),
-    context: v.string(), // Context of the current problem/step
+    context: v.string(),
     history: v.array(
       v.object({ role: v.union(v.literal("user"), v.literal("model")), text: v.string() }),
     ),
   },
   handler: async (ctx, args) => {
-    const user = await authKit.getAuthUser(ctx);
-    if (!user) throw new Error("Unauthorized");
-
-    // Check limits
-    const userDetails = await ctx.runQuery(api.users.getUserDetails);
-    const role = userDetails?.role || "member";
-
-    if (role === "member" && userDetails) {
-      if ((userDetails.monthlyMessages || 0) >= 100) {
-        return "Osiągnięto limit 100 wiadomości w tym miesiącu. Przejdź na Premium po nielimitowany dostęp!";
-      }
-    }
-
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("GEMINI_API_KEY not set");
 
@@ -66,11 +53,6 @@ ${args.context}
       ],
     });
 
-    // Increment usage for members
-    if (role === "member" && userDetails) {
-      await ctx.runMutation(api.users.incrementUsage, { type: "messages" });
-    }
-
     return response.text || "Przepraszam, nie udało mi się wygenerować odpowiedzi.";
   },
 });
@@ -82,19 +64,6 @@ export const explainTheory = action({
     userQuery: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await authKit.getAuthUser(ctx);
-    if (!user) throw new Error("Unauthorized");
-
-    // Check limits
-    const userDetails = await ctx.runQuery(api.users.getUserDetails);
-    const role = userDetails?.role || "member";
-
-    if (role === "member" && userDetails) {
-      if ((userDetails.monthlyMessages || 0) >= 100) {
-        return "Osiągnięto limit 100 wiadomości w tym miesiącu. Przejdź na Premium po nielimitowany dostęp!";
-      }
-    }
-
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("GEMINI_API_KEY not set");
 
@@ -120,11 +89,6 @@ WYMAGANIA:
       model: "gemini-3-flash-preview",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
     });
-
-    // Increment usage for members
-    if (role === "member" && userDetails) {
-      await ctx.runMutation(api.users.incrementUsage, { type: "messages" });
-    }
 
     return response.text || "Nie udało się wygenerować wyjaśnienia.";
   },
