@@ -1,5 +1,4 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+# Husky v10 cleanup - removed deprecated lines
 
 echo "🔍 Running Type Check..."
 bun run type-check
