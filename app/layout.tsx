@@ -26,6 +26,28 @@ export const metadata: Metadata = {
     icon: "/pwa-icon.svg",
     apple: "/pwa-icon.svg",
   },
+  openGraph: {
+    title: "MATHPREP_AI // PCSTYLE",
+    description: "Generuj rozbudowane plany nauki matematyki z pomocą AI.",
+    url: "https://math.pcstyle.dev",
+    siteName: "MATHPREP.PCSTYLE",
+    images: [
+      {
+        url: "https://og.pcstyle.dev/api/og?title=MATHPREP%20AI&subtitle=AI%20Math%20Learning%20Platform&icon=calculator&theme=magenta",
+        width: 1200,
+        height: 630,
+        alt: "MathPrep AI Preview",
+      },
+    ],
+    locale: "pl_PL",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MATHPREP_AI // PCSTYLE",
+    description: "Generuj rozbudowane plany nauki matematyki z pomocą AI.",
+    images: ["https://og.pcstyle.dev/api/og?title=MATHPREP%20AI&subtitle=AI%20Math%20Learning%20Platform&icon=calculator&theme=magenta"],
+  },
 };
 
 export default function RootLayout({
