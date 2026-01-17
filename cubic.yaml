@@ -1,28 +1,34 @@
+# yaml-language-server: $schema=https://cubic.dev/schema/cubic-repository-config.schema.json
+
 version: 1
+
 reviews:
   enabled: true
   sensitivity: high
   incremental_commits: true
   check_drafts: false
   architecture_diagrams: true
-  show_ai_feedback_buttons: true
   resolve_threads_when_addressed: true
-  custom_instructions: "NexusLearn (Math Platform) requires high precision in educational logic and ultra-smooth animations for the roadmap."
+  custom_instructions: |
+    NexusLearn Platform: Focus on educational logic, roadmap progression, and real-time responsiveness via Convex.
+
   ignore:
     files:
       - "**/node_modules/**"
       - "**/dist/**"
       - "**/*.lock*"
       - "**/_generated/**"
+
   custom_rules:
-    - name: "UX: Learning Roadmap"
-      description: "Ensure roadmap animations are performant and use @pcstyle/motion presets. No stuttering in SVG transitions."
-    - name: "Backend: Convex Reactivity"
-      description: "Ensure Convex queries are optimized for real-time updates. Flag any non-reactive patterns in high-traffic pages."
-    - name: "Aesthetics: Cybernetic Minimalism"
-      description: "Maintain the high-fidelity cyberpunk look. Use the @pcstyle/ui components for a premium feel."
+    - name: "LOGIC_VERIFICATION"
+      description: "Ensure the pedagogical roadmap and educational content structures are technically sound and maintainable."
+    - name: "CYBERNETIC_AESTHETICS"
+      description: "The platform must look and feel premium: Black background, Neon Pink accents, and smooth transitions."
+
 pr_descriptions:
   generate: true
-  instructions: "Summarize how changes improve the educational experience and platform performance."
+  instructions: |
+    Highlight changes related to learning paths and real-time platform updates.
+
 issues:
   fix_with_cubic_buttons: true
