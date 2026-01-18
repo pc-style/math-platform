@@ -22,7 +22,14 @@
     "*.{json,md,css}": "prettier --write"
   },
   "dependencies": {
-    "@google/genai": "^1.36.0",
+    "@pcstyle/ai": "workspace:*",
+    "@pcstyle/analytics": "workspace:*",
+    "@pcstyle/convex": "workspace:*",
+    "@pcstyle/hooks": "workspace:*",
+    "@pcstyle/logger": "workspace:*",
+    "@pcstyle/og": "workspace:*",
+    "@pcstyle/seo": "workspace:*",
+    "@pcstyle/toast": "workspace:*",
     "@workos-inc/authkit-nextjs": "^2.13.0",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
@@ -39,8 +46,7 @@
     "react-markdown": "^10.1.0",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
-    "tailwind-merge": "^3.4.0",
-    "@pcstyle/auth": "github:pc-style/auth#main"
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
